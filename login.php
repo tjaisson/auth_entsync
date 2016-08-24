@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Anobody can login with any password.
+ * Connexion sso
  *
  * @package auth_entsync
  * @copyright 2016 Thomas Jaisson
@@ -81,10 +81,11 @@ if($val = $cas->validateorredirect()) {
         ['uid' => $val->user, 'ent' => $ent->get_code()])) {
             //Utilisateur cas non connu, display erreur et redirect button
             //TODO : informer l'Utilisateur de son uid ent
-            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+            $msg = "Authentification {$ent->nomcourt} réussie mais l'utilisateur \"{$val->user}\" n'est pas autorisé à accèder à ce moodle.<br />Un administrateur peut autoriser l'utilisateur.";
+            printerrorpage($msg, \core\output\notification::NOTIFY_ERROR);
         }
         if($entu->archived) {
-            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+            printerrorpage('Utilisateur désactivé', \core\output\notification::NOTIFY_ERROR);
         }
         if(!$mdlu = get_complete_user_data('id', $entu->userid))  {
             //Ne devrait pas se produire, display erreur et redirect button
