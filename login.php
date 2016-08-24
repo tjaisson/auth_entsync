@@ -73,50 +73,46 @@ if($ent->get_mode() !== 'cas') {
     printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
 }
 
-require_once(__DIR__ . '/cas/connect.php');
+$cas = $ent->get_casconnector();
 
-$cas = auth_entsync_casconnect::instance($ent);
 
-if(isset($_GET['ticket'])) {
-    if($val = $cas->validateticket()) {
-        if(!$entu = $DB->get_record('auth_entsync_user',
-            ['uid' => $val->user, 'ent' => $ent->get_code()])) {
-                //Utilisateur cas non connu, display erreur et redirect button
-                //TODO : informer l'Utilisateur de son uid ent
-                printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
-            }
-            if($entu->archived) {
-                printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
-            }
-            if(!$mdlu = get_complete_user_data('id', $entu->userid))  {
-                //Ne devrait pas se produire, display erreur et redirect button
-                printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
-            }
-            if($mdlu->suspended) {
-                //Utilisateur suspendu, display erreur et redirect button
-                //TODO : informer l'Utilisateur
-                printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
-            }
-            set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
-            complete_user_login($mdlu);
+if($val = $cas->validateorredirect()) {
+    if(!$entu = $DB->get_record('auth_entsync_user',
+        ['uid' => $val->user, 'ent' => $ent->get_code()])) {
+            //Utilisateur cas non connu, display erreur et redirect button
+            //TODO : informer l'Utilisateur de son uid ent
+            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        }
+        if($entu->archived) {
+            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        }
+        if(!$mdlu = get_complete_user_data('id', $entu->userid))  {
+            //Ne devrait pas se produire, display erreur et redirect button
+            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        }
+        if($mdlu->suspended) {
+            //Utilisateur suspendu, display erreur et redirect button
+            //TODO : informer l'Utilisateur
+            printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        }
+        set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
+        complete_user_login($mdlu);
 
-            \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
+        \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
 
-            $urltogo = core_login_get_return_url();
+        $urltogo = core_login_get_return_url();
 
-            // Discard any errors before the last redirect.
-            unset($SESSION->loginerrormsg);
+        // Discard any errors before the last redirect.
+        unset($SESSION->loginerrormsg);
 
-            // test the session actually works by redirecting to self
-            $SESSION->wantsurl = $urltogo;
-            redirect(new moodle_url(get_login_url(), array('testsession'=>$mdlu->id)));
-    } else {
-        //display erreur et redirect button
-        printerrorpage('Ticket CAS non validé', \core\output\notification::NOTIFY_ERROR);
-    }
+        // test the session actually works by redirecting to self
+        $SESSION->wantsurl = $urltogo;
+        redirect(new moodle_url(get_login_url(), array('testsession'=>$mdlu->id)));
 } else {
-    $cas->redirecttocas();
+    //display erreur et redirect button
+    printerrorpage('Ticket CAS non validé', \core\output\notification::NOTIFY_ERROR);
 }
+
 
 
 

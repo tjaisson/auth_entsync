@@ -24,31 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
-final class auth_entsync_casconnect {
-    
-    private static $inst = null;
-    
-    public static function instance($ent)
-    {
-        if (self::$inst === null) {
-            self::$inst = new auth_entsync_casconnect($ent);
-        }
-        if(self::$inst->_entcode === $ent->get_code()) {
-            return self::$inst;
-        }
-        return false; //un seul ent peut faire cas à un moment donné
-    }
-    
-    public static function is_connected() {
-        if(self::$inst === null) return false;
-        return self::$inst->has_val();
-    }
-    
-    private $_val;
-    
-    private $_entcode;
+class auth_entsync_casconnect {
     
     /**
      * @var string|null Null if ok, error msg otherwise
@@ -73,16 +52,14 @@ final class auth_entsync_casconnect {
     /**
      * Constructor.
      */
-    private function __construct($ent) {
-        if($ent) {
-            $this->_entcode = $ent->get_code();
-            $this->_casparams = $ent->get_casparams();
-            if(! array_key_exists('retries', $this->_casparams)) $this->_casparams['retries'] = 0;
-            if(! array_key_exists('casversion', $this->_casparams)) $this->_casparams['casversion'] = '2.0';
-            if(! array_key_exists('port', $this->_casparams)) $this->_casparams['port'] = 443;
-        } else {
-            $this->_entcode = 0;
-        }
+    public function __construct() {
+    }
+    
+    public function set_param($casparams) {
+        $this->_casparams = $casparams;
+        if(! array_key_exists('retries', $this->_casparams)) $this->_casparams['retries'] = 0;
+        if(! array_key_exists('casversion', $this->_casparams)) $this->_casparams['casversion'] = '2.0';
+        if(! array_key_exists('port', $this->_casparams)) $this->_casparams['port'] = 443;
     }
     
     /**
@@ -94,28 +71,14 @@ final class auth_entsync_casconnect {
     	return $this->_error;
     }
 
-    public function get_val() {
-        if($this->_entcode <= 0) return false;
-        return isset($this->_val) ? $this->_val : false;
-    }
-
-    public function has_val() {
-        if($this->_entcode <= 0) return false;
-        return isset($this->_val);
-    }
-
-    public function redirecttocas() {
-        redirect($this->buildloginurl());
-    }
-    
-    public function validateticket() {
-        $this->_val = null;
+    public function validateorredirect() {
         $this->_error = '';
         $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
         if (preg_match('/^[SP]T-/', $ticket) ) {
             unset($_GET['ticket']);
         } else {
-            $this->_error = 'pas de ticket';
+            //pas de ticket, on redirige
+            redirect($this->buildloginurl());
             return false;
         }
         
@@ -168,7 +131,6 @@ final class auth_entsync_casconnect {
                                 call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
                         $attr->retries = $retries;
-                        $this->_val = $attr;
                         return $attr;
                     }
                 }

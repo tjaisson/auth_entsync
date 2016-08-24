@@ -59,13 +59,13 @@ class auth_plugin_entsync extends auth_plugin_base {
         global $CFG, $DB;
         
         if(!$mdlu = $DB->get_record('user',
-            ['username'=>$username, 'auth'=>'entsync', 'mnethostid'=>$CFG->mnet_localhost_id])) {
+            ['username'=>$username, 'auth'=>'entsync', 'mnethostid'=>$CFG->mnet_localhost_id,
+             'deleted'=>0, 'suspended'=>0
+            ])) {
             return false;
         }
 
-        require_once('ent_defs.php');
-        
-        $entus = $DB->get_records('auth_entsync_user', ['userid' => $mdlu->id]);
+        $entus = $DB->get_records('auth_entsync_user', ['userid' => $mdlu->id, 'archived' => 0]);
         $hasenabledent = false;
         foreach ($entus as $entu) {
             if($ent = auth_entsync_ent_base::get_ent($entu->ent)) {
@@ -168,25 +168,6 @@ class auth_plugin_entsync extends auth_plugin_base {
      */
     function can_be_manually_set() {
         return false;
-    }
-
-    /**
-     * Prints a form for configuring this authentication plugin.
-     *
-     * This function is called from admin/auth.php, and outputs a full page with
-     * a form for configuring this plugin.
-     *
-     * @param array $page An object containing all the data for this page.
-     */
-    function config_form_not($config, $err, $user_fields) {
-        include "config.html";
-    }
-
-    /**
-     * Processes and stores configuration data for this authentication plugin.
-     */
-    function process_config_not($config) {
-        return true;
     }
 
     function loginpage_idp_list($wantsurl) {
