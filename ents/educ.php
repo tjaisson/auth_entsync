@@ -116,4 +116,21 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         unset($record->prf);
         return true;
     }
+    
+    public function settings() {
+        return [
+            (object)['name' => 'cashost', 'default' => 'educhorus.enteduc.fr'],
+            (object)['name' => 'caspath', 'default' => '']
+        ];
+    }
+    
+    public function formdef($mform) {
+        $prfx = "ent({$this->_code}).";
+        $elemname = $prfx . 'cashost';
+        $mform->addElement('text', $elemname, 'Nom de l\'hôte CAS');
+        $mform->setType($elemname, PARAM_RAW);
+        $elemname = $prfx . 'caspath';
+        $mform->addElement('text', $elemname, 'Chemin CAS');
+        $mform->setType($elemname, PARAM_RAW);
+    }
 }

@@ -391,7 +391,7 @@ abstract class auth_entsync_sync {
             ++$this->_report->notbynames;
             return false;
         }
-        
+
         $sql = $DB->sql_concat('a.id', 'b.ent');
         $sql = "SELECT {$sql} AS id, a.id AS userid, b.ent AS ent, b.profile AS profile
         FROM {user} a

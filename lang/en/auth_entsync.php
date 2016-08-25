@@ -39,6 +39,7 @@ $string['sso'] = 'SSO';
 $string['connecturl'] = 'Connect URL';
 $string['rolepersselect'] = 'Employe\'s system role';
 $string['roleensselect'] = 'Teacher\'s system role';
+$string['entspecparam'] = '{$a} settings';
 
 $string['pluginnotenabledwarn'] = 'WARNING : ENTSYNC authentication plugin is not enabled<br />
 Go to <a href=\'{$a}\'>Manage authentication</a>';

@@ -47,6 +47,7 @@ abstract class auth_entsync_ent_base {
 
     protected $_code;
     protected $_entclass;
+    protected $_settings;
     
     public function get_code() {
         return $this->_code;
@@ -242,6 +243,37 @@ abstract class auth_entsync_ent_base {
     public function get_icon() {
         return new pix_icon('t/approve', $this->nomcourt);
     }
+    
+    /**
+     * Définit si des paramètres sont nécessaires
+     *
+     * @return false|array la liste des paramètres nécessaires
+     */
+    public function settings() {
+        return false;
+    }
+    
+    public function get_settings() {
+        if(isset($this->_settings)) return $this->_settings;
+        if($lst = $this->settings()) {
+            $prfx = "ent({$this->_code})_";
+            $stgs = array();
+            foreach($lst as $setting) {
+                if($stg = get_config('auth_entsync', $prfx . $setting->name)) {
+                    $stgs[$setting->name] = $stg;
+                } else {
+                    $stgs[$setting->name] = $setting->default;
+                }
+            }
+            $this->_settings = $stgs;
+        } else {
+            $this->_settings = array();
+        }
+        return $this->_settings;
+    }
+    
+    
+    
 }
 
 abstract class auth_entsync_entcas extends auth_entsync_ent_base {

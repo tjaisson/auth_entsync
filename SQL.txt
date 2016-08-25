@@ -1,0 +1,14 @@
+SELECT a.id as id, GROUP_CONCAT(CONCAT_WS(';', b.ent, b.profile)) as entprf
+FROM `mdl_user` a
+LEFT JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+WHERE a.auth = 'entsync'
+AND UPPER(a.firstname) = UPPER('thomas')
+AND UPPER(a.lastname) = UPPER('jaisson')
+GROUP BY a.id
+
+SELECT a.id as id, GROUP_CONCAT(b.ent) as ents, BIT_OR(b.profile) as profiles
+FROM `mdl_user` a
+LEFT JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+WHERE a.auth = 'entsync'
+AND UPPER(a.firstname) = UPPER('thomas')
+GROUP BY a.id

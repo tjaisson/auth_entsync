@@ -40,6 +40,8 @@ $string['sso'] = 'SSO';
 $string['connecturl'] = 'URL du connecteur';
 $string['rolepersselect'] = 'Rôle système des personnels';
 $string['roleensselect'] = 'Rôle système des enseignants';
+$string['entspecparam'] = 'Configuration pour {$a}';
+
 
 $string['pluginnotenabledwarn'] = 'ATTENTION : le plugin d\'authentification ENTSYNC n\'est pas activé.<br />
 La gestion des utilisateurs de l\'établissement ne sera pas fonctionnelle tant que vous ne l\'aurez pas activé<br />

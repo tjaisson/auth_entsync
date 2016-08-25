@@ -41,18 +41,22 @@ class admin_entparam_form extends moodleform {
 
         //ent list
         $mform->addElement('header', 'entlistheader', get_string('entlist', 'auth_entsync'));
+        $mform->setExpanded('entlistheader');
         $mform->addElement('html', $this->buildentlist());
         
         //rôles par profil
         $mform->addElement('header', 'rolesheader', get_string('entsyncparam', 'auth_entsync'));
+        $mform->setExpanded('rolesheader');
         $sysroles[0] = get_string('none');
-        $roles =  auth_entsync_rolehelper::getsysrolemenu(); // get_roles_for_contextlevels(CONTEXT_SYSTEM);  //role_fix_names(get_all_roles(), null, ROLENAME_ORIGINALANDSHORT);
+        $roles =  auth_entsync_rolehelper::getsysrolemenu();
         foreach ($roles as $roleid => $rolename) {
             $sysroles[$roleid] = $rolename;
         }
         $mform->addElement('select', 'role_ens', get_string('roleensselect', 'auth_entsync'), $sysroles);
         $mform->setType('role_ens', PARAM_INT);
 
+        $this->add_entsettings($mform);
+        
         $this->add_action_buttons(false, get_string("savechanges"));
     }
     
@@ -93,6 +97,17 @@ class admin_entparam_form extends moodleform {
         }
         
         return html_writer::table($t);
+    }
+    
+    private function add_entsettings($mform) {
+        foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+            if ($ent->is_enabled() && ($lst = $ent->settings())) {
+                $hdr = "header-{$entcode}";
+                $mform->addElement('header', $hdr, get_string('entspecparam', 'auth_entsync', $ent->nomlong));
+                $mform->setExpanded($hdr);
+                $ent->formdef($mform);
+            }
+        }
     }
 }
 
