@@ -158,6 +158,67 @@ abstract class auth_entsync_ent_base {
         }
     }
     
+    public static function set_formdata($config, $mform) {
+        $datas = array();
+        foreach(self::$_entinsts as $ent) {
+            if($ent->is_enabled() && $ent->has_settings()) {
+                $prfx = "ent({$ent->_code})_";
+                foreach($ent->settings() as $stg) {
+                    $prfxname = $prfx . $stg->name;
+                    if(isset($config->{$prfxname})) {
+                        $datas[$prfxname] = $config->{$prfxname};
+                    } else {
+                        $datas[$prfxname] = $stg->default;
+                    }
+                }
+            }
+        }
+        if(! empty($datas))
+            $mform->set_data($datas);
+    }
+    
+    public static function save_formdata($config, $formdata) {
+        foreach(self::$_entinsts as $ent) {
+            if($ent->is_enabled() && $ent->has_settings()) {
+                $prfx = "ent({$ent->_code})_";
+                foreach($ent->settings() as $stg) {
+                    $prfxname = $prfx . $stg->name;
+                    if(isset($formdata->{$prfxname})) {
+                        $new = $formdata->{$prfxname};
+                        if(isset($config->{$prfxname})) {
+                            $actual = $config->{$prfxname};
+                        } else {
+                            $actual = $stg->default;
+                        }
+                        if($new != $actual) {
+                            set_config($prfxname, $new, 'auth_entsync');
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    public function get_settings() {
+        if(isset($this->_settings)) return $this->_settings;
+        if($this->has_settings()) {
+            $lst = $this->settings();
+            $prfx = "ent({$this->_code})_";
+            $stgs = array();
+            foreach($lst as $setting) {
+                if($stg = get_config('auth_entsync', $prfx . $setting->name)) {
+                    $stgs[$setting->name] = $stg;
+                } else {
+                    $stgs[$setting->name] = $setting->default;
+                }
+            }
+            $this->_settings = $stgs;
+        } else {
+            $this->_settings = array();
+        }
+        return $this->_settings;
+    }
+    
     /**
      * Retourne l'url à utiliser pour se connecter avec cas
      *
@@ -247,32 +308,11 @@ abstract class auth_entsync_ent_base {
     /**
      * Définit si des paramètres sont nécessaires
      *
-     * @return false|array la liste des paramètres nécessaires
+     * @return bool
      */
-    public function settings() {
+    public function has_settings() {
         return false;
     }
-    
-    public function get_settings() {
-        if(isset($this->_settings)) return $this->_settings;
-        if($lst = $this->settings()) {
-            $prfx = "ent({$this->_code})_";
-            $stgs = array();
-            foreach($lst as $setting) {
-                if($stg = get_config('auth_entsync', $prfx . $setting->name)) {
-                    $stgs[$setting->name] = $stg;
-                } else {
-                    $stgs[$setting->name] = $setting->default;
-                }
-            }
-            $this->_settings = $stgs;
-        } else {
-            $this->_settings = array();
-        }
-        return $this->_settings;
-    }
-    
-    
     
 }
 

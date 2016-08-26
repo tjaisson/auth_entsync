@@ -54,31 +54,28 @@ if(!is_enabled_auth('entsync')) {
 }
 
 $mform = new admin_entparam_form();
-$config = get_config('auth/entsync');
-
-if((!isset($config->code_ent)) ||
-        (!$ent = tool_entsync_ent_base::get_ent($config->code_ent))) {
-    $config->code_ent = 0;
-    unset($ent);
-}
+$config = get_config('auth_entsync');
 
 if(!isset($config->role_ens)) $config->role_ens = 0;
-$mform->set_data(['code_ent' => $config->code_ent, 'role_ens' => $config->role_ens]);
+$mform->set_data(['role_ens' => $config->role_ens]);
+
+auth_entsync_ent_base::set_formdata($config, $mform);
+
 
 if ($formdata = $mform->is_cancelled()) {
     redirect($returnurl);
 } else if ($formdata = $mform->get_data()) {
     //application des paramètres	
-	//TODO : adapter au multi profile
 	if($formdata->role_ens != $config->role_ens) {
 	    if ($formdata->role_ens == 0) {
-            unset_config('role_ens', 'auth/entsync');
+            unset_config('role_ens', 'auth_entsync');
             auth_entsync_rolehelper::removerolesallusers(2);
         } else {
-            set_config('role_ens', $formdata->role_ens, 'auth/entsync');
+            set_config('role_ens', $formdata->role_ens, 'auth_entsync');
             auth_entsync_rolehelper::updateroleallusers(2, $formdata->role_ens);
         }
     }
+    auth_entsync_ent_base::save_formdata($config, $formdata);
 	redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 

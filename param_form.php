@@ -101,11 +101,11 @@ class admin_entparam_form extends moodleform {
     
     private function add_entsettings($mform) {
         foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
-            if ($ent->is_enabled() && ($lst = $ent->settings())) {
+            if ($ent->is_enabled() && $ent->has_settings()) {
                 $hdr = "header-{$entcode}";
                 $mform->addElement('header', $hdr, get_string('entspecparam', 'auth_entsync', $ent->nomlong));
                 $mform->setExpanded($hdr);
-                $ent->formdef($mform);
+                $ent->add_formdef($mform);
             }
         }
     }

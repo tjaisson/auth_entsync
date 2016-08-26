@@ -47,12 +47,14 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
 
     public function get_casparams() {
         $cp = [
-            'hostname' => 'educhorus.enteduc.fr',
             'retries' => 20
         ];
         //TODO : déterminer le RNE.
-        $rne = '0750677D';
-        $cp['baseuri'] = "/{$rne}/cas/";
+        $settings = $this->get_settings();
+        $hn = $settings['cashost'];
+        $uri = $settings['caspath'];
+        $cp['hostname'] = $hn;
+        $cp['baseuri'] = "/{$uri}/cas/";
         $cp['decodecallback'] = [$this, 'decodecallback'];
         return $cp;
     }
@@ -117,6 +119,10 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         return true;
     }
     
+    public function has_settings() {
+       return true;
+    }
+    
     public function settings() {
         return [
             (object)['name' => 'cashost', 'default' => 'educhorus.enteduc.fr'],
@@ -124,8 +130,8 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         ];
     }
     
-    public function formdef($mform) {
-        $prfx = "ent({$this->_code}).";
+    public function add_formdef($mform) {
+        $prfx = "ent({$this->_code})_";
         $elemname = $prfx . 'cashost';
         $mform->addElement('text', $elemname, 'Nom de l\'hôte CAS');
         $mform->setType($elemname, PARAM_RAW);
