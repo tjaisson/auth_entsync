@@ -42,7 +42,7 @@ abstract class auth_entsync_sync {
 	/**
 	 * Durée d'archivage des utilisateurs en secondes
 	 */
-    const ARCHIVDURATION = 3600*24*30*6; // environ 6 mois;
+    const ARCHIVDURATION = 15552000; //php 5.4 ne permet pas : 3600*24*30*6 environ 6 mois;
     
 	/**
 	 * Fausse email attribuée aux utilisateurs
