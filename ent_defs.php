@@ -48,7 +48,7 @@ require_once(__DIR__ . '/ents/base.php');
 //auth_entsync_ent_base::register('local', 4);
 
 require_once(__DIR__ . '/ents/ents_paris.php');
-//auth_entsync_ent_base::register('pcn', 2);
+auth_entsync_ent_base::register('pcn', 2);
 auth_entsync_ent_base::register('monlyceenet', 1);
 auth_entsync_ent_base::register('ng', 3);
 
