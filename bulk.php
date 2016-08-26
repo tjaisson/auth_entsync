@@ -93,7 +93,7 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
 
     if($report = $synchronizer->dosync()) {
         //synchro ok
-        $msg = get_string('aftersyncinfo', 'auth_entsync');
+        $msg = get_string('aftersyncinfo', 'auth_entsync', $report);
         $msg = $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
     } else {
         // il y a eu une erreur

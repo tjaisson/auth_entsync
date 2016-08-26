@@ -78,3 +78,14 @@ $string['afterparseinfo'] = 'Fichier {$a->file} lut avec succès.<br />
 $string['aftersyncinfo'] = 'Synchronisation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';
+
+//login
+$string['notauthorized'] = 'Authentification {$a->ent} réussie mais l\'utilisateur "{$a->user}" n\'est pas autorisé à accèder à ce moodle.<br />
+Un administrateur peut autoriser l\'utilisateur.';
+
+//educ'horus
+$string['educhoruscashost'] = 'Nom d\'hôte du serveur cas Educ\'Horus';
+$string['educhoruscashost_help'] = 'Habituellement : educhorus.enteduc.fr';
+$string['educhoruscaspath'] = 'URI de base';
+$string['educhoruscaspath_help'] = 'Habituellement le RNE de l\'établissement.<br />Par exemple : 0750677D';
+

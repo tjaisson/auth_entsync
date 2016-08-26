@@ -54,6 +54,7 @@ class admin_entparam_form extends moodleform {
         }
         $mform->addElement('select', 'role_ens', get_string('roleensselect', 'auth_entsync'), $sysroles);
         $mform->setType('role_ens', PARAM_INT);
+        
 
         $this->add_entsettings($mform);
         

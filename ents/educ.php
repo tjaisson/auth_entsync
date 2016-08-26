@@ -133,10 +133,14 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
     public function add_formdef($mform) {
         $prfx = "ent({$this->_code})_";
         $elemname = $prfx . 'cashost';
-        $mform->addElement('text', $elemname, 'Nom de l\'hôte CAS');
+        $mform->addElement('text', $elemname, get_string('educhoruscashost', 'auth_entsync'));
         $mform->setType($elemname, PARAM_RAW);
+        $mform->addHelpButton($elemname, 'educhoruscashost', 'auth_entsync');
+        
         $elemname = $prfx . 'caspath';
-        $mform->addElement('text', $elemname, 'Chemin CAS');
+        $mform->addElement('text', $elemname, get_string('educhoruscaspath', 'auth_entsync'));
         $mform->setType($elemname, PARAM_RAW);
+        $mform->addHelpButton($elemname, 'educhoruscaspath', 'auth_entsync');
+        
     }
 }

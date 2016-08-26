@@ -64,4 +64,13 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 {$a->nbusers} users added to temp list';
 $string['aftersyncinfo'] = 'Synchronization OK';
 
+//login
+$string['notauthorized'] = '{$a->ent} authentication succeded but user "{$a->user}" is not alloved on this moodle.<br />
+An administrator can allow this user.';
+
+//educ'horus
+$string['educhoruscashost'] = 'Hostname of Educ\'Horus CAS server';
+$string['educhoruscashost_help'] = 'eg: educhorus.enteduc.fr';
+$string['educhoruscaspath'] = 'Base URI';
+$string['educhoruscaspath_help'] = 'Usually RNE.<br />eg: 0750677D';
 

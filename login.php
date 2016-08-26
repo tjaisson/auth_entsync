@@ -81,7 +81,10 @@ if($val = $cas->validateorredirect()) {
         ['uid' => $val->user, 'ent' => $ent->get_code()])) {
             //Utilisateur cas non connu, display erreur et redirect button
             //TODO : informer l'Utilisateur de son uid ent
-            $msg = "Authentification {$ent->nomcourt} réussie mais l'utilisateur \"{$val->user}\" n'est pas autorisé à accèder à ce moodle.<br />Un administrateur peut autoriser l'utilisateur.";
+            $a = new stdClass();
+            $a->ent = $ent->nomcourt;
+            $a->user = $val->user;
+            $msg = get_string('notauthorized', 'auth_entsync', $a);
             printerrorpage($msg, \core\output\notification::NOTIFY_ERROR);
         }
         if($entu->archived) {
@@ -102,12 +105,16 @@ if($val = $cas->validateorredirect()) {
         \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
 
         $urltogo = core_login_get_return_url();
+        if(strstr($urltogo, 'entsync')) {
+            unset($SESSION->wantsurl);
+        } else {
+            $SESSION->wantsurl = $urltogo;
+        }
 
         // Discard any errors before the last redirect.
         unset($SESSION->loginerrormsg);
 
         // test the session actually works by redirecting to self
-        $SESSION->wantsurl = $urltogo;
         redirect(new moodle_url(get_login_url(), array('testsession'=>$mdlu->id)));
 } else {
     //display erreur et redirect button
