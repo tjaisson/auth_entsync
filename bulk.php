@@ -93,7 +93,7 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
 
     if($report = $synchronizer->dosync()) {
         //synchro ok
-        $msg = 'Syncho OK';
+        $msg = get_string('aftersyncinfo', 'auth_entsync');
         $msg = $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
     } else {
         // il y a eu une erreur
@@ -104,7 +104,7 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     
 	echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
 	echo $msg;
-	var_dump($report);
+//	var_dump($report);
 	echo $OUTPUT->continue_button($returnurl);
 	echo $OUTPUT->footer();
 	die;

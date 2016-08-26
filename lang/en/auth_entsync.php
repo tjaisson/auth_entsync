@@ -62,5 +62,6 @@ $string['uploadaddinfo'] = 'Upload another file if needed';
 $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 {$a->nblines} users found.<br />
 {$a->nbusers} users added to temp list';
+$string['aftersyncinfo'] = 'Synchronization OK';
 
 

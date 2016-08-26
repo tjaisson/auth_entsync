@@ -75,5 +75,6 @@ avant de procéder à la synchronisation.';
 $string['afterparseinfo'] = 'Fichier {$a->file} lut avec succès.<br />
 {$a->nblines} utilisateurs trouvés.<br />
 {$a->nbusers} utilisateurs ajoutés à la liste des utilisateurs à synchroniser.';
-
-
+$string['aftersyncinfo'] = 'Synchronisation réussie.<br />
+{$a->updated} utilisateurs mis à jours<br />
+{$a->created} utilisateurs créés';

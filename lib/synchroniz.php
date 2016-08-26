@@ -175,6 +175,7 @@ abstract class auth_entsync_sync {
             if($_mdlu->isdirty) {
                 unset($_mdlu->isdirty);
                 user_update_user($_mdlu, false, true);
+                ++$this->_report->updated;
             }
         } else {
             //création de l'utilisateur
@@ -188,6 +189,7 @@ abstract class auth_entsync_sync {
             $_mdlu->emailstop = 1;
             unset($_mdlu->isdirty);
             $_mdlu->id = user_create_user($_mdlu, false, true);
+            ++$this->_report->created;
         }
 
         // $_entu : record pour la mise à jour
@@ -277,7 +279,9 @@ abstract class auth_entsync_sync {
 		  'multinames' => 0,
 		  'profilmismatched' => 0,
 		  'checkedcollision' => 0,
-		  'entcollision' => 0
+		  'entcollision' => 0,
+		  'created' => 0,
+		  'updated' => 0
 		];
 		
 		$this->_progressreporter->start_progress('',10);
