@@ -97,12 +97,20 @@ abstract class auth_entsync_parser {
      * @param string $filecontent Contenu du fichier
      */
     public abstract function parse($filename, $filecontent);
-    
-    protected function validaterecord($record) {
+
+    protected function validate_record($record) {
         if(isset($this->_validatecallback)) {
             return call_user_func($this->_validatecallback, $record);            
         } else {
             return true;
+        }
+    }
+
+    protected function add_record($record) {
+        ++$this->_parsedlines;
+        if($this->validate_record($record)) {
+            $DB->insert_record('auth_entsync_tmpul', $record);
+            ++$this->_addedusers;
         }
     }
 }
@@ -121,17 +129,17 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
     public $delim;
     public function parse($filename, $filecontent) {
         global $DB;
-        
+
         $this->_progressreporter->start_progress('',10);
         $this->_progressreporter->start_progress('',1,1);
-        
+
         if(strtoupper(pathinfo($filename, PATHINFO_EXTENSION)) != 'CSV') {
         	$this->_error = 'Fichier csv requis';
         	$this->_progressreporter->end_progress();
         	$this->_progressreporter->end_progress();
         	return false;
         }
-        
+
         $this->_error = null;
         $this->_parsedlines = 0;
         $this->_addedusers = 0;
@@ -141,7 +149,7 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
         unset($filecontent);
 
         $linessize = count($lines);
-        
+
         $this->_progressreporter->end_progress();
         if($linessize < 2) {
             //pas assez de lignes
@@ -149,7 +157,7 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
         	$this->_progressreporter->end_progress();
             return false;
         }
-        
+
         $this->_progressreporter->start_progress('',1,1);
         
         //on retire le bom si nécessaire
@@ -158,7 +166,7 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
             $this->encoding = 'utf-8';
             $lines[0] = substr($lines[0], 3);
         }
-        
+
         //on lit les entêtes
         $line = core_text::convert($lines[0], $this->encoding, 'utf-8');
         $fields = str_getcsv($line, $this->delim);
@@ -198,17 +206,12 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
                     foreach ($columns as $key => $ii) {
                 $record->$key = trim($fields[$ii]);
             }
-            ++$this->_parsedlines;
-            if($this->validaterecord($record)) {
-                $DB->insert_record('auth_entsync_tmpul', $record);
-                ++$this->_addedusers;
-            }
+            $this->add_record($record);
         }
         $this->_progressreporter->end_progress();
         $this->_progressreporter->end_progress();
         return true;
     }
-    
 }
 
 /**
