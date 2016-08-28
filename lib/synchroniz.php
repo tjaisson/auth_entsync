@@ -269,7 +269,7 @@ abstract class auth_entsync_sync {
         }
     }
 
-	public function dosync() {
+	public function dosync($iurs) {
 		global $DB;
 		$this->_report = (object) [
 		  'errors' => 0,
@@ -296,7 +296,6 @@ abstract class auth_entsync_sync {
         $this->_otherlookup = $DB->count_records_select('auth_entsync_user', "ent <> :ent",
             ['ent' => $this->entcode]) > 0;
 
-        $iurs = $DB->get_records('auth_entsync_tmpul');
         $this->_progressreporter->end_progress();
         $this->_progressreporter->start_progress('',count($iurs),6);
 		$progresscnt = 0;
@@ -314,7 +313,7 @@ abstract class auth_entsync_sync {
                 }
             }
 		}
-		unset($iur);
+		unset($iurs);
         $this->_progressreporter->end_progress();
 
         $this->_progressreporter->start_progress('',1,1);
@@ -323,17 +322,17 @@ abstract class auth_entsync_sync {
         list($_select, $params) = $DB->get_in_or_equal($this->_profilestosync, SQL_PARAMS_NAMED, 'prf');
         $_select = "( checked = 0 ) and ( sync = 1 ) and ( ent = :ent ) and ( profile {$_select} )";
         $params['ent'] = $this->entcode;
-        $iurs = $DB->get_records_select('auth_entsync_user', $_select, $params);
+        $entus = $DB->get_records_select('auth_entsync_user', $_select, $params);
         $this->_progressreporter->end_progress();
 
-        $this->_progressreporter->start_progress('',count($iurs),2);
+        $this->_progressreporter->start_progress('',count($entus),2);
 		$progresscnt = 0;
-        foreach($iurs as $entu) {
+        foreach($entus as $entu) {
             $this->_progressreporter->progress($progresscnt);
 		    ++$progresscnt;
             $_entu = $this->archiveordelete($entu);
         }
-        unset($iur);
+        unset($entus);
         $this->_progressreporter->end_progress();
         $this->_progressreporter->end_progress();
         return $this->_report;

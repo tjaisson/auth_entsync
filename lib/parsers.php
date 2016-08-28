@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * Classe de base pour les parsers de fichiers d'import
  *
  *
- * @package   tool_entsync
+ * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,16 +40,10 @@ abstract class auth_entsync_parser {
      */
     protected $_error;
     
-    /**
-     * @var int
-     */
-    protected $_parsedlines;
+    protected $_report;
 
-     /**
-     * @var int
-     */
-    protected $_addedusers;
-
+    protected $_buffer;
+    
     protected $_progressreporter = null;
     
     protected $_validatecallback = null;
@@ -71,46 +65,61 @@ abstract class auth_entsync_parser {
         $this->_validatecallback = $callback;
     }
     
-/**
-     * Get number of parsed lines
+    /**
+     * Get repport
      *
-     * @return int
+     * @return stdClass avec les champs parsedlines, addedusers, uidcollision
      */
-    public function get_parsedlines() {
-        return $this->_parsedlines;
+    public function get_report() {
+        return $this->_report;
     }
     
     /**
-     * Get number of added users
-     *
-     * @return int
-     */
-    public function get_addedusers() {
-        return $this->_addedusers;
-    }
-    
-    /**
-     * Lit un fichier d'utilisateurs et compète la table
-     * temporaire 'tool_entsync_tmpul'
+     * Lit un fichier d'utilisateurs
      *
      * @param string $filename Nom du fichier
      * @param string $filecontent Contenu du fichier
+     * @return false|array le tableau des $iu indexé par uid
      */
-    public abstract function parse($filename, $filecontent);
-
-    protected function validate_record($record) {
+    public function parse($filename, $filecontent) {
+        $this->_report = new stdClass();
+        $this->_report->parsedlines = 0;
+        $this->_report->addedusers = 0;
+        $this->_report->uidcollision = 0;
+        $this->_buffer = array();
+        if($this->do_parse($filename, $filecontent)) {
+            return $this->_buffer;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Lit un fichier d'utilisateurs
+     *
+     * @param string $filename Nom du fichier
+     * @param string $filecontent Contenu du fichier
+     * @return bool si réussi ou non
+     */
+    protected abstract function do_parse($filename, $filecontent);
+    
+    protected function validate_record($iu) {
         if(isset($this->_validatecallback)) {
-            return call_user_func($this->_validatecallback, $record);            
+            return call_user_func($this->_validatecallback, $iu);            
         } else {
             return true;
         }
     }
 
-    protected function add_record($record) {
-        ++$this->_parsedlines;
-        if($this->validate_record($record)) {
-            $DB->insert_record('auth_entsync_tmpul', $record);
-            ++$this->_addedusers;
+    protected function add_iu($iu) {
+        ++$this->_report->parsedlines;
+        if($this->validate_record($iu)) {
+            if(array_key_exists($iu->uid, $this->_buffer)) {
+                ++$this->_report->uidcollision;
+            } else {
+                $this->_buffer[$iu->uid] = $iu;
+                ++$this->_report->addedusers;
+            }
         }
     }
 }
@@ -118,8 +127,7 @@ abstract class auth_entsync_parser {
 /**
  * Classe pour parser les fichiers CSV
  *
- *
- * @package   tool_entsync
+ * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -127,11 +135,9 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
     public $encoding;
     public $match;
     public $delim;
-    public function parse($filename, $filecontent) {
-        global $DB;
-
-        $this->_progressreporter->start_progress('',10);
-        $this->_progressreporter->start_progress('',1,1);
+    protected function do_parse($filename, $filecontent) {
+        $this->_progressreporter->start_progress('Lecture du fichier',10,1);
+        $this->_progressreporter->start_progress('En tête',1,1);
 
         if(strtoupper(pathinfo($filename, PATHINFO_EXTENSION)) != 'CSV') {
         	$this->_error = 'Fichier csv requis';
@@ -158,7 +164,7 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
             return false;
         }
 
-        $this->_progressreporter->start_progress('',1,1);
+        $this->_progressreporter->start_progress('En tête',1,1);
         
         //on retire le bom si nécessaire
         $bom = pack("CCC", 0xef, 0xbb, 0xbf);
@@ -192,8 +198,9 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
 
         $this->_progressreporter->end_progress();
         
-        $this->_progressreporter->start_progress('',$linessize-1,8);
+        $this->_progressreporter->start_progress('Liste',$linessize-1,8);
         //on traite chaque ligne
+        //TODO : economie de mémoire avec array_pop
         for($i = 1; $i < $linessize; ++$i) {
             $this->_progressreporter->progress($i);
             $line = core_text::convert($lines[$i], $this->encoding, 'utf-8');
@@ -201,12 +208,12 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
             $fields = str_getcsv($line, $this->delim);
             //y a t-il assez de champs dans la ligne ?
             if(count($fields) < $minfiedssize) continue;
-            //on constitue un enregistrement dans la base temporaire
-            $record = new stdClass();
+            //on constitue un stdClass de l'utilisateur
+            $iu = new stdClass();
                     foreach ($columns as $key => $ii) {
-                $record->$key = trim($fields[$ii]);
+                $iu->$key = trim($fields[$ii]);
             }
-            $this->add_record($record);
+            $this->add_iu($iu);
         }
         $this->_progressreporter->end_progress();
         $this->_progressreporter->end_progress();
@@ -226,7 +233,7 @@ class auth_entsync_parser_XML extends auth_entsync_parser {
     protected $_record;
     protected $_field = '';
     
-    public function parse($filename, $filecontent) {
+    protected function do_parse($filename, $filecontent) {
         
         $this->_progressreporter->start_progress('',10);
         $this->_progressreporter->start_progress('',1,1);

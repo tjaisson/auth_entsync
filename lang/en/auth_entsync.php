@@ -53,6 +53,7 @@ $string['notconfigwarn'] = 'No enabled WNE.<br />
 Go to <a href=\'{$a}\'>Settings</a>';
 $string['filetypeselect'] = 'File type';
 $string['filetypemissingwarn'] = 'Choose a file type';
+$string['filemissingwarn'] = 'Choose a file';
 
 $string['dosync'] = 'Synchronize';
 $string['proceed'] = 'Proceed with synchronization';

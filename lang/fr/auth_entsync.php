@@ -60,6 +60,7 @@ $string['notconfigwarn'] = 'Aucun ENT paramétré.<br />
 Aller à <a href=\'{$a}\'>Configuration</a>';
 $string['filetypeselect'] = 'Type du fichier';
 $string['filetypemissingwarn'] = 'Selectionner un type de fichier';
+$string['filemissingwarn'] = 'Choisir un fichier';
 
 $string['dosync'] = 'Synchroniser';
 $string['proceed'] = 'Procéder à la synchonisation';

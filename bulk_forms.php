@@ -42,23 +42,24 @@ class auth_entsync_bulk_form extends moodleform {
         if($displayproceed)
         {
         	$infohtml = $this->_customdata['displayhtml'];
-        	$multi = $this->_customdata['multi'];
+        	$displayupload = $this->_customdata['multi'];
+        	$storeid = $this->_customdata['storeid'];
         	
         	$mform->addElement('header', 'proceedgrp', get_string('proceed', 'auth_entsync'));
         	$mform->addElement('html', $infohtml);
+        	$mform->addElement('hidden', 'storeid', $storeid);
+            $mform->setType('storeid', PARAM_INT);
         	$mform->addElement('submit', 'proceed', get_string('dosync', 'auth_entsync'));
-        	$mform->addElement('hidden', 'step', 1);
-            $mform->setType('step', PARAM_INT);
-            if($multi) {
+            if($displayupload) {
             	$mform->addElement('header', 'settingsheader', get_string('uploadadd', 'auth_entsync'));
             	$mform->addElement('html', get_string('uploadaddinfo', 'auth_entsync'));
             }
         } else {
         	$mform->addElement('header', 'settingsheader', get_string('upload'));
-        	$multi = true;
+        	$displayupload = true;
         }
         
-        if($multi) {
+        if($displayupload) {
             $mform->addElement('filepicker', 'userfile', get_string('file'));
            
             $options = array();
@@ -74,21 +75,19 @@ class auth_entsync_bulk_form extends moodleform {
                 }
             }
             
-            $mform->addElement('selectgroups', 'filetype', get_string('filetypeselect', 'auth_entsync'), $options);
-            $mform->addRule('filetype', $txt, 'nonzero', null, 'client');
-            $mform->setType('filetype', PARAM_TEXT);
+            $mform->addElement('selectgroups', 'entfiletype', get_string('filetypeselect', 'auth_entsync'), $options);
+            $mform->addRule('entfiletype', $txt, 'nonzero', null, 'client');
+            $mform->setType('entfiletype', PARAM_TEXT);
             if($displayproceed)
             {
-            	$mform->addElement('submit', 'déposer', get_string('upload'));
+                $mform->freeze(['entfiletype']);
+            	$mform->addElement('submit', 'deposer', get_string('upload'));
             } else {
-                $mform->addElement('submit', 'déposer', get_string('next'));
+                $mform->addElement('submit', 'deposer', get_string('next'));
             }
         } else {
-            $mform->addElement('hidden', 'filetype', 0);
-            $mform->setType('filetype', PARAM_TEXT);
+            $mform->addElement('hidden', 'entfiletype', 0);
+            $mform->setType('entfiletype', PARAM_TEXT);
         }
-    }
-    public function disable_filetype() {
-        $this->_form->freeze(['filetype']);
     }
 }

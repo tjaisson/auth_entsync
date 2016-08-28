@@ -88,10 +88,6 @@ class  auth_entsync_ent_monlyceenet extends auth_entsync_entcas {
     }
     
     public function validate($profile, $record) {
-        global $DB;
-        //il ne devrait pas y avoir deux fois le même uid, mais bon... mieux vaut tester.
-        if($DB->record_exists('auth_entsync_tmpul',
-            ['uid' => $record->uid, 'profile' => $profile])) return false;
         $record->profile = $profile;
         return true;
     }
@@ -166,9 +162,6 @@ class  auth_entsync_ent_pcn extends auth_entsync_entcas {
                 $profile = -1;
         }
         if(!in_array($profile, $profiles)) return false;
-        //il ne devrait pas y avoir deux fois le même uid, mais bon... mieux vaut tester.
-        if($DB->record_exists('auth_entsync_tmpul',
-            ['uid' => $record->uid, 'profile' => $profile])) return false;
         $record->profile = $profile;
         unset($record->prf);
         return true;
@@ -246,9 +239,6 @@ class  auth_entsync_ent_ng extends auth_entsync_entcas {
                 $profile = -1;
         }
         if(!in_array($profile, $profiles)) return false;
-        //il ne devrait pas y avoir deux fois le même uid, mais bon... mieux vaut tester.
-        if($DB->record_exists('auth_entsync_tmpul',
-            ['uid' => $record->uid, 'profile' => $profile])) return false;
         $record->profile = $profile;
         unset($record->prf);
         return true;

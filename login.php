@@ -104,6 +104,8 @@ if($val = $cas->validateorredirect()) {
 
         \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
 
+        //TODO : ajouter dans $USER que c'est un sso et quel est l'ent. Au log out, rediriger vers l'ent.
+        
         $urltogo = core_login_get_return_url();
         if(strstr($urltogo, 'entsync')) {
             unset($SESSION->wantsurl);
