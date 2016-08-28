@@ -81,7 +81,7 @@ class myparser {
 
 
 
-$content = file_get_contents('test.xml');
+$content = file_get_contents(__DIR__ . '/../../test.xml');
 $myparser = new myparser();
 
 

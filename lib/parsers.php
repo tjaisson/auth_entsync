@@ -122,6 +122,41 @@ abstract class auth_entsync_parser {
             }
         }
     }
+    
+    protected function unzipone($filename, $filecontent) {
+        $this->_progressreporter->start_progress('',3);
+        //il faut enregistrer le fichier temporairement
+        $tempdir = make_request_directory();
+        $tempfile = $tempdir . '/archiv.zip';
+        $extractdir = make_unique_writable_directory($tempdir);
+        file_put_contents($tempfile, $filecontent);
+        $this->_progressreporter->progress(1);
+        unset($filecontent);
+        $fp = get_file_packer('application/zip');
+        $files = $fp->extract_to_pathname($tempfile, $extractdir);
+        unlink($tempfile);
+        $this->_progressreporter->progress(2);
+        
+        if(count($files) !== 1) {
+            $this->_error = 'Le fichier zip ne doit contenir qu\'un fichier.';
+            $this->_progressreporter->end_progress();
+            return false;
+        }
+        foreach ($files as $file => $status) {
+            if($status !== true) {
+                $this->_error = 'Fichier zip corrompu.';
+                $this->_progressreporter->end_progress();
+                return false;
+            }
+            break;
+        }
+        $_ext = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
+        $file = $extractdir . '/' . $file;
+        $filecontent = file_get_contents($file);
+        unlink($file);
+        $this->_progressreporter->end_progress();
+        return [$file, $filecontent];
+    }
 }
 
 /**
@@ -237,46 +272,21 @@ class auth_entsync_parser_XML extends auth_entsync_parser {
         
         $this->_progressreporter->start_progress('',10);
         
-        $this->_progressreporter->start_progress('');
         $_ext = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
         //unzip si nécessaire
         if($_ext == 'ZIP') {
-            //il faut enregistrer le fichier temporairement
-            $tempdir = make_request_directory();
-            $tempfile = $tempdir . '/archiv.zip';
-            $extractdir = make_unique_writable_directory($tempdir);
-            file_put_contents($tempfile, $filecontent);
-            $this->_progressreporter->progress();
-            unset($filecontent);
-            $fp = get_file_packer('application/zip');
-            $files = $fp->extract_to_pathname($tempfile, $extractdir);
-            $this->_progressreporter->progress();
-            
-            if(count($files) !== 1) {
-                $this->_error = 'Le fichier zip ne doit contenir qu\'un fichier.';
-                $this->_progressreporter->end_progress();
+            $ret = $this->unzipone($filename, $filecontent);
+            if(!$ret) {
                 $this->_progressreporter->end_progress();
                 return false;
             }
-            foreach ($files as $file => $status) { 
-                if($status !== true) {
-                    $this->_error = 'Fichier zip corrompu.';
-                    $this->_progressreporter->end_progress();
-                    $this->_progressreporter->end_progress();
-            return false;
-                }
-                break;              
-            }
-            $_ext = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
-            $file = $extractdir . '/' . $file;
-            $filecontent = file_get_contents($file);
-            $this->_progressreporter->progress();
-            unlink($file);
-            unlink($tempfile);
+            list($filename, $filecontent) = $ret;
+            $_ext = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
+        } else {
+            $this->_progressreporter->increment_progress();
         }
         
         //ce doit être un xml
-        $this->_progressreporter->end_progress();
         if($_ext != 'XML') {
             $this->_error = 'Fichier xml requis';
             $this->_progressreporter->end_progress();
@@ -289,7 +299,7 @@ class auth_entsync_parser_XML extends auth_entsync_parser {
         $parser = xml_parser_create('UTF-8');
         xml_set_element_handler($parser, [$this, 'on_open'], [$this, 'on_close']);
         xml_set_character_data_handler($parser, [$this, 'on_data']);
-        xml_parse($parser, $filecontent);
+        xml_parse($parser, $filecontent, true);
         unset($filecontent);
         xml_parser_free($parser);
     }
