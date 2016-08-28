@@ -138,7 +138,8 @@ if ($formdata = $mform->get_data()) {
         $filename = $mform->get_new_filename('userfile');
         $progress->start_progress('', 2);
         $ius= $fileparser->parse($filename, $mform->get_file_content('userfile'));
-
+        
+        
         if ($ius) {
             // le chargement s'est bien passé
             $report = $fileparser->get_report();
@@ -158,12 +159,11 @@ if ($formdata = $mform->get_data()) {
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
         } else {
             // il y a eu une erreur
-            $progress->end_progress('veuillez patienter', 2);
+            $progress->end_progress();
             $parseerror = $fileparser->get_error();
             $msg = "Erreur de chargement. $parseerror";
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
         }
-    //
 	} else {
 	    $msg = get_string('filemissingwarn', 'auth_entsync');
 	    echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_WARNING);

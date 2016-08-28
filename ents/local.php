@@ -50,8 +50,8 @@ class  auth_entsync_ent_local extends auth_entsync_ent_base {
     
     public function get_filetypes() {
         return [
-            1 => 'Élèves (fichier CSV)',
-            2 => 'Enseignants (fichier CSV)',
+            1 => 'Élèves BEE (fichier xml ou zip)',
+            2 => 'Enseignants STS (fichier xml ou zip)',
         ];
     }
     
@@ -59,13 +59,15 @@ class  auth_entsync_ent_local extends auth_entsync_ent_base {
         switch($filetype) {
             case 1 : return  [1];
             case 2 : return  [2];
-            case 3 : return  [4];
         }
         return  [];
     }
     
     public function get_fileparser($filetype) {
-        return null;
+        if( ($filetype < 1) || ($filetype>2)) return null; 
+        require_once(__DIR__ . '/../lib/parsers.php');
+        $fileparser = new auth_entsync_parser_XML();
+        return $fileparser;
     }
     
     public function get_connector_url() {

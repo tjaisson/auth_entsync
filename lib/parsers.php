@@ -222,7 +222,7 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
 }
 
 /**
- * Classe pour parser les CSV qui n'ont pas de champ profil.
+ * Classe pour parser les XML.
  *
  *
  * @package   auth_entsync
@@ -236,17 +236,49 @@ class auth_entsync_parser_XML extends auth_entsync_parser {
     protected function do_parse($filename, $filecontent) {
         
         $this->_progressreporter->start_progress('',10);
-        $this->_progressreporter->start_progress('',1,1);
         
-        
+        $this->_progressreporter->start_progress('');
         $_ext = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
         //unzip si nécessaire
         if($_ext == 'ZIP') {
+            //il faut enregistrer le fichier temporairement
+            $tempdir = make_request_directory();
+            $tempfile = $tempdir . '/archiv.zip';
+            $extractdir = make_unique_writable_directory($tempdir);
+            file_put_contents($tempfile, $filecontent);
+            $this->_progressreporter->progress();
+            unset($filecontent);
+            $fp = get_file_packer('application/zip');
+            $files = $fp->extract_to_pathname($tempfile, $extractdir);
+            $this->_progressreporter->progress();
             
+            if(count($files) !== 1) {
+                $this->_error = 'Le fichier zip ne doit contenir qu\'un fichier.';
+                $this->_progressreporter->end_progress();
+                $this->_progressreporter->end_progress();
+                return false;
+            }
+            foreach ($files as $file => $status) { 
+                if($status !== true) {
+                    $this->_error = 'Fichier zip corrompu.';
+                    $this->_progressreporter->end_progress();
+                    $this->_progressreporter->end_progress();
+            return false;
+                }
+                break;              
+            }
+            $_ext = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
+            $file = $extractdir . '/' . $file;
+            $filecontent = file_get_contents($file);
+            $this->_progressreporter->progress();
+            unlink($file);
+            unlink($tempfile);
         }
+        
+        //ce doit être un xml
+        $this->_progressreporter->end_progress();
         if($_ext != 'XML') {
             $this->_error = 'Fichier xml requis';
-            $this->_progressreporter->end_progress();
             $this->_progressreporter->end_progress();
             return false;
         }
