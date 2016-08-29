@@ -317,7 +317,7 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
 }
 
 /**
- * Classe de base pour parser les XML.
+ * Classe pour parser les XML BEE.
  *
  *
  * @package   auth_entsync
