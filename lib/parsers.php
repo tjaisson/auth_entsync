@@ -257,14 +257,14 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
 }
 
 /**
- * Classe pour parser les XML.
+ * Classe de base pour parser les XML.
  *
  *
  * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class auth_entsync_parser_XML extends auth_entsync_parser {
+abstract class auth_entsync_parser_XML extends auth_entsync_parser {
     protected $_record;
     protected $_field = '';
     
@@ -311,5 +311,27 @@ class auth_entsync_parser_XML extends auth_entsync_parser {
         }
     }
     
+    public abstract function on_open($parser, $name, $attribs); 
+    public abstract function on_close($parser, $name);
     
+}
+
+/**
+ * Classe de base pour parser les XML.
+ *
+ *
+ * @package   auth_entsync
+ * @copyright 2016 Thomas Jaisson
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class auth_entsync_parser_bee extends auth_entsync_parser_XML {
+    private $match1 = ['lastname' => 'NOM', 'firstname' => 'PRENOM'];
+    private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
+    private $match;
+    public function on_open($parser, $name, $attribs) {
+        
+    }
+    public function on_close($parser, $name) {
+        
+    }
 }
