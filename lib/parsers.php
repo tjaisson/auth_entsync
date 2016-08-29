@@ -124,7 +124,7 @@ abstract class auth_entsync_parser {
     }
     
     protected function unzipone($filename, $filecontent) {
-        $this->_progressreporter->start_progress('',3);
+        $this->_progressreporter->start_progress('unzip',3);
         //il faut enregistrer le fichier temporairement
         $tempdir = make_request_directory();
         $tempfile = $tempdir . '/archiv.zip';
@@ -270,7 +270,7 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
     
     protected function do_parse($filename, $filecontent) {
         
-        $this->_progressreporter->start_progress('',10);
+        $this->_progressreporter->start_progress('lecture',10);
         
         $_ext = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
         //unzip si nécessaire
@@ -292,16 +292,22 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
             $this->_progressreporter->end_progress();
             return false;
         }
-        return $this->doparse($filecontent);
+        $bf = $this->doparse($filecontent);
+        $this->_progressreporter->end_progress();
+        return $bf;
     }
     
     private function doparse($filecontent) {
+        $this->_progressreporter->start_progress('lecture', \core\progress\display_if_slow::INDETERMINATE ,9);
         $parser = xml_parser_create('UTF-8');
         xml_set_element_handler($parser, [$this, 'on_open'], [$this, 'on_close']);
         xml_set_character_data_handler($parser, [$this, 'on_data']);
         xml_parse($parser, $filecontent, true);
         unset($filecontent);
         xml_parser_free($parser);
+        $this->afterparse();
+        $this->_progressreporter->end_progress();
+        return $this->_buffer;
     }
     
     function on_data($parser, $data) {
@@ -313,7 +319,9 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
     
     public abstract function on_open($parser, $name, $attribs); 
     public abstract function on_close($parser, $name);
-    
+    protected function afterparse() {
+        
+    }
 }
 
 /**
@@ -329,9 +337,54 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
     private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
     private $match;
     public function on_open($parser, $name, $attribs) {
+        switch($name) {
+            case 'ELEVE' :
+                $this->_record = new stdClass();
+                $this->_record->uid = $attribs['ELEVE_ID'];
+                $this->match = $this->match1;
+                return;
+            case 'STRUCTURES_ELEVE' :
+                $this->_record = new stdClass();
+                $this->_record->uid = $attribs['ELEVE_ID'];
+                $this->match = $this->match2;
+                return;
+        }
         
+        if(isset($this->_record)) {
+            if($key =  array_search($name, $this->match)) {
+                $this->_field = $key;
+                $this->_record->{$key} = '';
+            }
+        }
     }
+
     public function on_close($parser, $name) {
-        
+        $this->_field = '';
+        switch($name) {
+            case 'ELEVE' :
+                $this->add_iu($this->_record);
+                unset($this->_record);
+                $this->_progressreporter->progress();
+                return;
+            case 'STRUCTURES_ELEVE' :
+                if(array_key_exists($this->_record->uid, $this->_buffer)) {
+                    $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
+                    $this->_progressreporter->progress();
+                }
+                unset($this->_record);
+                return;
+        }
+    }
+    protected function afterparse() {
+        $lst = $this->_buffer;
+        $this->_buffer = array();
+        $this->_report->addedusers = 0;
+        while($lst) {
+            $iu = array_pop($lst);
+            if(!empty($iu->cohortname)) {
+                ++$this->_report->addedusers;
+                array_push($this->_buffer, $iu);
+            }
+        }
     }
 }

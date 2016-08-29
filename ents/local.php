@@ -66,7 +66,7 @@ class  auth_entsync_ent_local extends auth_entsync_ent_base {
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>2)) return null; 
         require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_XML();
+        $fileparser = new auth_entsync_parser_bee();
         return $fileparser;
     }
     
