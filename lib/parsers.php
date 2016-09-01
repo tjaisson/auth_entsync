@@ -333,7 +333,7 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class auth_entsync_parser_bee extends auth_entsync_parser_XML {
-    private $match1 = ['lastname' => 'NOM', 'firstname' => 'PRENOM'];
+    private $match1 = ['lastname' => 'NOM_DE_FAMILLE', 'firstname' => 'PRENOM'];
     private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
     private $match;
     public function on_open($parser, $name, $attribs) {
