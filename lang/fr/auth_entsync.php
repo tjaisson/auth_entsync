@@ -74,8 +74,7 @@ alors il faut les synchroniser en même temps.<br />
 Par exemple, il faut charger le fichier des élèves du collège et celui des élèves du lycée
 avant de procéder à la synchronisation.';
 $string['afterparseinfo'] = 'Fichier {$a->file} lut avec succès.<br />
-{$a->nblines} utilisateurs trouvés.<br />
-{$a->nbusers} utilisateurs ajoutés à la liste des utilisateurs à synchroniser.';
+{$a->nbusers} utilisateurs trouvés.';
 $string['aftersyncinfo'] = 'Synchronisation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';

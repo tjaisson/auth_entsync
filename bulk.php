@@ -207,5 +207,6 @@ $i = auth_entsync_usertbl::count_users(1);
 $ii = auth_entsync_usertbl::count_users(2);
 $iii =  auth_entsync_usertbl::count_users([1,2]);
 echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
+
 echo $OUTPUT->footer();
 die;

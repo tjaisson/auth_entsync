@@ -61,8 +61,7 @@ $string['infoproceed'] = 'INFO : {$a->nbusers} users ({$a->profiltype}) ready to
 $string['uploadadd'] = 'Or upload another file if needed';
 $string['uploadaddinfo'] = 'Upload another file if needed';
 $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
-{$a->nblines} users found.<br />
-{$a->nbusers} users added to temp list';
+{$a->nbusers} users found.';
 $string['aftersyncinfo'] = 'Synchronization OK';
 
 //login
