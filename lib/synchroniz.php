@@ -76,6 +76,10 @@ abstract class auth_entsync_sync {
     
     protected $_profileswithcohort = [];
     
+    protected $_existingentu;
+
+    protected $_existingentuother;
+    
     /**
      * @var int Code de l'ent courant
      */
@@ -194,29 +198,38 @@ abstract class auth_entsync_sync {
 
         // $_entu : record pour la mise à jour
         $_entu = new stdClass();
-        $_entu->checked = true;
+        $_entu->isdirty = false;
 
         //création ou mise à jour de l'utilisateur géré
         if($entu) {
         	//l'utilisateur existe déjà dans la table ent
+        	$entu->checked = true;
         	$_entu->id = $entu->id;
         	if($entu->archived) {
         	    $_entu->archived = 0;
         	    $_entu->archivedsince = 0;
+        	    $_entu->isdirty = true;
         	}
-        	if($entu->sync != 1) $_entu->sync = 1;
-            if($entu->userid != $_mdlu->id) $_entu->userid = $_mdlu->id;
-        	if($entu->ent != $this->entcode) $_entu->ent = $this->entcode;
-        	if($entu->profile != $iu->profile) $_entu->profile = $iu->profile;
-        	if($entu->uid != $iu->uid) $_entu->uid = $iu->uid;
-            $DB->update_record('auth_entsync_user', $_entu);
+        	if($entu->sync != 1) {$_entu->sync = 1; $_entu->isdirty = true;}
+            if($entu->userid != $_mdlu->id) {$_entu->userid = $_mdlu->id; $_entu->isdirty = true;}
+        	if($entu->ent != $this->entcode) {$_entu->ent = $this->entcode; $_entu->isdirty = true;}
+        	if($entu->profile != $iu->profile) {$_entu->profile = $iu->profile; $_entu->isdirty = true;}
+        	if($entu->uid != $iu->uid) {$_entu->uid = $iu->uid; $_entu->isdirty = true;}
+        	if($_entu->isdirty) {
+        	    unset($_entu->isdirty);
+                $DB->update_record('auth_entsync_user', $_entu);
+        	}
         } else {
         	//il s'agit d'un nouvel utilisateur dans la table ent
+            $_entu->isdirty = true;
             $_entu->sync = 1;
+    	    $_entu->archived = 0;
+    	    $_entu->archivedsince = 0;
             $_entu->userid = $_mdlu->id;
         	$_entu->ent = $this->entcode;
         	$_entu->profile = $iu->profile;
         	$_entu->uid = $iu->uid;
+        	unset($_entu->isdirty);
             $_entu->id = $DB->insert_record('auth_entsync_user', $_entu, true);
         }
 
@@ -244,21 +257,21 @@ abstract class auth_entsync_sync {
             $_entu->archivedsince = $this->_currenttime;
             $DB->update_record('auth_entsync_user', $_entu);
         }
-        
+
         //on supprime les $entu expirés
         $select = "userid = :userid AND archived = 1 AND archivedsince < :limit";
         $DB->delete_records_select('auth_entsync_user', $select,
             ['userid' => $entu->userid, 'limit' => $this->_limitarchiv]);
-        
+
         //on recherche le $mdlu
         if( $mdlu = $DB->get_record('user',
             ['id' => $entu->userid, 'deleted' => 0], 'id, username, suspended') )  {
-        
-            if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->id])) {
+
+            if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid])) {
                 //il n'est plus référencé
                 delete_user($mdlu);
             } else {
-                if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->id, 'archived' => 0])) {
+                if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
                     //il est archivé
                     $_mdlu = new stdClass();
                     $_mdlu->id = $mdlu->id;
@@ -289,13 +302,15 @@ abstract class auth_entsync_sync {
 		
 		$this->_currenttime = time();
 		//on décoche tous les utilisateurs de l'ent
-        $this->uncheckusers();
+        //$this->uncheckusers();
 
         $this->_profileswithcohort = array_intersect($this->_profileswithcohort, $this->_profilestosync);
 
         $this->_otherlookup = $DB->count_records_select('auth_entsync_user', "ent <> :ent",
             ['ent' => $this->entcode]) > 0;
 
+        $this->buildexistinglst();
+            
         $this->_progressreporter->end_progress();
         $this->_progressreporter->start_progress('',count($iurs),6);
 		$progresscnt = 0;
@@ -316,29 +331,39 @@ abstract class auth_entsync_sync {
 		unset($iurs);
         $this->_progressreporter->end_progress();
 
-        $this->_progressreporter->start_progress('',1,1);
         $this->_limitarchiv = $this->_currenttime - $this::ARCHIVDURATION;
-        
-        list($_select, $params) = $DB->get_in_or_equal($this->_profilestosync, SQL_PARAMS_NAMED, 'prf');
-        $_select = "( checked = 0 ) and ( sync = 1 ) and ( ent = :ent ) and ( profile {$_select} )";
-        $params['ent'] = $this->entcode;
-        $entus = $DB->get_records_select('auth_entsync_user', $_select, $params);
-        $this->_progressreporter->end_progress();
 
-        $this->_progressreporter->start_progress('',count($entus),2);
+        $this->_progressreporter->start_progress('',count($this->_existingentu),3);
 		$progresscnt = 0;
-        foreach($entus as $entu) {
+        foreach($this->_existingentu as $entu) {
             $this->_progressreporter->progress($progresscnt);
 		    ++$progresscnt;
-            $_entu = $this->archiveordelete($entu);
+		    if(!$entu->checked) {
+                $_entu = $this->archiveordelete($entu);
+		    }
         }
-        unset($entus);
+        unset($this->_existingentu);
+        unset($this->_existingentuother);
         $this->_progressreporter->end_progress();
         $this->_progressreporter->end_progress();
         return $this->_report;
 	}
 
-
+	protected function buildexistinglst() {
+	    $entus = auth_entsync_usertbl::get_entus(-1, $this->entcode);
+	    $this->_existingentu = array();
+	    $this->_existingentuother = array();
+	    while($entus) {
+	        $entu = array_pop($entus);
+	        if(in_array($entu->profile, $this->_profilestosync)) {
+	            $entu->checked = false;
+	            $this->_existingentu[$entu->uid] = $entu;
+	        } else {
+	            $this->_existingentuother[$entu->uid] = 1;
+            }
+	    }
+	}
+	
     /**
      * Recherche l'utilisateur dans les utilisateurs existants
      *
@@ -356,37 +381,48 @@ abstract class auth_entsync_sync {
      * si l'utilisateur devrait être ignoré
      */
     protected function lookforuser($iu) {
-       global $DB, $CFG;
-       $entu = $DB->get_record('auth_entsync_user', ['ent'=>$this->entcode, 'uid' => $iu->uid]);
+        global $DB, $CFG;
+        if(array_key_exists($iu->uid, $this->_existingentu)) {
+            $entu = $this->_existingentu[$iu->uid];
+        } else {
+            if(array_key_exists($iu->uid, $this->_existingentuother)) {
+                //même ent mais autre profil
+                //ne devrait pas se produire
+                ++$this->_report->profilmismatched;
+                return false;
+            } else {
+                $entu = null;
+            }
+       }
        if($entu) {
-           if($entu->checked) {
-               //ne devrait pas se produire
-               ++$this->_report->checkedcollision;
-               return false;
-           }
-           if($entu->profile == $iu->profile) {
-               //même ent et même profil, c'est bien lui
-               if($mdlu = $DB->get_record('user', ['id' => $entu->userid, 'deleted' => 0,
+            if($entu->checked) {
+                //ne devrait pas se produire
+                ++$this->_report->checkedcollision;
+                return false;
+            }
+            if($entu->profile == $iu->profile) {
+                //même ent et même profil, c'est bien lui
+                if($mdlu = $DB->get_record('user', ['id' => $entu->userid, 'deleted' => 0,
                    'mnethostid' => $CFG->mnet_localhost_id],
                    'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname'
                    )) {
                    ++$this->_report->byid;
                    return [$entu, $mdlu];
-               }
-               //si $mdlu n'est pas là -> recherche par nom prenom
-               return [$entu, $this->lookforuserbynames($iu)];
+                }
+                //si $mdlu n'est pas là -> recherche par nom prenom
+                return [$entu, $this->lookforuserbynames($iu)];
                        
-           } else {
-               //même ent mais autre profil
-               //ne devrait pas se produire
-               ++$this->_report->profilmismatched;
-               return false;
-           }
-       } else {
-           //cherche par nom prenom
-           return [false, $this->lookforuserbynames($iu)];
-       }
-	}
+            } else {
+                //même ent mais autre profil
+                //ne devrait pas se produire
+                ++$this->_report->profilmismatched;
+                return false;
+            }
+        } else {
+            //cherche par nom prenom
+            return [false, $this->lookforuserbynames($iu)];
+        }
+    }
 	
     protected function lookforuserbynames($iu) {
         global $DB, $CFG;

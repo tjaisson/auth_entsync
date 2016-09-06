@@ -64,6 +64,32 @@ class auth_entsync_usertbl {
         return $DB->count_records_sql($sql, $param);
     }
     
+    static function get_entus($profile = -1, $ent = -1) {
+        global $DB;
+        list($_select, $params) = self::build_sql_entu($profile, $ent);
+        return $DB->get_records_select('auth_entsync_user', $_select, $params);
+    }
+
+    private static function build_sql_entu($profile, $ent) {
+        global $DB;
+        if($profile === -1) {
+            $param = array();
+            $sql = '';
+        } else {
+            list($sql, $param) = $DB->get_in_or_equal($profile, SQL_PARAMS_NAMED, 'prf');
+            $sql = ' AND profile ' . $sql;
+        }
+        if($ent != -1) {
+            $sql .= ' AND ent = :ent';
+            $param['ent'] = $ent;
+        }
+    
+        $sql = "sync = 1{$sql}";
+    
+        return [$sql, $param];
+    }
+    
+    
 }
     class auth_entsync_tmptbl {
 /**

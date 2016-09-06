@@ -50,7 +50,7 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
         if($storecode) {
             $dir = make_temp_directory('entsync');
             $file = $dir . '/' . $storecode;
-            $this->_tmparray = json_decode(file_get_contents($file));
+            $this->_tmparray = (array)json_decode(file_get_contents($file));
         } else  {
             $this->_tmparray = array();
         }
@@ -79,7 +79,7 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
         }
     }
     public function get_ius() {
-        return (array)$this->_tmparray;
+        return $this->_tmparray;
     }
     public function clear() {
         if($this->_storecode) {
