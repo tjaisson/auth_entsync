@@ -25,6 +25,20 @@
 defined('MOODLE_INTERNAL') || die();
 
 class auth_entsync_usertbl {
+    static function get_users_ent() {
+        $select = 'a.id as id, a.username as username, a.password as password, a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles';
+        $manual = array();
+        foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
+            if($ent->is_enabled()) {
+                $select .= ", BIT_OR(b.ent = {$entcode}) as ent{$entcode}";
+                if($ent->get_mode() === 'manual') {
+                    $manual[] = $entcode;
+                }
+            }
+        }
+    }
+    
+    
     private static function build_sql($select, $profile, $ent) {
         global $DB;
         if($profile === -1) {

@@ -21,3 +21,24 @@
  * @copyright 2016 Thomas Jaisson
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+
+
+require(__DIR__ . '/../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->libdir . '/moodlelib.php');
+require_once(__DIR__ . '/lib/table.php');
+require_once('ent_defs.php');
+
+require_login();
+admin_externalpage_setup('authentsyncuser');
+require_capability('moodle/user:viewdetails', context_system::instance());
+
+$profile = optional_param('profile', -1, PARAM_INT);
+$cohort =  optional_param('cohort', -1, PARAM_INT);
+
+
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading_with_help(get_string('entsyncuser', 'auth_entsync'), 'entsyncuser', 'auth_entsync');
+echo $OUTPUT->footer();
+die;

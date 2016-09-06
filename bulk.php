@@ -196,8 +196,6 @@ if($storeid) {
     } else {
         $mform = new auth_entsync_bulk_form();
     }
-} else {
-    auth_entsync_tmptbl::reset();
 }
 echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
 

@@ -64,6 +64,10 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 {$a->nbusers} users found.';
 $string['aftersyncinfo'] = 'Synchronization OK';
 
+///user
+$string['entsyncuser'] = 'Users list';
+$string['entsyncuser_help'] = 'Users list';
+
 //login
 $string['notauthorized'] = '{$a->ent} authentication succeded but user "{$a->user}" is not alloved on this moodle.<br />
 An administrator can allow this user.';

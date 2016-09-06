@@ -33,5 +33,6 @@ if ($hassiteconfig) {
 	$ADMIN->add('entsynccat', new admin_externalpage('authentsyncparam', new lang_string('entsyncparam', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/param.php", 'moodle/site:config'));
 	if(is_enabled_auth('entsync')) {
 	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncbulk', new lang_string('entsyncbulk', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/bulk.php", 'moodle/site:uploadusers'));
+	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncuser', new lang_string('entsyncuser', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/user.php", 'moodle/user:viewdetails'));
 	}
 }

@@ -79,6 +79,10 @@ $string['aftersyncinfo'] = 'Synchronisation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';
 
+//user
+$string['entsyncuser'] = 'Listes d\'utilisateurs';
+$string['entsyncuser_help'] = 'Il est possible de lister les utilisateurs de l\'établissement.';
+
 //login
 $string['notauthorized'] = 'Authentification {$a->ent} réussie mais l\'utilisateur "{$a->user}" n\'est pas autorisé à accèder à ce moodle.<br />
 Un administrateur peut autoriser l\'utilisateur.';

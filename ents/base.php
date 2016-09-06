@@ -122,6 +122,9 @@ abstract class auth_entsync_ent_base {
         return self::$_entinsts[$entcode];
     }
     
+    /**
+     * @return array[auth_entsync_ent_base] 
+     */
     public static function get_ents() {
         return self::$_entinsts;
     }
