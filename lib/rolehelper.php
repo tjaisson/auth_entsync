@@ -23,6 +23,8 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
+require_once('table.php');
+
 
 
 class auth_entsync_rolehelper {
@@ -53,7 +55,8 @@ class auth_entsync_rolehelper {
     }
     
     static function updateroleallusers($profile, $newroleid) {
-        $iurs = self::get_users_byprofile($profile);
+//        $iurs = self::get_users_byprofile($profile);
+        $iurs = auth_entsync_usertbl::get_users($profile);
         foreach($iurs as $userid) {
             self::updaterole($userid, $newroleid);
         }
@@ -63,40 +66,12 @@ class auth_entsync_rolehelper {
      * @param int $profile le profil à traiter
      */
     static function removerolesallusers($profile) {
-        $iurs = self::get_users_byprofile($profile);
+//        $iurs = self::get_users_byprofile($profile);
+        $iurs = auth_entsync_usertbl::get_users($profile);
+        
         foreach($iurs as $userid) {
             self::removeroles($userid);
         }
-    }
-    
-    static function get_users_byprofile($profile) {
-        global $DB;
-        $sql = "SELECT a.id
-            FROM {user} a
-            WHERE a.auth = 'entsync'
-            AND a.deleted = 0
-            AND a.suspended = 0
-            AND (SELECT COUNT(1) FROM {auth_entsync_user} b
-                    WHERE b.userid = a.id
-                      AND b.archived = 0
-                      AND b.profile = :profile
-            ) > 0";
-        return $DB->get_fieldset_sql($sql, ['profile' => $profile]);
-    }
-    
-    static function count_users_byprofile($profile) {
-        global $DB;
-        $sql = "SELECT COUNT(1)
-            FROM {user} a
-            WHERE a.auth = 'entsync'
-            AND a.deleted = 0
-            AND a.suspended = 0
-            AND (SELECT COUNT(1) FROM {auth_entsync_user} b
-                    WHERE b.userid = a.id
-                      AND b.archived = 0
-                      AND b.profile = :profile
-            ) > 0";
-        return $DB->count_records_sql($sql, ['profile' => $profile]);
     }
     
     static function getsysrolemenu() {
