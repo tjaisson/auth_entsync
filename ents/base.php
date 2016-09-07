@@ -308,6 +308,15 @@ abstract class auth_entsync_ent_base {
         return new pix_icon('t/approve', $this->nomcourt);
     }
     
+    public function include_filehelp() {
+        $_helphtml = __DIR__ . "/help/{$this->_entclass}_help.html";
+        if(file_exists($_helphtml)) {
+            include($_helphtml);
+        } else {
+            echo '<p>L\'aide n\'est pas encore disponible.</p>';
+        }
+    }
+    
     /**
      * Définit si des paramètres sont nécessaires
      *

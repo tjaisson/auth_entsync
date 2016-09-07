@@ -52,6 +52,10 @@ $string['entsyncbulk_help'] = 'Users may be uploaded (and optionally enrolled in
 $string['notconfigwarn'] = 'No enabled WNE.<br />
 Go to <a href=\'{$a}\'>Settings</a>';
 $string['filetypeselect'] = 'File type';
+$string['filetypeselect_help'] = 'Select the type of the file you\'re uploading. You can find more help via the link below.';
+$string['filetypeselect_link'] = '%%WWWROOT%%/auth/entsync/filehelp.php';
+
+
 $string['filetypemissingwarn'] = 'Choose a file type';
 $string['filemissingwarn'] = 'Choose a file';
 
@@ -63,6 +67,10 @@ $string['uploadaddinfo'] = 'Upload another file if needed';
 $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 {$a->nbusers} users found.';
 $string['aftersyncinfo'] = 'Synchronization OK';
+
+//file help
+$string['entsyncfilehelp'] = 'Help on file types';
+
 
 ///user
 $string['entsyncuser'] = 'Users list';

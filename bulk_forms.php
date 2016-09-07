@@ -84,6 +84,7 @@ class auth_entsync_bulk_form extends moodleform {
             	$mform->addElement('submit', 'deposer', get_string('upload'));
             } else {
                 $mform->addElement('submit', 'deposer', get_string('next'));
+                $mform->addHelpButton('entfiletype', 'filetypeselect', 'auth_entsync');
             }
         } else {
             $mform->addElement('hidden', 'entfiletype', 0);

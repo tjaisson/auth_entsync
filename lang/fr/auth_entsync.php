@@ -59,6 +59,8 @@ Cela est utile si plusieurs structures sont rattachées à ce moodle (dans le ca
 $string['notconfigwarn'] = 'Aucun ENT paramétré.<br />
 Aller à <a href=\'{$a}\'>Configuration</a>';
 $string['filetypeselect'] = 'Type du fichier';
+$string['filetypeselect_help'] = 'Sélectionnez le type de fichier utilisateurs que vous voulez déposer. Plus d\'information sur la façon d\'obtenir les fichiers utilisateurs dans les ENT via le lien ci-dessous.';
+
 $string['filetypemissingwarn'] = 'Selectionner un type de fichier';
 $string['filemissingwarn'] = 'Choisir un fichier';
 
@@ -78,6 +80,9 @@ $string['afterparseinfo'] = 'Fichier {$a->file} lut avec succès.<br />
 $string['aftersyncinfo'] = 'Synchronisation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';
+
+//file help
+$string['entsyncfilehelp'] = 'Aide sur les types de fichiers utilsateurs pour les ENT activés';
 
 //user
 $string['entsyncuser'] = 'Listes d\'utilisateurs';
