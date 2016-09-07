@@ -82,7 +82,7 @@ $string['aftersyncinfo'] = 'Synchronisation réussie.<br />
 {$a->created} utilisateurs créés';
 
 //file help
-$string['entsyncfilehelp'] = 'Aide sur les types de fichiers utilsateurs pour les ENT activés';
+$string['entsyncfilehelp'] = 'Aide sur les types de fichiers utilisateurs pour les ENT activés';
 
 //user
 $string['entsyncuser'] = 'Listes d\'utilisateurs';
