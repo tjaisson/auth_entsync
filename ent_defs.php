@@ -44,8 +44,8 @@ require_once(__DIR__ . '/ents/base.php');
  *
  * toujoursn appeler end_register() à la fin
  */
-require_once(__DIR__ . '/ents/local.php');
-auth_entsync_ent_base::register('local', 4);
+//require_once(__DIR__ . '/ents/local.php');
+//auth_entsync_ent_base::register('local', 4);
 
 require_once(__DIR__ . '/ents/ents_paris.php');
 auth_entsync_ent_base::register('pcn', 2);
