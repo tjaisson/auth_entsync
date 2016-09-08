@@ -44,9 +44,13 @@ foreach(auth_entsync_ent_base::get_ents() as $ent) {
 }
 
 $i=1;
+
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
     if($ent->is_enabled()) {
-        echo "<a name = 'ent{$ent->get_code()}'></a>";
+//        $head = $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong}", 3);
+//        echo "<a id = 'ent{$ent->get_code()}'>{$head}</a>";
+        echo "<a id='ent{$ent->get_code()}'></a>";
+        echo "<hr />";
         echo $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong}", 3);
         $ent->include_filehelp();
         ++$i;

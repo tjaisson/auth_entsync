@@ -51,15 +51,15 @@ Aller à <a href=\'{$a}\'>Configuration</a>';
 
 //bulk
 $string['entsyncbulk'] = 'Synchronisation';
-$string['entsyncbulk_help'] = 'La synchronisation permet de mettre à jour la liste des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces.<br /><br />
+$string['entsyncbulk_help'] = 'La synchronisation permet de mettre à jour la liste des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces (ENT).<br /><br />
 <b>Attention</b>, les utilisateurs qui ne sont plus présents dans les fichiers importés seront archivés puis automatiquement supprimés au bout de 6 mois.<br /><br />
-<b>Note</b> : il est possible de combiner plusieurs fichiers du même type en les chargeant successivement avant de procéder à la synchronisation.<br />
+<b>Note</b> : pour certains ENT, il est possible de combiner plusieurs fichiers du même type en les chargeant successivement avant de procéder à la synchronisation.<br />
 Cela est utile si plusieurs structures sont rattachées à ce moodle (dans le cas d\'une cité scolaire, par exemple).';
 
 $string['notconfigwarn'] = 'Aucun ENT paramétré.<br />
 Aller à <a href=\'{$a}\'>Configuration</a>';
 $string['filetypeselect'] = 'Type du fichier';
-$string['filetypeselect_help'] = 'Sélectionnez le type de fichier utilisateurs que vous voulez déposer. Plus d\'information sur la façon d\'obtenir les fichiers utilisateurs dans les ENT via le lien ci-dessous.';
+$string['filetypeselect_help'] = 'Sélectionnez le type de fichier utilisateurs que vous voulez déposer.<br /><br />Plus d\'information sur la procédure permettant d\'obtenir ces fichiers utilisateurs dans les applications tierces (ENT) via le lien ci-dessous.';
 
 $string['filetypemissingwarn'] = 'Selectionner un type de fichier';
 $string['filemissingwarn'] = 'Choisir un fichier';

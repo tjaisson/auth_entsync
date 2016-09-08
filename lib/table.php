@@ -105,27 +105,3 @@ class auth_entsync_usertbl {
     
     
 }
-    class auth_entsync_tmptbl {
-/**
-     * Vide la table temporaire 'tool_entsync_tmpul'
-     */
-    static function reset() {
-        global $DB;
-        $DB->delete_records('auth_entsync_tmpul');
-    }
-    
-    /**
-     * Compte le nombre d'enregistrements présents dans la table
-     * temporaire 'tool_entsync_tmpul'
-     *
-     * @param int $profile optionnel
-     * @return number
-     */
-    static function count_users($profile = -1) {
-        global $DB;
-        if($profile === -1 )
-            return $DB->count_records('auth_entsync_tmpul');
-        else
-            return $DB->count_records('auth_entsync_tmpul', ['profile' => $profile]);
-    }
-}

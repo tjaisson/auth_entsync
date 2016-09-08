@@ -48,7 +48,7 @@ Go to <a href=\'{$a}\'>Settings</a>';
 
 //bulk
 $string['entsyncbulk'] = 'Synchronize users';
-$string['entsyncbulk_help'] = 'Users may be uploaded (and optionally enrolled in courses) via text file.';
+$string['entsyncbulk_help'] = 'Users may be synchronized via file.';
 $string['notconfigwarn'] = 'No enabled WNE.<br />
 Go to <a href=\'{$a}\'>Settings</a>';
 $string['filetypeselect'] = 'File type';
