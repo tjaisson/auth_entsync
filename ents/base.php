@@ -309,7 +309,7 @@ abstract class auth_entsync_ent_base {
     }
     
     public function include_filehelp() {
-        $_helphtml = __DIR__ . "/help/{$this->_entclass}_help.html";
+        $_helphtml = __DIR__ . "/help/{$this->_entclass}_filehelp.php";
         if(file_exists($_helphtml)) {
             include($_helphtml);
         } else {
@@ -317,7 +317,16 @@ abstract class auth_entsync_ent_base {
         }
     }
     
-    /**
+    public function include_connecthelp() {
+        $_helphtml = __DIR__ . "/help/{$this->_entclass}_connecthelp.php";
+        if(file_exists($_helphtml)) {
+            include($_helphtml);
+        } else {
+            echo '<p>L\'aide n\'est pas encore disponible.</p>';
+        }
+    }
+    
+/**
      * Définit si des paramètres sont nécessaires
      *
      * @return bool

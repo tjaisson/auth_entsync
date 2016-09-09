@@ -42,6 +42,7 @@ class admin_entparam_form extends moodleform {
         //ent list
         $mform->addElement('header', 'entlistheader', get_string('entlist', 'auth_entsync'));
         $mform->setExpanded('entlistheader');
+        $mform->addHelpButton('entlistheader', 'entlist', 'auth_entsync');
         $mform->addElement('html', $this->buildentlist());
         
         //rôles par profil
@@ -54,6 +55,7 @@ class admin_entparam_form extends moodleform {
         }
         $mform->addElement('select', 'role_ens', get_string('roleensselect', 'auth_entsync'), $sysroles);
         $mform->setType('role_ens', PARAM_INT);
+        $mform->addHelpButton('role_ens', 'roleensselect', 'auth_entsync');
         
 
         $this->add_entsettings($mform);

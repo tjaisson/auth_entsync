@@ -30,31 +30,27 @@ require_once(__DIR__ . '/lib/table.php');
 require_once('ent_defs.php');
 
 require_login();
-admin_externalpage_setup('authentsyncbulk');
-require_capability('moodle/site:uploadusers', context_system::instance());
+admin_externalpage_setup('authentsyncparam');
+require_capability('moodle/site:config', context_system::instance());
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('entsyncfilehelp', 'auth_entsync'));
+echo $OUTPUT->heading(get_string('entsyncconnecthelp', 'auth_entsync'));
 $i=1;
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
-    if($ent->is_enabled()) {
+    if($ent->is_sso()) {
         echo "{$i}.&nbsp;<a href='#ent{$ent->get_code()}'>{$ent->nomlong}</a><br />";
         ++$i;
     }
 }
 
-echo '<br /><p>Seuls les ENT activés sont listés ici.</p>';
-
 $i=1;
 
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
-    if($ent->is_enabled()) {
-//        $head = $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong}", 3);
-//        echo "<a id = 'ent{$ent->get_code()}'>{$head}</a>";
+    if($ent->is_sso()) {
         echo "<a id='ent{$ent->get_code()}'></a>";
         echo "<hr />";
         echo $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong}", 3);
-        $ent->include_filehelp();
+        $ent->include_connecthelp();
         ++$i;
     }
 }

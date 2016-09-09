@@ -1,5 +1,6 @@
+<?php defined('MOODLE_INTERNAL') || die; ?>
 <p>Pour l'ENT Lilie, les fichiers utilisateurs sont obtenus dans la <b>console d'administration</b>&nbsp;:</p>
-<p><img src='./ents/help/lilie.jpg' /></p>
+<p><img style = "border: 1px solid;" src='./ents/help/monlyceenet.jpg' /></p>
 <ol>
 <li>Cliquer sur "Ressources",</li>
 <li>Sélectionner "Export générique",</li>

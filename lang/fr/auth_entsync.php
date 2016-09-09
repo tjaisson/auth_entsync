@@ -32,14 +32,15 @@ $string['mdlauth'] = 'Autre utilisateur';
 
 //param
 $string['entsyncparam'] = 'Configuration';
-$string['entsyncparam_help'] = 'Vous pouvez configurer le mode de gestion des utilisateurs de l\'établissement';
-
-$string['entlist'] = 'ENTs disponibles';
+$string['entlist'] = 'ENT disponibles';
+$string['entlist_help'] = 'Vous pouvez activer la connexion avec l\'ENT de votre établissement.<br /><br />
+Plus d\'information sur la procédure de mise en place côté ENT via le lien ci-dessous.';
 $string['entname'] = 'Nom';
 $string['sso'] = 'SSO';
-$string['connecturl'] = 'URL du connecteur';
+$string['connecturl'] = 'URL du connecteur ou du signet à mettre en place côté ENT';
 $string['rolepersselect'] = 'Rôle système des personnels';
 $string['roleensselect'] = 'Rôle système des enseignants';
+$string['roleensselect_help'] = 'Choisissez le rôle système que vous voulez attribuer aux enseignants.';
 $string['entspecparam'] = 'Configuration pour {$a}';
 
 
@@ -49,40 +50,40 @@ Aller à <a href=\'{$a}\'>Gestion de l\'authentification</a>';
 $string['paramredirect'] = 'Le paramétrage se fait dans "Utilisateurs de l\'établissement".<br />
 Aller à <a href=\'{$a}\'>Configuration</a>';
 
-//bulk
-$string['entsyncbulk'] = 'Synchronisation';
-$string['entsyncbulk_help'] = 'La synchronisation permet de mettre à jour la liste des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces (ENT).<br /><br />
-<b>Attention</b>, les utilisateurs qui ne sont plus présents dans les fichiers importés seront archivés puis automatiquement supprimés au bout de 6 mois.<br /><br />
-<b>Note</b> : pour certains ENT, il est possible de combiner plusieurs fichiers du même type en les chargeant successivement avant de procéder à la synchronisation.<br />
-Cela est utile si plusieurs structures sont rattachées à ce moodle (dans le cas d\'une cité scolaire, par exemple).';
+//connect help
+$string['entsyncconnecthelp'] = 'Aide sur la mise en place des connecteurs côté ENT';
 
-$string['notconfigwarn'] = 'Aucun ENT paramétré.<br />
-Aller à <a href=\'{$a}\'>Configuration</a>';
+//bulk
+$string['entsyncbulk'] = 'Importation des utilisateurs';
+$string['entsyncbulk_help'] = 'L\'importation permet de mettre à jour la liste des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces (ENT).<br /><br />
+<b>Attention</b>, les utilisateurs qui ne sont plus présents dans les fichiers importés seront archivés puis automatiquement supprimés au bout de 6 mois.<br /><br />
+<b>Note</b> : pour certains ENT, il est possible de combiner plusieurs fichiers du même type en les chargeant successivement avant de procéder à l\'importation.<br />
+Cela est utile si plusieurs structures sont rattachées à ce moodle (dans le cas d\'une cité scolaire, par exemple).';
+$string['notconfigwarn'] = 'Aucun ENT n\'est activé.<br />
+Aller à <a href=\'{$a}\'>Configuration</a> pour le faire.';
 $string['filetypeselect'] = 'Type du fichier';
 $string['filetypeselect_help'] = 'Sélectionnez le type de fichier utilisateurs que vous voulez déposer.<br /><br />Plus d\'information sur la procédure permettant d\'obtenir ces fichiers utilisateurs dans les applications tierces (ENT) via le lien ci-dessous.';
-
 $string['filetypemissingwarn'] = 'Selectionner un type de fichier';
 $string['filemissingwarn'] = 'Choisir un fichier';
-
-$string['dosync'] = 'Synchroniser';
-$string['proceed'] = 'Procéder à la synchonisation';
+$string['dosync'] = 'Importation';
+$string['proceed'] = 'Procéder à l\'importation';
 $string['infoproceed'] = 'INFO : {$a->nbusers} utilisateurs ({$a->profiltype}) prêts à être synchronisés avec les
 {$a->alreadyusers} utilisateurs existants.<br />
 ATTENTION : les utilisateurs existants qui ne sont plus présents dans le fichier seront archivés puis automatiquement supprimés après 6 mois.';
 $string['uploadadd'] = 'Ou déposer un autre fichier si besoin (cas d\'une cité scolaire...)';
 $string['uploadaddinfo'] = 'IMPORTANT : si plusieurs structures sont rattachées à ce moodle
 (cas d\'une cité scolaire, par exemple),
-alors il faut les synchroniser en même temps.<br />
-Par exemple, il faut charger le fichier des élèves du collège et celui des élèves du lycée
-avant de procéder à la synchronisation.';
+alors il faut les importer en même temps.<br />
+Par exemple, il faut charger le fichier des élèves du collège <b>et</b> celui des élèves du lycée
+avant de procéder à l\'importation.';
 $string['afterparseinfo'] = 'Fichier {$a->file} lut avec succès.<br />
 {$a->nbusers} utilisateurs trouvés.';
-$string['aftersyncinfo'] = 'Synchronisation réussie.<br />
+$string['aftersyncinfo'] = 'Importation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';
 
 //file help
-$string['entsyncfilehelp'] = 'Aide sur les types de fichiers utilisateurs pour les ENT activés';
+$string['entsyncfilehelp'] = 'Comment obtenir les fichiers utilisateurs dans les ENT';
 
 //user
 $string['entsyncuser'] = 'Listes d\'utilisateurs';

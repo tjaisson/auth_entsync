@@ -32,19 +32,23 @@ $string['mdlauth'] = 'Other user';
 
 //param
 $string['entsyncparam'] = 'Settings';
-$string['entsyncparam_help'] = 'You can configure WNE connector settings';
 $string['entlist'] = 'Available WNEs';
+$string['entlist_help'] = 'You can configure WNE connector settings';
+$string['entlist_link'] = '%%WWWROOT%%/auth/entsync/connecthelp.php';
 $string['entname'] = 'Name';
 $string['sso'] = 'SSO';
 $string['connecturl'] = 'Connect URL';
 $string['rolepersselect'] = 'Employe\'s system role';
 $string['roleensselect'] = 'Teacher\'s system role';
+$string['roleensselect_help'] = 'Choose system role you vant to assign to teachers.';
 $string['entspecparam'] = '{$a} settings';
-
 $string['pluginnotenabledwarn'] = 'WARNING : ENTSYNC authentication plugin is not enabled<br />
 Go to <a href=\'{$a}\'>Manage authentication</a>';
 $string['paramredirect'] = 'Settings are in "Managed users".<br />
 Go to <a href=\'{$a}\'>Settings</a>';
+
+//connect help
+$string['entsyncconnecthelp'] = 'Help on connectors';
 
 //bulk
 $string['entsyncbulk'] = 'Synchronize users';
@@ -54,11 +58,8 @@ Go to <a href=\'{$a}\'>Settings</a>';
 $string['filetypeselect'] = 'File type';
 $string['filetypeselect_help'] = 'Select the type of the file you\'re uploading. You can find more help via the link below.';
 $string['filetypeselect_link'] = '%%WWWROOT%%/auth/entsync/filehelp.php';
-
-
 $string['filetypemissingwarn'] = 'Choose a file type';
 $string['filemissingwarn'] = 'Choose a file';
-
 $string['dosync'] = 'Synchronize';
 $string['proceed'] = 'Proceed with synchronization';
 $string['infoproceed'] = 'INFO : {$a->nbusers} users ({$a->profiltype}) ready to be synchronised.';
@@ -69,7 +70,7 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 $string['aftersyncinfo'] = 'Synchronization OK';
 
 //file help
-$string['entsyncfilehelp'] = 'Help on file types';
+$string['entsyncfilehelp'] = 'How to retrieve users files';
 
 
 ///user

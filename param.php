@@ -80,7 +80,8 @@ if ($formdata = $mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
+//echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
+echo $OUTPUT->heading(get_string('entsyncparam', 'auth_entsync'));
 //liste des ents enable/disable
 $mform->display();
 echo $OUTPUT->footer();

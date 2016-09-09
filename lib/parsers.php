@@ -340,7 +340,7 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
         switch($name) {
             case 'ELEVE' :
                 $this->_record = new stdClass();
-                $this->_record->uid = $attribs['ELEVE_ID'];
+                $this->_record->uid = 'BEE.' . $attribs['ELEVE_ID'];
                 $this->match = $this->match1;
                 return;
             case 'STRUCTURES_ELEVE' :
@@ -403,7 +403,7 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
         switch($name) {
             case 'ELEVE' :
                 $this->_record = new stdClass();
-                $this->_record->uid = $attribs['ELEVE_ID'];
+                $this->_record->uid = 'STS.' . $attribs['ELEVE_ID'];
                 $this->match = $this->match1;
                 return;
             case 'STRUCTURES_ELEVE' :
