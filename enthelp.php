@@ -34,25 +34,29 @@ admin_externalpage_setup('authentsyncparam');
 require_capability('moodle/site:config', context_system::instance());
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('entsyncconnecthelp', 'auth_entsync'));
+echo $OUTPUT->heading(get_string('entsyncenthelp', 'auth_entsync'));
+
+echo $OUTPUT->notification(get_string('entsyncenthelpintro', 'auth_entsync',
+        	   		"$CFG->wwwroot/auth/entsync/bulk.php"), \core\output\notification::NOTIFY_INFO);
+
 $i=1;
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
-    if($ent->is_sso()) {
-        echo "{$i}.&nbsp;<a href='#ent{$ent->get_code()}'>{$ent->nomlong}</a><br />";
-        ++$i;
-    }
+    echo "{$i}.&nbsp;<a href='#ent{$ent->get_code()}'>{$ent->nomlong}</a><br />";
+    ++$i;
 }
 
 $i=1;
 
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
-    if($ent->is_sso()) {
-        echo "<a id='ent{$ent->get_code()}'></a>";
-        echo "<hr />";
-        echo $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong}", 3);
-        $ent->include_connecthelp();
-        ++$i;
+    echo "<a id='ent{$ent->get_code()}'></a>";
+    echo "<hr />";
+    if($ent->is_enabled()) {
+        echo $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong} (actif)", 3);
+    } else {
+        echo $OUTPUT->heading("{$i}.&nbsp;{$ent->nomlong} (inactif)", 3);
     }
+    $ent->include_help();
+    ++$i;
 }
 
 echo $OUTPUT->footer();

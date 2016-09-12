@@ -33,7 +33,7 @@ $string['mdlauth'] = 'Autre utilisateur';
 //param
 $string['entsyncparam'] = 'Configuration';
 $string['entlist'] = 'ENT disponibles';
-$string['entlist_help'] = 'Vous pouvez activer la connexion avec l\'ENT de votre établissement.<br /><br />
+$string['entlist_help'] = 'Vous pouvez activer ici la connexion avec l\'ENT de votre établissement.<br /><br />
 Plus d\'information sur la procédure de mise en place côté ENT via le lien ci-dessous.';
 $string['entname'] = 'Nom';
 $string['sso'] = 'SSO';
@@ -50,12 +50,15 @@ Aller à <a href=\'{$a}\'>Gestion de l\'authentification</a>';
 $string['paramredirect'] = 'Le paramétrage se fait dans "Utilisateurs de l\'établissement".<br />
 Aller à <a href=\'{$a}\'>Configuration</a>';
 
-//connect help
-$string['entsyncconnecthelp'] = 'Aide sur la mise en place des connecteurs côté ENT';
+//aide ent
+$string['entsyncenthelp'] = 'Aide sur la mise en place des connecteurs ENT';
+$string['entsyncenthelpintro'] = 'Cette page présente l\'aide à la mise en place des connecteurs avec les ENT.<br /><br />
+<b>NOTE</b> : Quel que soit l\'ENT utilisé, vous devez également importer les comptes des élèves et des enseignants de l\'ENT dans Moodle.
+Ceci se fait dans <a href=\'{$a}\'>Importation des utilisateurs</a>. L\'aide concernant les fichiers d\'importation y est également disponible.';
 
 //bulk
 $string['entsyncbulk'] = 'Importation des utilisateurs';
-$string['entsyncbulk_help'] = 'L\'importation permet de mettre à jour la liste des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces (ENT).<br /><br />
+$string['entsyncbulk_help'] = 'L\'importation permet de mettre à jour les comptes des utilisateurs à l\'aide de fichiers obtenus dans les applications tierces (ENT).<br /><br />
 <b>Attention</b>, les utilisateurs qui ne sont plus présents dans les fichiers importés seront archivés puis automatiquement supprimés au bout de 6 mois.<br /><br />
 <b>Note</b> : pour certains ENT, il est possible de combiner plusieurs fichiers du même type en les chargeant successivement avant de procéder à l\'importation.<br />
 Cela est utile si plusieurs structures sont rattachées à ce moodle (dans le cas d\'une cité scolaire, par exemple).';
@@ -93,7 +96,32 @@ $string['entsyncuser_help'] = 'Il est possible de lister les utilisateurs de l\'
 $string['notauthorized'] = 'Authentification {$a->ent} réussie mais l\'utilisateur "{$a->user}" n\'est pas autorisé à accèder à ce moodle.<br />
 Un administrateur peut autoriser l\'utilisateur.';
 
+//comptes locaux
+$string['entlocal'] = 'Comptes locaux';
+$string['entlocal_help'] = 'Activez "Comptes locaux" si votre établissement ne dispose pas d\'un ENT.<br />
+Cela vous permet de créer les comptes utilisateurs pour les élèves et les enseignants en important les fichiers "Siècle".';
+
+//PCN
+$string['entpcn'] = 'PCN';
+$string['entpcn_help'] = 'Activez "PCN" si votre établissement utilise l\'ENT Paris Classe Numérique.<br />
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+
+//lilie
+$string['entmonlyceenet'] = 'Lilie';
+$string['entmonlyceenet_help'] = 'Activez "Lilie" si votre établissement utilise l\'ENT Lilie.<br />
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+    
+//Open ENT NG
+$string['entng'] = 'Open ENT NG';
+$string['entng_help'] = 'Activez "Open ENT NG" si votre établissement utilise l\'ENT Open ENT NG.<br />
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+
 //educ'horus
+$string['enteduchorus'] = 'Educ\'Horus';
+$string['enteduchorus_help'] = 'Activez "Educ\'Horus" si votre établissement utilise Educ\'Horus.<br />
+Des paramètres spécifiques à Educ\'Horus vous seront demandés.<br /> 
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+
 $string['educhoruscashost'] = 'Nom d\'hôte du serveur cas Educ\'Horus';
 $string['educhoruscashost_help'] = 'Habituellement : educhorus.enteduc.fr';
 $string['educhoruscaspath'] = 'URI de base';

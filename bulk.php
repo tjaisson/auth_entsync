@@ -157,6 +157,7 @@ if ($formdata = $mform->get_data()) {
                 'nbusers' => $report->addedusers
             ]);
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
+            var_dump($ius);
         } else {
             // il y a eu une erreur
             $progress->end_progress();

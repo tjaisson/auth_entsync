@@ -92,7 +92,8 @@ class admin_entparam_form extends moodleform {
                 $yn = $txt2->no;
             }
             
-            $row = new html_table_row([$ent->nomlong, $hideshow, $yn, $ent->get_connector_url()]);
+            $helpname = $ent->nomlong . $OUTPUT->help_icon("ent{$ent->get_entclass()}",'auth_entsync'); 
+            $row = new html_table_row([$helpname, $hideshow, $yn, $ent->get_connector_url()]);
             if ($class) {
                 $row->attributes['class'] = $class;
             }

@@ -398,18 +398,12 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class auth_entsync_parser_sts extends auth_entsync_parser_XML {
-    private $match = ['lastname' => 'NOM_DE_FAMILLE', 'firstname' => 'PRENOM'];
+    private $match = ['lastname' => 'NOM_USAGE', 'firstname' => 'PRENOM', 'fct' => 'FONCTION'];
     public function on_open($parser, $name, $attribs) {
         switch($name) {
-            case 'ELEVE' :
+            case 'INDIVIDU' :
                 $this->_record = new stdClass();
-                $this->_record->uid = 'STS.' . $attribs['ELEVE_ID'];
-                $this->match = $this->match1;
-                return;
-            case 'STRUCTURES_ELEVE' :
-                $this->_record = new stdClass();
-                $this->_record->uid = $attribs['ELEVE_ID'];
-                $this->match = $this->match2;
+                $this->_record->uid = 'STS.' . $attribs['ID'];
                 return;
         }
 
@@ -424,27 +418,22 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
     public function on_close($parser, $name) {
         $this->_field = '';
         switch($name) {
-            case 'ELEVE' :
+            case 'INDIVIDU' :
                 $this->add_iu($this->_record);
                 unset($this->_record);
                 $this->_progressreporter->progress();
                 return;
-            case 'STRUCTURES_ELEVE' :
-                if(array_key_exists($this->_record->uid, $this->_buffer)) {
-                    $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
-                    $this->_progressreporter->progress();
-                }
-                unset($this->_record);
-                return;
         }
     }
+
     protected function afterparse() {
         $lst = $this->_buffer;
         $this->_buffer = array();
         $this->_report->addedusers = 0;
         while($lst) {
             $iu = array_pop($lst);
-            if(!empty($iu->cohortname)) {
+            if(!empty($iu->fct) && ($iu->fct == 'ENS')) {
+                unset($iu->fct);
                 ++$this->_report->addedusers;
                 array_push($this->_buffer, $iu);
             }

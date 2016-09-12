@@ -317,8 +317,8 @@ abstract class auth_entsync_ent_base {
         }
     }
     
-    public function include_connecthelp() {
-        $_helphtml = __DIR__ . "/help/{$this->_entclass}_connecthelp.php";
+    public function include_help() {
+        $_helphtml = __DIR__ . "/help/{$this->_entclass}_help.php";
         if(file_exists($_helphtml)) {
             include($_helphtml);
         } else {
