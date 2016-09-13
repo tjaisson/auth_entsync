@@ -56,6 +56,7 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         $cp['hostname'] = $hn;
         $cp['baseuri'] = "/{$uri}/cas/";
         $cp['decodecallback'] = [$this, 'decodecallback'];
+        $cp['homeuri'] = "/{$uri}/";
         return $cp;
     }
     

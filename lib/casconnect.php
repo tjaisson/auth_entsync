@@ -68,7 +68,9 @@ class auth_entsync_casconnect {
         if(! array_key_exists('casversion', $this->_casparams)) $this->_casparams['casversion'] = '2.0';
         if(! array_key_exists('port', $this->_casparams)) $this->_casparams['port'] = 443;
         if(! array_key_exists('supportGW', $this->_casparams)) $this->_casparams['supportGW'] = false;
-        if(! array_key_exists('redirecturi', $this->_casparams)) $this->_casparams['redirecturi'] = '/';
+        if(! array_key_exists('homeuri', $this->_casparams)) $this->_casparams['homeuri'] = '/';
+        if(! array_key_exists('homehost', $this->_casparams))
+            $this->_casparams['homehost'] = $this->_casparams['hostname'];
     }
     
     public function support_gw() {
@@ -80,9 +82,12 @@ class auth_entsync_casconnect {
     }
     
     public function  redirtohome() {
-        redirect('https://' . $this->_casparams['hostname'] . $this->_casparams['redirecturi']);
+        redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
     }
     
+    /**
+     * @return boolean
+     */
     public function read_ticket() {
         $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
         if (preg_match('/^[SP]T-/', $ticket) ) {
@@ -120,7 +125,7 @@ class auth_entsync_casconnect {
             return false;
         }
         
-        $valurl  = $this->buildvalidateurl($this->_ticket);
+        $valurl  = $this->buildvalidateurl()->out(false);
         
         $cu = new curl();
         
@@ -185,11 +190,16 @@ class auth_entsync_casconnect {
     
     public function buildloginurl($gw = false)
     {
-        //return $this->_buildQueryUrl($this->_getServerBaseURL().'login','service='. urlencode($this->getURL()));
-        return $this->_buildQueryUrl($this->_getServerBaseURL().'login','service='. urlencode($this->_clienturl->out(false)));
+        $param = ['service' => $this->_clienturl->out(false)];
+        var_dump($param);
+        if($gw) $param['gateway'] = 'true';
+        return new moodle_url($this->_getServerBaseURL().'login', $param);
     }
     
-    protected function buildvalidateurl($ticket) {
+    /**
+     * @return moodle_url
+     */
+    protected function buildvalidateurl() {
         $ret =  $this->_getServerBaseURL();       
         switch ($this->_casparams['casversion']) {
             case '1.0':
@@ -202,12 +212,11 @@ class auth_entsync_casconnect {
                 $ret .= 'p3/serviceValidate';
                 break;
             default:
-                return false;
+                $ret .= 'serviceValidate';
+                break;
         }
-        //$ret  = $this->_buildQueryUrl($ret, 'service='.urlencode($this->getURL()));
-        $ret  = $this->_buildQueryUrl($ret, 'service='.urlencode($this->_clienturl->out(false)));
-        $ret .= '&ticket=' . urlencode($ticket);
-        return $ret;
+        $param = ['service' => $this->_clienturl->out(false), 'ticket' => $this->_ticket];
+        return new moodle_url($ret, $param);
     }
 
     protected function getURL()

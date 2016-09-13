@@ -189,16 +189,17 @@ class auth_plugin_entsync extends auth_plugin_base {
     }
     
     public function postlogout_hook($user) {
+        global $CFG;
         if(($user->auth == 'entsync') && isset($user->entsync)) {
             $ent = auth_entsync_ent_base::get_ent($user->entsync);
             if($ent->get_mode() == 'cas') {
                 $cas = $ent->get_casconnector();
                 if($cas->support_gw()) {
-                    $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php", ['ent' => $entclass]);
+                    $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php", ['ent' => $ent->get_entclass()]);
                     $cas->set_clienturl($clienturl);
                     $cas->redirtocas(true);
                 } else {
-                    
+                    $cas->redirtohome();
                 }
             }
             

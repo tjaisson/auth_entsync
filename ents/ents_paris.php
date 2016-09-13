@@ -191,7 +191,7 @@ class  auth_entsync_ent_ng extends auth_entsync_entcas {
         return [
         'hostname' => 'ent-ng.paris.fr',
         'baseuri' => '/cas/',
-        'redirecturi' => '/',
+        'homeuri' => '/',
         'supportGW' => false
         ];
     }
