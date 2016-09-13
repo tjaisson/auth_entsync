@@ -57,7 +57,7 @@ if(!$ent = auth_entsync_ent_base::get_ent($entclass)) {
 }
 
 if(!$ent->is_sso()) {
-    //si ce nn'est pas sso, l'authentification ne passe pas par là
+    //si ce n'est pas sso, l'authentification ne passe pas par là
     printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
 }
     
@@ -74,7 +74,8 @@ if($ent->get_mode() !== 'cas') {
 }
 
 $cas = $ent->get_casconnector();
-
+$clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/login.php", ['ent' => $entclass]);
+$cas->set_clienturl($clienturl);
 
 if($val = $cas->validateorredirect()) {
     if(!$entu = $DB->get_record('auth_entsync_user',
@@ -105,6 +106,8 @@ if($val = $cas->validateorredirect()) {
         \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
 
         //TODO : ajouter dans $USER que c'est un sso et quel est l'ent. Au log out, rediriger vers l'ent.
+        $USER->entsync = $ent->get_code();
+        
         
         $urltogo = core_login_get_return_url();
         if(strstr($urltogo, 'entsync')) {

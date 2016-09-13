@@ -47,9 +47,9 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
 
     public function get_casparams() {
         $cp = [
-            'retries' => 20
+            'retries' => 20,
+            'supportGW' => true
         ];
-        //TODO : déterminer le RNE.
         $settings = $this->get_settings();
         $hn = $settings['cashost'];
         $uri = $settings['caspath'];

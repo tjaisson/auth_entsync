@@ -178,7 +178,7 @@ class auth_plugin_entsync extends auth_plugin_base {
             if($ent->is_enabled() && $ent->is_sso()) {
                 $entclass = $ent->get_entclass();
                 $lst[] = [
-                    'url' => new moodle_url("{$CFG->wwwroot}/auth/entsync/login.php?ent={$entclass}"),
+                    'url' => new moodle_url("{$CFG->wwwroot}/auth/entsync/login.php", ['ent' => $entclass]),
                     'name' => $ent->nomlong,
                     'icon' => $ent->get_icon()
                 ];
@@ -187,6 +187,24 @@ class auth_plugin_entsync extends auth_plugin_base {
         
         return $lst;
     }
+    
+    public function postlogout_hook($user) {
+        if(($user->auth == 'entsync') && isset($user->entsync)) {
+            $ent = auth_entsync_ent_base::get_ent($user->entsync);
+            if($ent->get_mode() == 'cas') {
+                $cas = $ent->get_casconnector();
+                if($cas->support_gw()) {
+                    $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php", ['ent' => $entclass]);
+                    $cas->set_clienturl($clienturl);
+                    $cas->redirtocas(true);
+                } else {
+                    
+                }
+            }
+            
+        }
+    }
+    
     
 }
 

@@ -48,7 +48,8 @@ class  auth_entsync_ent_monlyceenet extends auth_entsync_entcas {
     public function get_casparams() {
         return [
         'hostname' => 'ent.iledefrance.fr',
-        'baseuri' => '/connexion/'
+        'baseuri' => '/connexion/',
+        'supportGW' => true
         ];
     }
     
@@ -113,7 +114,8 @@ class  auth_entsync_ent_pcn extends auth_entsync_entcas {
     public function get_casparams() {
         return [
         'hostname' => 'www.parisclassenumerique.fr',
-        'baseuri' => '/connexion/'
+        'baseuri' => '/connexion/',
+        'supportGW' => true
         ];
     }
 
@@ -188,7 +190,9 @@ class  auth_entsync_ent_ng extends auth_entsync_entcas {
     public function get_casparams() {
         return [
         'hostname' => 'ent-ng.paris.fr',
-        'baseuri' => '/cas/'
+        'baseuri' => '/cas/',
+        'redirecturi' => '/',
+        'supportGW' => false
         ];
     }
 

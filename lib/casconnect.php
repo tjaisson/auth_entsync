@@ -50,6 +50,13 @@ class auth_entsync_casconnect {
     protected $_casparams;
     
     /**
+     * @var moodle_url
+     */
+    protected $_clienturl;
+    
+    protected $_ticket;
+    
+    /**
      * Constructor.
      */
     public function __construct() {
@@ -60,6 +67,33 @@ class auth_entsync_casconnect {
         if(! array_key_exists('retries', $this->_casparams)) $this->_casparams['retries'] = 0;
         if(! array_key_exists('casversion', $this->_casparams)) $this->_casparams['casversion'] = '2.0';
         if(! array_key_exists('port', $this->_casparams)) $this->_casparams['port'] = 443;
+        if(! array_key_exists('supportGW', $this->_casparams)) $this->_casparams['supportGW'] = false;
+        if(! array_key_exists('redirecturi', $this->_casparams)) $this->_casparams['redirecturi'] = '/';
+    }
+    
+    public function support_gw() {
+        return $this->_casparams['supportGW'];
+    }
+    
+    public function  redirtocas($gw = false) {
+        redirect($this->buildloginurl($gw));
+    }
+    
+    public function  redirtohome() {
+        redirect('https://' . $this->_casparams['hostname'] . $this->_casparams['redirecturi']);
+    }
+    
+    public function read_ticket() {
+        $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
+        if (preg_match('/^[SP]T-/', $ticket) ) {
+            unset($_GET['ticket']);
+            $this->_ticket = $ticket;
+            return true;
+        } else {
+            //pas de ticket
+            unset($this->_ticket);
+            return false;
+        }
     }
     
     /**
@@ -72,17 +106,21 @@ class auth_entsync_casconnect {
     }
 
     public function validateorredirect() {
-        $this->_error = '';
-        $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
-        if (preg_match('/^[SP]T-/', $ticket) ) {
-            unset($_GET['ticket']);
+        if($this->read_ticket()) {
+            return $this->validate_ticket();
         } else {
-            //pas de ticket, on redirige
-            redirect($this->buildloginurl());
+            $this->redirtocas();
+        }
+    }
+    
+    public function validate_ticket() {
+        $this->_error = '';
+        if(!isset($this->_ticket)) {
+            $this->_error = 'Erreur.';
             return false;
         }
         
-        $valurl  = $this->buildvalidateurl($ticket);
+        $valurl  = $this->buildvalidateurl($this->_ticket);
         
         $cu = new curl();
         
@@ -145,9 +183,10 @@ class auth_entsync_casconnect {
         return false;
     }
     
-    public function buildloginurl()
+    public function buildloginurl($gw = false)
     {
-        return $this->_buildQueryUrl($this->_getServerBaseURL().'login','service='.urlencode($this->getURL()));
+        //return $this->_buildQueryUrl($this->_getServerBaseURL().'login','service='. urlencode($this->getURL()));
+        return $this->_buildQueryUrl($this->_getServerBaseURL().'login','service='. urlencode($this->_clienturl->out(false)));
     }
     
     protected function buildvalidateurl($ticket) {
@@ -165,14 +204,15 @@ class auth_entsync_casconnect {
             default:
                 return false;
         }
-        $ret  = $this->_buildQueryUrl($ret, 'service='.urlencode($this->getURL()));
+        //$ret  = $this->_buildQueryUrl($ret, 'service='.urlencode($this->getURL()));
+        $ret  = $this->_buildQueryUrl($ret, 'service='.urlencode($this->_clienturl->out(false)));
         $ret .= '&ticket=' . urlencode($ticket);
         return $ret;
     }
 
     protected function getURL()
     {
-            $final_uri = '';
+        $final_uri = '';
             // remove the ticket if present in the URL
             $final_uri = ($this->_isHttps()) ? 'https' : 'http';
             $final_uri .= '://';
@@ -232,6 +272,14 @@ class auth_entsync_casconnect {
             } else {
                 return false;
             }
+    }
+    
+    /**
+     * @param moodle_url $url
+     */
+    public function set_clienturl($url) {
+        $this->_clienturl = $url;
+        
     }
     
     protected function _getClientUrl()
