@@ -4,12 +4,17 @@ require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib/locallib.php');
 require_once $CFG->libdir.'/formslib.php';
 
+$url = new moodle_url('/');
+$PAGE->set_url($url);
+unset($url);
+$PAGE->set_pagelayout('admin');
+$PAGE->set_context(context_system::instance());
 
 class myform extends moodleform  {
     function definition () {
         $mform = $this->_form;
         $mform->addElement('text', 'champ', 'champ');
-        $mform->setType($elemname, PARAM_TEXT);
+        $mform->setType('champ', PARAM_TEXT);
         $this->add_action_buttons();
     }
 }
@@ -23,8 +28,9 @@ if($data = $form->get_data()) {
 }
 
 
-$txt2 = simplify_name($txt);
+$txt2 = auth_entsync_stringhelper::simplify_name($txt);
 
+$txt3 = auth_entsync_stringhelper::simplify_name2($txt);
 
 
 
@@ -32,6 +38,7 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading('test');
 echo "<pre>$txt</pre>";
 echo "<pre>$txt2</pre>";
+echo "<pre>$txt3</pre>";
 $form->display();
 echo $OUTPUT->footer();
 

@@ -530,11 +530,12 @@ class auth_entsync_sync_local extends auth_entsync_sync {
     protected function validate_user($iu) {
         return (!empty($iu->firstname)) && (!empty($iu->lastname));
     }
+
     protected function applycreds($_mdlu, $iu) {
         global $CFG, $DB;
         $_mdlu->isdirty = true;
         $_fn = core_text::substr(simplify_name($iu->firstname),0,1);
-        $_ln = simplify_name($iu->lastname);
+        $_ln = auth_entsync_stringhelper::simplify_name($iu->lastname);
         $clean = core_user::clean_field($_fn . $_ln, 'username');
         if(0 === $DB->count_records('user', ['username' => $clean])) {
             $_mdlu->username = $clean;
@@ -546,7 +547,7 @@ class auth_entsync_sync_local extends auth_entsync_sync {
             $_mdlu->username = $clean . $i;
         }
         $_mdlu->mnethostid = $CFG->mnet_localhost_id;
-        $pw = rnd_string();
+        $pw = auth_entsync_stringhelper::rnd_string();
         $_mdlu->password = "entsync\\{$pw}";
     }
 
