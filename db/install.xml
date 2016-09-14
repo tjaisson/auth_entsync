@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="auth/entsync/db" VERSION="20160906" COMMENT="XMLDB file for Moodle auth/entsync plugin"
+<XMLDB PATH="auth/entsync/db" VERSION="20160914" COMMENT="XMLDB file for Moodle auth/entsync plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -22,7 +22,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="true" FIELDS="userid, ent"/>
-        <INDEX NAME="uid" UNIQUE="true" FIELDS="ent, uid"/>
+        <INDEX NAME="uid" UNIQUE="false" FIELDS="ent, uid"/>
       </INDEXES>
     </TABLE>
   </TABLES>

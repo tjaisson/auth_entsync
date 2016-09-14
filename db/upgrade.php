@@ -51,7 +51,28 @@ function xmldb_auth_entsync_upgrade($oldversion) {
 	    upgrade_plugin_savepoint(true, 2016090700, 'auth', 'entsync');
 	}
 	
+	if ($oldversion < 2016091400) {
 	
+	    // Define index uid (unique) to be dropped form auth_entsync_user.
+	    $table = new xmldb_table('auth_entsync_user');
+	    $index = new xmldb_index('uid', XMLDB_INDEX_UNIQUE, array('ent', 'uid'));
+	
+	    // Conditionally launch drop index uid.
+	    if ($dbman->index_exists($table, $index)) {
+	        $dbman->drop_index($table, $index);
+	    }
+	    
+	    $index = new xmldb_index('uid', XMLDB_INDEX_NOTUNIQUE, array('ent', 'uid'));
+	    
+	    // Conditionally launch add index uid.
+	    if (!$dbman->index_exists($table, $index)) {
+	        $dbman->add_index($table, $index);
+	    }
+	     
+	
+	    // Entsync savepoint reached.
+	    upgrade_plugin_savepoint(true, 2016091400, 'auth', 'entsync');
+	}
 	
 	
     return true;
