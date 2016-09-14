@@ -104,7 +104,7 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
 
 	echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
 	echo $msg;
-	var_dump($report);
+//	var_dump($report);
 	echo $OUTPUT->continue_button($returnurl);
 	echo $OUTPUT->footer();
 	die;
@@ -157,7 +157,7 @@ if ($formdata = $mform->get_data()) {
                 'nbusers' => $report->addedusers
             ]);
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
-            var_dump($ius);
+//            var_dump($ius);
         } else {
             // il y a eu une erreur
             $progress->end_progress();
