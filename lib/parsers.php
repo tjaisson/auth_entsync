@@ -320,7 +320,6 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
     public abstract function on_open($parser, $name, $attribs); 
     public abstract function on_close($parser, $name);
     protected function afterparse() {
-        
     }
 }
 
@@ -340,7 +339,8 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
         switch($name) {
             case 'ELEVE' :
                 $this->_record = new stdClass();
-                $this->_record->uid = 'BEE.' . $attribs['ELEVE_ID'];
+//                $this->_record->uid = 'BEE.' . $attribs['ELEVE_ID'];
+                $this->_record->uid = $attribs['ELEVE_ID'];
                 $this->match = $this->match1;
                 return;
             case 'STRUCTURES_ELEVE' :
@@ -375,6 +375,7 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
                 return;
         }
     }
+
     protected function afterparse() {
         $lst = $this->_buffer;
         $this->_buffer = array();
@@ -382,15 +383,20 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
         while($lst) {
             $iu = array_pop($lst);
             if(!empty($iu->cohortname)) {
+                $iu->cohortname = trim($iu->cohortname);
+                if(!empty($iu->firstname)) $iu->firstname = trim($iu->firstname);
+                if(!empty($iu->lastname)) $iu->lastname = trim($iu->lastname);
+                $iu->uid =  'BEE.' . $iu->uid;
+                $iu->profile = 1;
                 ++$this->_report->addedusers;
-                array_push($this->_buffer, $iu);
+                $this->_buffer[$iu->uid] = $iu;
             }
         }
     }
 }
 
 /**
- * Classe pour parser les XML BEE.
+ * Classe pour parser les XML STS.
  *
  *
  * @package   auth_entsync
@@ -403,7 +409,7 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
         switch($name) {
             case 'INDIVIDU' :
                 $this->_record = new stdClass();
-                $this->_record->uid = 'STS.' . $attribs['ID'];
+                $this->_record->uid = $attribs['ID'];
                 return;
         }
 
@@ -434,8 +440,12 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
             $iu = array_pop($lst);
             if(!empty($iu->fct) && ($iu->fct == 'ENS')) {
                 unset($iu->fct);
+                if(!empty($iu->firstname)) $iu->firstname = trim($iu->firstname);
+                if(!empty($iu->lastname)) $iu->lastname = trim($iu->lastname);
+                $iu->uid =  'STS.' . $iu->uid;
+                $iu->profile = 2;
                 ++$this->_report->addedusers;
-                array_push($this->_buffer, $iu);
+                $this->_buffer[$iu->uid] = $iu;
             }
         }
     }

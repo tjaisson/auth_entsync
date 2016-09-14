@@ -76,5 +76,9 @@ class  auth_entsync_ent_local extends auth_entsync_ent_base {
     public function get_connector_url() {
         return "";
     }
+
+    public function accept_multifile($filetype) {
+        return true;
+    }
     
 }

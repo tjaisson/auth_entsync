@@ -411,7 +411,7 @@ abstract class auth_entsync_sync {
                 }
                 //si $mdlu n'est pas là -> recherche par nom prenom
                 return [$entu, $this->lookforuserbynames($iu)];
-                       
+
             } else {
                 //même ent mais autre profil
                 //ne devrait pas se produire
@@ -423,7 +423,7 @@ abstract class auth_entsync_sync {
             return [false, $this->lookforuserbynames($iu)];
         }
     }
-	
+
     protected function lookforuserbynames($iu) {
         global $DB, $CFG;
         if(!$this->_otherlookup) {
@@ -467,7 +467,7 @@ abstract class auth_entsync_sync {
         ++$this->_report->multinames;
         return false;
     }
-    
+
     /**
      * Valide si l'utilisateur est importable
      *
@@ -491,7 +491,7 @@ class auth_entsync_sync_cas extends auth_entsync_sync {
         if(empty($iu->uid)) return false;
         return true;
     }
-    
+
     protected function applycreds($_mdlu, $iu) {
         global $DB, $CFG;
 	    $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}";
@@ -507,7 +507,7 @@ class auth_entsync_sync_cas extends auth_entsync_sync {
 	            $_mdlu->username = $clean . $i;
 	        }
 	    }
-	    
+
 	    $_mdlu->mnethostid = $CFG->mnet_localhost_id;
 	    $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
 	}
@@ -531,11 +531,22 @@ class auth_entsync_sync_local extends auth_entsync_sync {
         return (!empty($iu->firstname)) && (!empty($iu->lastname));
     }
     protected function applycreds($_mdlu, $iu) {
-        global $CFG;
+        global $CFG, $DB;
         $_mdlu->isdirty = true;
-//      TODO :  $_mdlu->username = create
-        $_mdlu-> $CFG->mnet_localhost_id;
-//      TODO :  $pw = create;
+        $_fn = core_text::substr(simplify_name($iu->firstname),0,1);
+        $_ln = simplify_name($iu->lastname);
+        $clean = core_user::clean_field($_fn . $_ln, 'username');
+        if(0 === $DB->count_records('user', ['username' => $clean])) {
+            $_mdlu->username = $clean;
+        } else {
+            $i = 1;
+            while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
+                ++$i;
+            }
+            $_mdlu->username = $clean . $i;
+        }
+        $_mdlu->mnethostid = $CFG->mnet_localhost_id;
+        $pw = rnd_string();
         $_mdlu->password = "entsync\\{$pw}";
     }
 

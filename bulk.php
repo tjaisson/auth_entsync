@@ -139,7 +139,6 @@ if ($formdata = $mform->get_data()) {
         $progress->start_progress('', 2);
         $ius= $fileparser->parse($filename, $mform->get_file_content('userfile'));
         
-        
         if ($ius) {
             // le chargement s'est bien passé
             $report = $fileparser->get_report();
@@ -160,9 +159,13 @@ if ($formdata = $mform->get_data()) {
 //            var_dump($ius);
         } else {
             // il y a eu une erreur
+            if($ius === false) {
+                $parseerror = $fileparser->get_error();
+                $msg = "Erreur de chargement du fichier. $parseerror";
+            } else {
+                $msg = 'Aucun utilisateur trouvé.';
+            }
             $progress->end_progress();
-            $parseerror = $fileparser->get_error();
-            $msg = "Erreur de chargement. $parseerror";
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
         }
 	} else {
