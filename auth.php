@@ -32,11 +32,19 @@ require_once('ent_defs.php');
  */
 class auth_plugin_entsync extends auth_plugin_base {
     
+    private $locked = ['firstname', 'lastname', 'email'];
+    
     /**
      * Constructor.
      */
     public function __construct() {
         $this->authtype = 'entsync';
+        $this->config = new stdClass();
+        $locked = ['firstname', 'lastname', 'email'];
+        foreach($this->locked as $field) {
+            $cfgname = "field_lock_{$field}";
+            $this->config->{$cfgname} =  'locked';
+        }
     }
 
     /**
@@ -115,7 +123,6 @@ class auth_plugin_entsync extends auth_plugin_base {
      */
     function user_update($olduser, $newuser) {
         //override if needed
-        unset($newuser->username);
         return true;
     }
 

@@ -191,6 +191,7 @@ abstract class auth_entsync_sync {
             $_mdlu->lastname = $iu->lastname;
             $_mdlu->email = $this->get_fakeemail($iu->profile);
             $_mdlu->emailstop = 1;
+            $_mdlu->lang = 'fr';
             unset($_mdlu->isdirty);
             $_mdlu->id = user_create_user($_mdlu, false, true);
             ++$this->_report->created;

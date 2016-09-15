@@ -141,7 +141,7 @@ abstract class auth_entsync_ent_base {
         if(!self::ent_exists($entcode)) return false;
         return in_array($entcode, self::$_enabledents);
     }
-    
+
     public static function enable_ent($entcode){
         // add to enabled list
         if(!self::ent_exists($entcode)) return;
