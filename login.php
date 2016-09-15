@@ -73,7 +73,9 @@ if($ent->get_mode() !== 'cas') {
     printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
 }
 
-$cas = $ent->get_casconnector();
+if(!$cas = $ent->get_casconnector()) {
+    printerrorpage("Connecteur {$ent->nomlong} non configuré", \core\output\notification::NOTIFY_ERROR);;
+}
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/login.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
 

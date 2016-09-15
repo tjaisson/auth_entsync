@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 class auth_entsync_stringhelper {
-    public static function rnd_string($length = 5) {
-        $characters = 'abcdefghijklmnopqrstuvwxyz';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
+
+    private static $lettres = 'abcdefghijkmnpqrstuvwxyz';
+    
+    public static function rnd_string() {
+        return self::$lettres[rand(0, 23)]
+        . rand(1, 9)
+        . self::$lettres[rand(0, 23)]
+        . rand(1, 9) . rand(0, 9);
     }
     
     private static $translit;

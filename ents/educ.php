@@ -141,4 +141,10 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         $mform->addHelpButton($elemname, 'educhoruscaspath', 'auth_entsync');
         
     }
+
+    public function get_casconnector() {
+        $conf = $this->get_settings();
+        if($conf['caspath'] == '') return false;
+        return parent::get_casconnector();
+    }
 }
