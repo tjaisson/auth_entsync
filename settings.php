@@ -29,7 +29,7 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_heading('entsync/head', new lang_string('settings'),
         new lang_string('paramredirect', 'auth_entsync', "{$CFG->wwwroot}/auth/entsync/param.php")));
 
-	$ADMIN->add('accounts', new admin_category('entsynccat', new lang_string('enttool', 'auth_entsync')));
+	$ADMIN->add('users', new admin_category('entsynccat', new lang_string('enttool', 'auth_entsync')));
 	$ADMIN->add('entsynccat', new admin_externalpage('authentsyncparam', new lang_string('entsyncparam', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/param.php", 'moodle/site:config'));
 	if(is_enabled_auth('entsync')) {
 	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncbulk', new lang_string('entsyncbulk', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/bulk.php", 'moodle/site:uploadusers'));

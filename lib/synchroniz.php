@@ -535,7 +535,7 @@ class auth_entsync_sync_local extends auth_entsync_sync {
     protected function applycreds($_mdlu, $iu) {
         global $CFG, $DB;
         $_mdlu->isdirty = true;
-        $_fn = core_text::substr(simplify_name($iu->firstname),0,1);
+        $_fn = core_text::substr(auth_entsync_stringhelper::simplify_name($iu->firstname),0,1);
         $_ln = auth_entsync_stringhelper::simplify_name($iu->lastname);
         $clean = core_user::clean_field($_fn . $_ln, 'username');
         if(0 === $DB->count_records('user', ['username' => $clean])) {

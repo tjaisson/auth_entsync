@@ -30,7 +30,6 @@ if($data = $form->get_data()) {
 
 $txt2 = auth_entsync_stringhelper::simplify_name($txt);
 
-$txt3 = auth_entsync_stringhelper::simplify_name2($txt);
 
 
 
@@ -38,7 +37,6 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading('test');
 echo "<pre>$txt</pre>";
 echo "<pre>$txt2</pre>";
-echo "<pre>$txt3</pre>";
 $form->display();
 echo $OUTPUT->footer();
 
