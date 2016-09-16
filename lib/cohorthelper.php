@@ -46,7 +46,7 @@ class auth_entsync_cohorthelper {
         self::$_cohortsbyid = array();
         $_prfx_len = strlen(self::COHORT_PRFX);
         self::$_cohortsbyid = array();
-        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'], '', 'id, idnumber');
+        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'], "SUBSTRING(idnumber, {$_prfx_len})", 'id, idnumber');
         foreach ($lst as $id => $c) {
             $id = (int)$id;
             if(0 === strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {

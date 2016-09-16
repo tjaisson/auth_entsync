@@ -15,12 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Link to CSV user upload
+ * Gestion des utilisateurs.
  *
- * @package    tool
- * @subpackage uploaduser
- * @copyright  2010 Petr Skoda {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package auth_entsync
+ * @copyright 2016 Thomas Jaisson
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
 defined('MOODLE_INTERNAL') || die;
@@ -33,6 +32,6 @@ if ($hassiteconfig) {
 	$ADMIN->add('entsynccat', new admin_externalpage('authentsyncparam', new lang_string('entsyncparam', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/param.php", 'moodle/site:config'));
 	if(is_enabled_auth('entsync')) {
 	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncbulk', new lang_string('entsyncbulk', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/bulk.php", 'moodle/site:uploadusers'));
-	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncuser', new lang_string('entsyncuser', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/user.php", 'moodle/user:viewdetails'));
+	   $ADMIN->add('entsynccat', new admin_externalpage('authentsyncuser', new lang_string('entsyncuser', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/users.php", 'moodle/user:viewdetails'));
 	}
 }
