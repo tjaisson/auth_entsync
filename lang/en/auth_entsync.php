@@ -79,6 +79,9 @@ $string['entsyncfilehelp'] = 'How to retrieve users files';
 $string['entsyncuser'] = 'Users list';
 $string['entsyncuser_help'] = 'Users list';
 
+//task
+$string['garbage'] = 'ENTSYNC Clean up';
+
 //login
 $string['notauthorized'] = '{$a->ent} authentication succeded but user "{$a->user}" is not alloved on this moodle.<br />
 An administrator can allow this user.';

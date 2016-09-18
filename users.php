@@ -35,50 +35,127 @@ require_login();
 admin_externalpage_setup('authentsyncuser');
 require_capability('moodle/user:viewdetails', context_system::instance());
 
-$profile = optional_param('profile', -1, PARAM_INT);
-$cohort =  optional_param('cohort', -1, PARAM_INT);
-
-
-
 class user_select_form extends moodleform {
     function definition () {
         $mform = $this->_form;
-        $mform->addElement('header', 'eleves', 'Eleves');
+        $mform->addElement('header', 'filter', get_string('choose'));
+        $this->_form->setExpanded('filter');
         $cllst = auth_entsync_cohorthelper::get_cohorts();
-        $mform->addElement('select', 'cohort', 'classe', $cllst);
+        $grp=array();
+        $grp[] = $mform->createElement('select', 'cohort', 'classe', $cllst);
+        $grp[] = $mform->createElement('submit', 'dispelev', '> '. get_string('show'));
+        $mform->addGroup($grp, 'elev', 'Elèves de', array(' '), false);
         $mform->setType('cohort', PARAM_INT);
-        $mform->addElement('submit', 'dispelev', 'Afficher');
         
-        $mform->addElement('header', 'profs', 'Profs');
-        $mform->addElement('submit', 'dispprof', 'Afficher');
+        $grp=array();
+        $grp[] = $mform->createElement('submit', 'dispprof', '> '. get_string('show'));
+        $grp[] = $mform->createElement('html', '');
+        $mform->addGroup($grp, 'ens', 'Enseignants', array(' '), false);
+    }
+    
+    function collapse(){
+        $this->_form->setExpanded('filter', false, true);
     }
 }
 
 
 $form = new user_select_form();
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading_with_help(get_string('entsyncuser', 'auth_entsync'), 'entsyncuser', 'auth_entsync');
-$form->display();
-
-$t = new html_table();
-$t->head = [get_string('firstname'), get_string('lastname'), get_string('username'), get_string('password')];
-
-$lst = auth_entsync_usertbl::get_users_ent_elev(3);
-foreach($lst as $u) {
-    if($u->local === '0') { 
-        $u->username = '';
-        $u->password = '';
-    } else {
-        if(!isset($u->password)) $u->password = '&bull;&bull;&bull;&bull;&bull;';
+if ($formdata = $form->get_data()) {
+    if(isset($formdata->dispelev)) {
+        $profile = 1;
+        $cohort = $formdata->cohort;
+    } else if(isset($formdata->dispprof)) {
+        $profile = 2;
     }
-    $t->data[] = new html_table_row([$u->firstname, $u->lastname, $u->username, $u->password]);
+} else {
+    $resetpw  = optional_param('resetpw', 0, PARAM_INT);
+    $confirm  = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
+    $profile  = optional_param('profile', 0, PARAM_INT);
+    $cohort   = optional_param('cohort', 0, PARAM_INT);
 }
 
+$returnurl = new moodle_url('/auth/entsync/user.php', ['profile' => $profile, 'cohort' => $cohort]);
 
-echo html_writer::table($t);
 
-//echo "<pre>$ret</pre>";
+
+$lst = null;
+$cbquery = '&amp;cb=users&amp;profile=';
+
+if(($profile === 1) && ($cohort > 0)) {
+    $lst = auth_entsync_usertbl::get_users_ent_elev($cohortid);
+    $cohort = auth_entsync_cohorthelper::get_cohorts()[$cohortid];
+    $ttl = "Elèves de {$cohort} :";
+    $cbquery .= "1&amp;cohort={$cohort}";
+} else if ($profile === 2) {
+    $lst = auth_entsync_usertbl::get_users_ent_ens();
+    $ttl = "Enseignants :";
+    $cbquery .= '2';
+}
+
+if($lst) {
+    $t = new html_table();
+    $t->head = [get_string('firstname'), get_string('lastname')];
+//icon
+    $reset = $OUTPUT->pix_icon('t/reset', get_string('reset'));
+    $approve = $OUTPUT->pix_icon('t/approve', get_string('yes'));
+    $block = $OUTPUT->pix_icon('t/block', get_string('no'));
+    
+    
+    $entheads = array();
+    $entfields = array();
+    $haslocalent = false;
+    foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
+        if($ent->is_enabled()) {
+            if($ent->get_mode() === 'local') $haslocalent = true;
+            $entheads[] = $ent->nomcourt;
+            $entfields[] = "ent{$entcode}";
+        }
+    }
+    if($haslocalent) {
+        $t->head[] = get_string('username');
+        $t->head[] = get_string('password');
+    }
+    foreach($entheads as $entname) {
+        $t->head[] = $entname;
+    }
+
+    $reseturl = 'resetpw.php?sesskey=' . sesskey() . $cbquery;
+
+    foreach($lst as $u) {
+        if($u->local === '0') { 
+            $u->username = '-';
+            $u->password = '-';
+        } else {
+            if(!isset($u->password)) $u->password =
+            "&bull;&bull;&bull;&bull;&bull;
+            <a href = \"{$reseturl}&amp;resetpw={$u->id}\">
+            {$reset}</a>";
+        }
+        $row = [$u->firstname, $u->lastname];
+        if($haslocalent) {
+            $row[] = $u->username;
+            $row[] = $u->password;
+        }
+        foreach($entfields as $field) {
+            if($u->{$field} === '1') {
+                $row[] = $approve;
+            } else {
+                $row[] = $block;
+            }
+        }
+        $t->data[] = new html_table_row($row);
+        $form->collapse();
+    }
+}
+echo $OUTPUT->header();
+
+$form->display();
+// echo "<pre>hello</pre>";
+if($lst) {
+    echo $OUTPUT->heading($ttl);
+    echo html_writer::table($t);
+}
 echo $OUTPUT->footer();
 
 

@@ -92,6 +92,9 @@ $string['entsyncfilehelp'] = 'Comment obtenir les fichiers utilisateurs dans les
 $string['entsyncuser'] = 'Listes d\'utilisateurs';
 $string['entsyncuser_help'] = 'Il est possible de lister les utilisateurs de l\'établissement.';
 
+//task
+$string['garbage'] = 'Nettoyage ENTSYNC';
+
 //login
 $string['notauthorized'] = 'Authentification {$a->ent} réussie mais l\'utilisateur "{$a->user}" n\'est pas autorisé à accèder à ce moodle.<br />
 Un administrateur peut autoriser l\'utilisateur.';
