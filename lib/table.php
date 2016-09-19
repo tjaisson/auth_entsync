@@ -49,6 +49,19 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         return [$select, $param];
     }
     
+    static function get_user_ent($userid) {
+        global $DB;
+        list($select, $param) = self::build_select();
+        
+        $sql = "SELECT {$select}
+            FROM {user} a
+            JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+            WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0 AND a.id = :userid
+            GROUP BY a.id";
+        $param['userid'] = $userid;
+        return $DB->get_record_sql($sql, $param);
+    }
+    
     static function get_users_ent_ens() {
         global $DB;
         list($select, $param) = self::build_select();

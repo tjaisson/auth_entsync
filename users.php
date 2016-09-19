@@ -33,7 +33,8 @@ require_once('ent_defs.php');
 
 require_login();
 admin_externalpage_setup('authentsyncuser');
-require_capability('moodle/user:viewdetails', context_system::instance());
+$sitecontext = context_system::instance();
+require_capability('moodle/user:viewdetails', $sitecontext);
 
 class user_select_form extends moodleform {
     function definition () {
@@ -58,104 +59,145 @@ class user_select_form extends moodleform {
     }
 }
 
+$returnurl = new moodle_url('/auth/entsync/users.php');
 
-$form = new user_select_form();
+$resetpw  = optional_param('resetpw', 0, PARAM_INT);
+$confirm  = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
+$profile  = optional_param('profile', 0, PARAM_INT);
+$cohort   = optional_param('cohort', 0, PARAM_INT);
 
-if ($formdata = $form->get_data()) {
-    if(isset($formdata->dispelev)) {
-        $profile = 1;
-        $cohort = $formdata->cohort;
-    } else if(isset($formdata->dispprof)) {
-        $profile = 2;
+//choix de la liste par les params de requete
+if($profile === 1) {
+    if($cohort <= 0) {
+        unset($profile);
+        unset($cohort);
+    } else {
+        $returnurl->params(['profile' => $profile, 'cohort' => $cohort]);
     }
-} else {
-    $resetpw  = optional_param('resetpw', 0, PARAM_INT);
-    $confirm  = optional_param('confirm', '', PARAM_ALPHANUM);   //md5 confirmation hash
-    $profile  = optional_param('profile', 0, PARAM_INT);
-    $cohort   = optional_param('cohort', 0, PARAM_INT);
-}
-
-$returnurl = new moodle_url('/auth/entsync/user.php', ['profile' => $profile, 'cohort' => $cohort]);
-
-
-
-$lst = null;
-$cbquery = '&amp;cb=users&amp;profile=';
-
-if(($profile === 1) && ($cohort > 0)) {
-    $lst = auth_entsync_usertbl::get_users_ent_elev($cohortid);
-    $cohort = auth_entsync_cohorthelper::get_cohorts()[$cohortid];
-    $ttl = "Elèves de {$cohort} :";
-    $cbquery .= "1&amp;cohort={$cohort}";
 } else if ($profile === 2) {
-    $lst = auth_entsync_usertbl::get_users_ent_ens();
-    $ttl = "Enseignants :";
-    $cbquery .= '2';
+    unset($cohort);
+    $returnurl->params(['profile' => $profile]);
+} else {
+    unset($profile);
+    unset($cohort);
 }
 
-if($lst) {
-    $t = new html_table();
-    $t->head = [get_string('firstname'), get_string('lastname')];
-//icon
-    $reset = $OUTPUT->pix_icon('t/reset', get_string('reset'));
-    $approve = $OUTPUT->pix_icon('t/approve', get_string('yes'));
-    $block = $OUTPUT->pix_icon('t/block', get_string('no'));
+//y a t il des actions à faire
+if($resetpw and confirm_sesskey()) {
+    require_capability('moodle/user:update', $sitecontext);
+    $u = auth_entsync_usertbl::get_user_ent($resetpw);
+    if($u->local === '0') {
+        redirect($returnurl);
+    }
+    if ($confirm != md5($resetpw)) {
+        echo $OUTPUT->header();
+        $fullname = fullname($user, true);
+        echo $OUTPUT->heading('Réinitialiser le mote de passe');
     
+        $optionsyes = array('resetpw'=>$resetpw, 'confirm'=>md5($resetpw), 'sesskey'=>sesskey());
+        $reseturl = new moodle_url($returnurl, $optionsyes);
+        $resetbutton = new single_button($reseturl, get_string('reset'), 'post');
     
-    $entheads = array();
-    $entfields = array();
-    $haslocalent = false;
-    foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
-        if($ent->is_enabled()) {
-            if($ent->get_mode() === 'local') $haslocalent = true;
-            $entheads[] = $ent->nomcourt;
-            $entfields[] = "ent{$entcode}";
+        echo $OUTPUT->confirm("Etes vous sur de vouloir réinitialiser le mot de passe de {$u->firstname} {$u->lastname} ?", $resetbutton, $returnurl);
+        echo $OUTPUT->footer();
+        die;
+    } else if (!empty($_POST)) {
+        require_once(__DIR__ . '/lib/locallib.php');
+        $_mdlu = new stdClass();
+        $_mdlu->id = $resetpw;
+        $pw = auth_entsync_stringhelper::rnd_string();
+        $_mdlu->password = "entsync\\{$pw}";
+        user_update_user($_mdlu, false, true);
+        redirect($returnurl);
+    }
+    redirect($returnurl);
+} else {
+    $form = new user_select_form();
+    
+    if ($formdata = $form->get_data()) {
+        if(isset($formdata->dispelev) && ($formdata->cohort > 0)) {
+            $profile = 1;
+            $cohort = $formdata->cohort;
+            $returnurl->params(['profile' => $profile, 'cohort' => $cohort]);
+        } else if(isset($formdata->dispprof)) {
+            $profile = 2;
+            $returnurl->params(['profile' => $profile]);
         }
     }
-    if($haslocalent) {
-        $t->head[] = get_string('username');
-        $t->head[] = get_string('password');
+    
+    $lst = null;
+    
+    if(($profile === 1) && ($cohort > 0)) {
+        $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
+        $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+        $ttl = "Elèves de {$cohortname} :";
+    } else if ($profile === 2) {
+        $lst = auth_entsync_usertbl::get_users_ent_ens();
+        $ttl = "Enseignants :";
     }
-    foreach($entheads as $entname) {
-        $t->head[] = $entname;
-    }
-
-    $reseturl = 'resetpw.php?sesskey=' . sesskey() . $cbquery;
-
-    foreach($lst as $u) {
-        if($u->local === '0') { 
-            $u->username = '-';
-            $u->password = '-';
-        } else {
-            if(!isset($u->password)) $u->password =
-            "&bull;&bull;&bull;&bull;&bull;
-            <a href = \"{$reseturl}&amp;resetpw={$u->id}\">
-            {$reset}</a>";
-        }
-        $row = [$u->firstname, $u->lastname];
-        if($haslocalent) {
-            $row[] = $u->username;
-            $row[] = $u->password;
-        }
-        foreach($entfields as $field) {
-            if($u->{$field} === '1') {
-                $row[] = $approve;
-            } else {
-                $row[] = $block;
+    
+    if($lst) {
+        $t = new html_table();
+        $t->head = [get_string('firstname'), get_string('lastname')];
+    //icon
+        $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
+        $approve = $OUTPUT->pix_icon('t/approve', get_string('yes'));
+        $block = $OUTPUT->pix_icon('t/block', get_string('no'));
+        
+        
+        $entheads = array();
+        $entfields = array();
+        $haslocalent = false;
+        foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
+            if($ent->is_enabled()) {
+                if($ent->get_mode() === 'local') $haslocalent = true;
+                $entheads[] = $ent->nomcourt;
+                $entfields[] = "ent{$entcode}";
             }
         }
-        $t->data[] = new html_table_row($row);
-        $form->collapse();
+        if($haslocalent) {
+            $t->head[] = get_string('username');
+            $t->head[] = get_string('password');
+        }
+        foreach($entheads as $entname) {
+            $t->head[] = $entname;
+        }
+    
+    
+        foreach($lst as $u) {
+            if($u->local === '0') { 
+                $u->username = '-';
+                $u->password = '-';
+            } else {
+                $reseturl = $returnurl->out(true, ['sesskey' => sesskey(), 'resetpw' => $u->id]);
+                if(!isset($u->password)) $u->password =
+                "&bull;&bull;&bull;&bull;&bull;
+                <a href = \"{$reseturl}\">
+                {$resetico}</a>";
+            }
+            $row = [$u->firstname, $u->lastname];
+            if($haslocalent) {
+                $row[] = $u->username;
+                $row[] = $u->password;
+            }
+            foreach($entfields as $field) {
+                if($u->{$field} === '1') {
+                    $row[] = $approve;
+                } else {
+                    $row[] = $block;
+                }
+            }
+            $t->data[] = new html_table_row($row);
+            $form->collapse();
+        }
     }
+    echo $OUTPUT->header();
+    
+    $form->display();
+    // echo "<pre>hello</pre>";
+    if($lst) {
+        echo $OUTPUT->heading($ttl);
+        echo html_writer::table($t);
+    }
+    echo $OUTPUT->footer();
 }
-echo $OUTPUT->header();
-
-$form->display();
-// echo "<pre>hello</pre>";
-if($lst) {
-    echo $OUTPUT->heading($ttl);
-    echo html_writer::table($t);
-}
-echo $OUTPUT->footer();
-
-
