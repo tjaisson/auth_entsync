@@ -488,6 +488,23 @@ abstract class auth_entsync_sync {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class auth_entsync_sync_cas extends auth_entsync_sync {
+    protected $recupcas = false;
+    
+    public function set_recupcas($val) {
+        $this->recupcas = $val;
+    }
+    
+    protected function lookforuserbynames($iu) {
+        global $DB, $CFG;
+        if($this->recupcas) {
+            if($mdlu = $DB->get_record('user', ['auth' => 'cas', 'username' => $iu->uid, 'mnethostid' => $CFG->mnet_localhost_id],
+                'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname')) {
+                return $mdlu;
+            }
+        }
+        return parent::lookforuserbynames($iu);
+    }
+    
     protected function validate_user($iu) {
         if(empty($iu->uid)) return false;
         return true;

@@ -37,8 +37,14 @@ require_once $CFG->libdir.'/formslib.php';
 class auth_entsync_bulk_form extends moodleform {
     function definition () {
     	$displayproceed = (isset($this->_customdata['displayproceed'])) ? $this->_customdata['displayproceed'] : false;
-        $mform = $this->_form;
-		
+    	$advanced = (isset($this->_customdata['advanced'])) ? $this->_customdata['advanced'] : false;
+    	$mform = $this->_form;
+
+    	if($advanced) {
+    	    $mform->addElement('hidden', 'advanced', true);
+    	    $mform->setType('advanced', PARAM_BOOL);
+    	}
+
         if($displayproceed)
         {
         	$infohtml = $this->_customdata['displayhtml'];
@@ -49,6 +55,11 @@ class auth_entsync_bulk_form extends moodleform {
         	$mform->addElement('html', $infohtml);
         	$mform->addElement('hidden', 'storeid', $storeid);
             $mform->setType('storeid', PARAM_INT);
+            if($advanced) {
+                $mform->addElement('checkbox', 'recupcas', 'Récupérer les utilisateurs de auth_cas');
+                $mform->setDefault('recupcas', false);
+            }
+
         	$mform->addElement('submit', 'proceed', get_string('dosync', 'auth_entsync'));
             if($displayupload) {
             	$mform->addElement('header', 'settingsheader', get_string('uploadadd', 'auth_entsync'));
@@ -58,7 +69,7 @@ class auth_entsync_bulk_form extends moodleform {
         	$mform->addElement('header', 'settingsheader', get_string('upload'));
         	$displayupload = true;
         }
-        
+
         if($displayupload) {
             $mform->addElement('filepicker', 'userfile', get_string('file'));
            

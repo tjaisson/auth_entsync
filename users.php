@@ -91,7 +91,6 @@ if($resetpw and confirm_sesskey()) {
     }
     if ($confirm != md5($resetpw)) {
         echo $OUTPUT->header();
-        $fullname = fullname($user, true);
         echo $OUTPUT->heading('Réinitialiser le mote de passe');
     
         $optionsyes = array('resetpw'=>$resetpw, 'confirm'=>md5($resetpw), 'sesskey'=>sesskey());
@@ -127,18 +126,18 @@ if($resetpw and confirm_sesskey()) {
     
     $lst = null;
     
-    if(($profile === 1) && ($cohort > 0)) {
-        $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
-        $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
-        $ttl = "Elèves de {$cohortname} :";
-    } else if ($profile === 2) {
-        $lst = auth_entsync_usertbl::get_users_ent_ens();
-        $ttl = "Enseignants :";
-    }
     
-    if($lst) {
+    if(isset($profile)) {
+        if(($profile === 1) && ($cohort > 0)) {
+            $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
+            $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+            $ttl = "Elèves de {$cohortname} :";
+        } else if ($profile === 2) {
+            $lst = auth_entsync_usertbl::get_users_ent_ens();
+            $ttl = "Enseignants :";
+        }
+
         $t = new html_table();
-        $t->head = [get_string('firstname'), get_string('lastname')];
     //icon
         $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
         $approve = $OUTPUT->pix_icon('t/approve', get_string('yes'));
@@ -155,9 +154,12 @@ if($resetpw and confirm_sesskey()) {
                 $entfields[] = "ent{$entcode}";
             }
         }
+        
         if($haslocalent) {
-            $t->head[] = get_string('username');
-            $t->head[] = get_string('password');
+        $selbutts = '<a href="javascript:selAll()">tous</a><br /><a href="javascript:selNone()">aucun</a>';
+        $t->head = [$selbutts, get_string('firstname'), get_string('lastname'), get_string('username'), get_string('password')];
+        } else {
+            $t->head = [get_string('firstname'), get_string('lastname')];
         }
         foreach($entheads as $entname) {
             $t->head[] = $entname;
@@ -165,20 +167,26 @@ if($resetpw and confirm_sesskey()) {
     
     
         foreach($lst as $u) {
+            $preselect = '';
             if($u->local === '0') { 
                 $u->username = '-';
                 $u->password = '-';
             } else {
                 $reseturl = $returnurl->out(true, ['sesskey' => sesskey(), 'resetpw' => $u->id]);
-                if(!isset($u->password)) $u->password =
-                "&bull;&bull;&bull;&bull;&bull;
-                <a href = \"{$reseturl}\">
-                {$resetico}</a>";
+                if(isset($u->password)) {
+                    $preselect = ' checked';
+                } else {
+                    $u->password =
+                        "&bull;&bull;&bull;&bull;&bull;
+                        <a href = \"{$reseturl}\">
+                        {$resetico}</a>";
+                }
             }
-            $row = [$u->firstname, $u->lastname];
             if($haslocalent) {
-                $row[] = $u->username;
-                $row[] = $u->password;
+                $cb = "<input type=\"checkbox\" name=\"select[]\" value=\"{$u->id}\"{$preselect}></input>";
+                $row = [$cb, $u->firstname, $u->lastname, $u->username, $u->password];
+            } else {
+                $row = [$u->firstname, $u->lastname];
             }
             foreach($entfields as $field) {
                 if($u->{$field} === '1') {
@@ -194,10 +202,44 @@ if($resetpw and confirm_sesskey()) {
     echo $OUTPUT->header();
     
     $form->display();
-    // echo "<pre>hello</pre>";
     if($lst) {
         echo $OUTPUT->heading($ttl);
+        if($haslocalent) { ?>
+            <form method="post" action="etiqu.php" id="form1" target="_blank">
+            <input type="submit" value="Imprimer" /> des étiquettes pour les utilisateurs sélectionnés
+            <input type="hidden" name="profile" value="<?php echo $profile; ?>" />
+        <?php
+            if($profile === 1 ) { ?>
+            <input type="hidden" name="cohort" value="<?php echo $cohort; ?>" />
+            <?php 
+            }
+        }
+        echo '<div id="listDiv">';
         echo html_writer::table($t);
+        echo '</div>';
+        if($haslocalent) { ?>
+        	</form>
+            <script type="text/javascript">
+            function selAll()
+            {
+                t = document.getElementById("listDiv");
+                l = t.getElementsByTagName("input");
+                for(i = 0;i < l.length; i++)
+                {
+                    l[i].checked = true;
+                }
+            }
+            function selNone()
+            {
+                t = document.getElementById("listDiv");
+                l = t.getElementsByTagName("input");
+                for (i = 0; i < l.length; i++) {
+                    l[i].checked = false;
+                }
+            }
+        </script>
+        <?php
+        }
     }
     echo $OUTPUT->footer();
 }

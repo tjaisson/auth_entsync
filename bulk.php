@@ -80,6 +80,14 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     }
 
     $synchronizer = $ent->get_synchronizer($filetype);
+    
+    //mode advanced...
+    if(optional_param('advanced', false, PARAM_BOOL)) {
+        if(optional_param('recupcas', false, PARAM_BOOL) && ($ent->get_mode() === 'cas')) {
+            $synchronizer->set_recupcas(true);            
+        }
+    }
+    
     $synchronizer->roles[2] = $config->role_ens;
 
 	echo $OUTPUT->header();
@@ -110,8 +118,15 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
 	die;
 }
 
+
+$formparams = array();
+//gestion des option avancées
+if(optional_param('advanced', false, PARAM_BOOL)) {
+    $formparams['advanced'] = true;
+}
+
 //formulaire et chargement des fichiers
-$mform = new auth_entsync_bulk_form();
+$mform = new auth_entsync_bulk_form(null, $formparams);
 
 echo $OUTPUT->header();
 
@@ -184,23 +199,22 @@ if($storeid) {
     if($readytosyncusers > 0) {
         //déjà au moins un utilisateur en attente de synchro.
         //On donne la possibilité de procéder à la synchronisation
+        $formparams['displayproceed'] = true;
         $already = auth_entsync_usertbl::count_users($ent->get_profilesintype($filetype)  ,$ent->get_code());
-        $infoproceed = $OUTPUT->notification(get_string('infoproceed', 'auth_entsync',
+        $formparams['displayhtml'] = $OUTPUT->notification(get_string('infoproceed', 'auth_entsync',
             ['nbusers' => $readytosyncusers, 'profiltype' => $ent->get_filetypes()[$filetype],
                 'alreadyusers' => $already
             ]),
             \core\output\notification::NOTIFY_INFO);
-        $mform =  new auth_entsync_bulk_form(null,
-            ['displayproceed' => true,
-             'displayhtml' => $infoproceed,
-             'storeid'=> $storeid,
-             'multi' => $ent->accept_multifile($filetype)]);
+        $formparams['storeid'] = $storeid;
+        $formparams['multi'] = $ent->accept_multifile($filetype);
+        $mform =  new auth_entsync_bulk_form(null, $formparams);
         //on donne la possibilité d'envoyer un autre fichier mais le type de fichier ne doit pas changer
-        //$mform->disable_filetype();
     } else {
-        $mform = new auth_entsync_bulk_form();
+        $mform = new auth_entsync_bulk_form(null, $formparams);
     }
 }
+
 echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
 
 $mform->display();

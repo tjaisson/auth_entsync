@@ -1,11 +1,30 @@
+<?php 
+require(__DIR__ . '/../../config.php');
+require_once($CFG->libdir . '/adminlib.php');
+require_once($CFG->libdir . '/moodlelib.php');
+require_once $CFG->libdir.'/formslib.php';
+require_once(__DIR__ . '/lib/table.php');
+require_once(__DIR__ . '/lib/cohorthelper.php');
+require_once('ent_defs.php');
 
+require_login();
+$sitecontext = context_system::instance();
+require_capability('moodle/user:viewdetails', $sitecontext);
 
+$profile = required_param('profile', PARAM_INT);
+if($profile === 1) {
+    $cohort =  required_param('cohort', PARAM_INT);
+    $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
+    $ttl = $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+} else if($profile === 2) {
+    $lst = auth_entsync_usertbl::get_users_ent_ens();
+    $ttl = "Enseignant";
+}
+?>
 
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>
-
 </title>
         <style type="text/css">
         body {
@@ -30,7 +49,8 @@
             width: 20em;
             float: left;
             min-height: 1px;
-            height: 17em;
+            height: 11em;
+			display:inline;
         }
 
         p {
@@ -68,58 +88,55 @@
     {
         display: none !important;
     }
+        div.etiqus {
+		            overflow: visible !important;
+		}
+        p.break {
+		   page-break-after: always;
+		}
 }
     </style>
-
 </head>
+
 <body>
-    <form method="post" action="etiqu.aspx?CL=2CEC1" id="form1">
-<div class="aspNetHidden">
-<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwULLTIwNzQ0NDEwNDJkZAFWfTgemztf2QAsdjzlEqxS6QRipY0/JwqI2K1IqeAI" />
-</div>
+    <div class="etiqus">
+        <div class="butt"><a href="javascript:window.print()">Imprimer</a> <a href="javascript:window.close()">Fermer</a><hr /></div>
+        
+<?php
+    if(isset($_POST['select'])) {
+        $select = $_POST['select'];
+    } else {
+        $select = false;
+    }
+        
 
-<div class="aspNetHidden">
-
-	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="C6CBEBA6" />
-</div>
-        <div class="etiqus" id="etiqus">
-            <div class="butt"><a href="javascript:window.print()">Imprimer</a> <a href="javascript:window.close()">Fermer</a><hr /></div>
-            
-                    <div class="etiqu">
-                        <p class="cl">2CEC1</p>
-                        <p class="nom">Jaisson Thomas</p>
-                    <hr />
-                        <p class="tt">Codes Windows</p>
-                        <p class="id">id.&nbsp: tqsdfqsdf</p>
-                        <p class="pw">pw&nbsp;: qsdfqsd</p>
-                        <p class="nt">Changez votre mot de passe en pressant les touches Ctrl&nbsp;+ Alt&nbsp;+ Suppr après avoir ouvert votre session</p>
-                    <hr />
-                        <p class="tt">Codes Educ'Horus</p>
-                        
-                            <p class="id">id.&nbsp: qsdfqsdf</p>
-                            <p class="pw">pw&nbsp;: &bull;&bull;&bull;&bull;&bull;</p>
-                        
-                    </div>
-            
-                    <div class="etiqu">
-                        <p class="cl">2CEC1</p>
-                        <p class="nom">DHFFJHGJ kkjhml</p>
-                    <hr />
-                        <p class="tt">Codes Windows</p>
-                        <p class="id">id.&nbsp: wxcvvvwxcv</p>
-                        <p class="pw">pw&nbsp;: wxcvwxcv</p>
-                        <p class="nt">Changez votre mot de passe en pressant les touches Ctrl&nbsp;+ Alt&nbsp;+ Suppr après avoir ouvert votre session</p>
-                    <hr />
-                        <p class="tt">Codes Educ'Horus</p>
-                        
-                            <p class="id">id.&nbsp: wxcvwxcxv</p>
-                            <p class="pw">pw&nbsp;: wxcvwxddfg</p>
-                        
-                    </div>
-            
-            
-        </div>
-    </form>
+    $i = 0;
+    foreach($lst as $u) {
+        if((!$select) || (in_array($u->id, $select)) ) {
+            if($u->local === '0') {
+                $u->username = 0;
+            } else {
+                if(!isset($u->password)) $u->password = '&bull;&bull;&bull;&bull;&bull;';
+            }
+            ?>
+                <div class="etiqu">
+                    <p class="cl"><?php echo $ttl;?></p>
+                    <p class="nom"><?php echo $u->firstname . ' ' . $u->lastname; ?></p>
+                <hr />
+                <?php if($u->username) { ?>
+                    <p class="tt">Codes Moodle</p>
+                    <p class="id">id.&nbsp: <?php echo $u->username; ?></p>
+                    <p class="pw">pw&nbsp;: <?php echo $u->password; ?></p>
+                <?php } ?>
+                </div>
+        <?php 
+            if(++$i === 8) {
+                $i=0;
+                echo '<p class="break">&nbsp;</p>';
+            }
+        }
+    } ?>        
+    </div>
 </body>
 </html>
 
