@@ -228,43 +228,55 @@ abstract class auth_entsync_sync {
     }
 
     /**
-     * Archive ou supprime l'utilisateur géré
+     * Archive l'utilisateur géré
      *
      * @param $entu L'utilisateur géré
      */
-    protected function archiveordelete($entu) {
+    protected function archive($entu) {
         global $DB;
-        //s'il n'est pas déjà archivé
         if(!$entu->archived) {
+            //il n'était pas déjà archivé
             $_entu = new stdClass();
             $_entu->id = $entu->id;
             $_entu->archived = 1;
             $_entu->archivedsince = $this->_currenttime;
             $DB->update_record('auth_entsync_user', $_entu);
-        }
-
-        //on supprime les $entu expirés
-        $select = "userid = :userid AND archived = 1 AND archivedsince < :limit";
-        $DB->delete_records_select('auth_entsync_user', $select,
-            ['userid' => $entu->userid, 'limit' => $this->_limitarchiv]);
-
-        //on recherche le $mdlu
-        if( $mdlu = $DB->get_record('user',
-            ['id' => $entu->userid, 'deleted' => 0], 'id, username, suspended') )  {
-
-            if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid])) {
-                //il n'est plus référencé
-                delete_user($mdlu);
-            } else {
-                if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
-                    //il est archivé
-                    $_mdlu = new stdClass();
-                    $_mdlu->id = $mdlu->id;
-                    $_mdlu->suspended = true;
-                    $DB->update_record('user', $_mdlu);
-                }
+            
+            if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
+                //il est archivé dans tous les ent
+                //on retire son éventuel rôle système (si c'est un prof)
+                auth_entsync_rolehelper::removeroles($entu->userid);
+                
+                //on le sort de sa cohorte éventuelle (si c'est un élève)
+                auth_entsync_cohorthelper::removecohorts($entu->userid);
             }
         }
+        
+        //le reste doit êter géré dans la tâche programmée 
+        
+        
+//         //on supprime les $entu expirés
+//         $select = "userid = :userid AND archived = 1 AND archivedsince < :limit";
+//         $DB->delete_records_select('auth_entsync_user', $select,
+//             ['userid' => $entu->userid, 'limit' => $this->_limitarchiv]);
+
+//         //on recherche le $mdlu
+//         if( $mdlu = $DB->get_record('user',
+//             ['id' => $entu->userid, 'deleted' => 0], 'id, username, suspended') )  {
+
+//             if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid])) {
+//                 //il n'est plus référencé
+//                 delete_user($mdlu);
+//             } else {
+//                 if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
+//                     //il est archivé
+//                     $_mdlu = new stdClass();
+//                     $_mdlu->id = $mdlu->id;
+//                     $_mdlu->suspended = true;
+//                     $DB->update_record('user', $_mdlu);
+//                 }
+//             }
+//         }
     }
 
 	public function dosync($iurs) {
@@ -324,7 +336,7 @@ abstract class auth_entsync_sync {
             $this->_progressreporter->progress($progresscnt);
 		    ++$progresscnt;
 		    if(!$entu->checked) {
-                $_entu = $this->archiveordelete($entu);
+                $_entu = $this->archive($entu);
 		    }
         }
         unset($this->_existingentu);

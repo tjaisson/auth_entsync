@@ -48,7 +48,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         }
         return [$select, $param];
     }
-    
+
     static function get_user_ent($userid) {
         global $DB;
         list($select, $param) = self::build_select();
@@ -65,7 +65,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
     static function get_users_ent_ens() {
         global $DB;
         list($select, $param) = self::build_select();
-        
+
         $sql = "SELECT {$select}
             FROM {user} a
             JOIN {auth_entsync_user} b on b.userid = a.id
@@ -94,19 +94,21 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         }
     }
     
+    const userselect =
+'SELECT a.id as id, a.firstname as firstname, a.lastname as lastname, a.username as username,
+ IF((SUBSTRING(a.password,1 , 8) = \'entsync\\\\\'), SUBSTRING(a.password,9), NULL) as password,
+ BIT_OR(b.profile) as profiles,
+ GROUP_CONCAT(CONCAT_WS(\';\', b.ent, b.sync, b.uid, b.struct, b.profile, b.archived, b.archivedsince)) as ents';
+
     static function get_users_ent_ens2() {
         global $DB;
-        $sql = "SELECT
-            a.id as id, a.firstname as firstname, a.lastname as lastname, a.username as username,
-            IF((SUBSTRING(a.password,1 , 8) = 'entsync\\\\'), SUBSTRING(a.password,9), NULL) as password,
-            BIT_OR(b.profile) as profiles,
-            GROUP_CONCAT(CONCAT_WS(';', b.ent, b.sync, b.uid, b.struct, b.profile, b.archived, b.archivedsince)) as ents
+        $sql = self::userselect . '
             FROM {user} a
             JOIN {auth_entsync_user} b on b.userid = a.id
-            WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0
+            WHERE a.auth = \'entsync\' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0
             GROUP BY a.id
             HAVING profiles = 2
-            ORDER BY a.lastname, a.firstname";
+            ORDER BY a.lastname, a.firstname';
         
         $ret = $DB->get_records_sql($sql);
         foreach($ret as $u) {

@@ -142,19 +142,20 @@ if($resetpw and confirm_sesskey()) {
         $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
         $activico = $OUTPUT->pix_icon('t/approve', get_string('yes'));
         $archivedico = "";//$OUTPUT->pix_icon('i/scheduled', get_string('no'));
-        
-        
+
         $entheads = array();
         $entfields = array();
         $haslocalent = false;
         foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
             if($ent->is_enabled()) {
-                if($ent->get_mode() === 'local') $haslocalent = true;
+                if($ent->get_mode() === 'local'){
+                    $haslocalent = true;
+                }
                 $entheads[] = $ent->nomcourt;
                 $entfields[] = "ent{$entcode}";
             }
         }
-        
+
         if($haslocalent) {
         $selbutts = '<a href="javascript:selAll()">tous</a><br /><a href="javascript:selNone()">aucun</a>';
         $t->head = [$selbutts, get_string('firstname'), get_string('lastname'), get_string('username'), get_string('password')];
@@ -164,8 +165,7 @@ if($resetpw and confirm_sesskey()) {
         foreach($entheads as $entname) {
             $t->head[] = $entname;
         }
-    
-    
+
         foreach($lst as $u) {
             $preselect = '';
             if($u->local === '0') { 
@@ -202,15 +202,13 @@ if($resetpw and confirm_sesskey()) {
     echo $OUTPUT->header();
     
     $form->display();
-//    var_dump(auth_entsync_usertbl::get_users_ent_ens2());
-//    $lst = false;
     if($lst) {
         echo $OUTPUT->heading($ttl);
         if($haslocalent) { ?>
             <form method="post" action="etiqu.php" id="form1" target="_blank">
             <input type="submit" value="Imprimer" /> des étiquettes pour les utilisateurs sélectionnés
             <input type="hidden" name="profile" value="<?php echo $profile; ?>" />
-        <?php
+        	<?php
             if($profile === 1 ) { ?>
             <input type="hidden" name="cohort" value="<?php echo $cohort; ?>" />
             <?php 
@@ -243,5 +241,6 @@ if($resetpw and confirm_sesskey()) {
         <?php
         }
     }
+
     echo $OUTPUT->footer();
 }
