@@ -46,9 +46,10 @@ $returnurl = new moodle_url('/auth/entsync/param.php');
 if(!is_enabled_auth('entsync')) {
     // le plugin d'authentification doit être activé
     echo $OUTPUT->header();
-    echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
+    echo $OUTPUT->heading(get_string('entsyncparam', 'auth_entsync'));
+    echo $OUTPUT->notification(get_string('entsyncparam_help', 'auth_entsync'), core\output\notification::NOTIFY_INFO);
     echo $OUTPUT->notification(get_string('pluginnotenabledwarn', 'auth_entsync',
-        "$CFG->wwwroot/$CFG->admin/settings.php?section=manageauths"));
+        "$CFG->wwwroot/$CFG->admin/settings.php?section=manageauths"), core\output\notification::NOTIFY_INFO);
     echo $OUTPUT->footer();
     die;
 }
@@ -80,8 +81,7 @@ if ($formdata = $mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-//echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
-echo $OUTPUT->heading(get_string('entsyncparam', 'auth_entsync'));
+echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
 //liste des ents enable/disable
 $mform->display();
 echo $OUTPUT->footer();

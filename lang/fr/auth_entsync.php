@@ -32,6 +32,9 @@ $string['mdlauth'] = 'Autre utilisateur';
 
 //param
 $string['entsyncparam'] = 'Configuration';
+$string['entsyncparam_help'] = 'La gestion des <b>Utilisateurs de l\'établissement</b> permet de simplifier la création des comptes des élèves et des enseignants
+en important des fichiers standarts en provenance de Siècle ou d\'un ENT.
+Si votre établissement utilise l\'un des ENT supportés, vous pouvez également mettre en place un connecteur d\'authentification unique (sso).';
 $string['entlist'] = 'ENT disponibles';
 $string['entlist_help'] = 'Vous pouvez activer ici la connexion avec l\'ENT de votre établissement.<br /><br />
 Plus d\'information sur la procédure de mise en place côté ENT via le lien ci-dessous.';
@@ -44,7 +47,7 @@ $string['roleensselect_help'] = 'Choisissez le rôle système que vous voulez at
 $string['entspecparam'] = 'Configuration pour {$a}';
 
 
-$string['pluginnotenabledwarn'] = 'ATTENTION : le plugin d\'authentification ENTSYNC n\'est pas activé.<br />
+$string['pluginnotenabledwarn'] = 'NOTE : le plugin d\'authentification ENTSYNC n\'est pas activé.<br />
 La gestion des utilisateurs de l\'établissement ne sera pas fonctionnelle tant que vous ne l\'aurez pas activé<br />
 Aller à <a href=\'{$a}\'>Gestion de l\'authentification</a>';
 $string['paramredirect'] = 'Le paramétrage se fait dans "Utilisateurs de l\'établissement".<br />

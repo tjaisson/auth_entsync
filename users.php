@@ -141,7 +141,7 @@ if($resetpw and confirm_sesskey()) {
     //icon
         $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
         $activico = $OUTPUT->pix_icon('t/approve', get_string('yes'));
-        $archivedico = $OUTPUT->pix_icon('i/scheduled', get_string('no'));
+        $archivedico = "";//$OUTPUT->pix_icon('i/scheduled', get_string('no'));
         
         
         $entheads = array();

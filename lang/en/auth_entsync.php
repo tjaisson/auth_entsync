@@ -32,6 +32,7 @@ $string['mdlauth'] = 'Other user';
 
 //param
 $string['entsyncparam'] = 'Settings';
+$string['entsyncparam_help'] = 'ENT users authentication plugin.';
 $string['entlist'] = 'Available WNEs';
 $string['entlist_help'] = 'You can configure WNE connector settings';
 $string['entlist_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
@@ -42,7 +43,9 @@ $string['rolepersselect'] = 'Employe\'s system role';
 $string['roleensselect'] = 'Teacher\'s system role';
 $string['roleensselect_help'] = 'Choose system role you vant to assign to teachers.';
 $string['entspecparam'] = '{$a} settings';
-$string['pluginnotenabledwarn'] = 'WARNING : ENTSYNC authentication plugin is not enabled<br />
+
+$string['plugindesc'] = 'ENT users authentication plugin.';
+$string['pluginnotenabledwarn'] = 'INFO : ENTSYNC authentication plugin is not enabled<br />
 Go to <a href=\'{$a}\'>Manage authentication</a>';
 $string['paramredirect'] = 'Settings are in "Managed users".<br />
 Go to <a href=\'{$a}\'>Settings</a>';
