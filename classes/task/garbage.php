@@ -7,6 +7,8 @@ class garbage extends \core\task\scheduled_task {
         return get_string('garbage', 'auth_entsync');
     }
                                                                      
-    public function execute() {       
+    public function execute() {
+        //utilisateurs archivés
+        
     }                                                                                                                               
 }

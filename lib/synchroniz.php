@@ -81,7 +81,7 @@ abstract class auth_entsync_sync {
     protected $_existingentuother;
     
     /**
-     * @var int Code de l'ent courant
+     * @var int Code de l'ent synchronisé
      */
     public $entcode;
 
@@ -106,22 +106,6 @@ abstract class auth_entsync_sync {
     
     public function set_progress_reporter($progressreporter) {
         $this->_progressreporter = $progressreporter;
-    }
-    
-    /**
-     * Retourne le nombre d'utilisateurs présents dans la table temporaire
-     * par profil (cached)
-     *
-     * @param int $profile Le profil des utilisateurs recherchés
-     * @return int Le nombre d'utilisateurs présents dans la table temporaire
-     */
-    public function get_readytosyncusers($profile) {
-        global $DB;
-        if($this->_readytosyncusers[$profile] < 0) {
-            $this->_readytosyncusers[$profile] = $DB->count_records('auth_entsync_tmpul',
-                ['profile' => $profile]);
-        }
-        return $this->_readytosyncusers[$profile];
     }
     
     public function set_profilestosync($profilelist) {

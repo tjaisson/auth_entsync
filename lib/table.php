@@ -55,7 +55,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         
         $sql = "SELECT {$select}
             FROM {user} a
-            JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+            JOIN {auth_entsync_user} b on b.userid = a.id
             WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0 AND a.id = :userid
             GROUP BY a.id";
         $param['userid'] = $userid;
@@ -68,13 +68,51 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         
         $sql = "SELECT {$select}
             FROM {user} a
-            JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+            JOIN {auth_entsync_user} b on b.userid = a.id
             WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0
             GROUP BY a.id
             HAVING profiles = 2
             ORDER BY a.lastname, a.firstname";
         
         return $DB->get_records_sql($sql, $param);
+    }
+
+    protected static function cleanu($u) {
+        $ents = explode(',', $u->ents);
+        $u->ents = array();
+        foreach($ents as $ent) {
+            $ent = explode(';', $ent);
+            $u->ents[$ent[0]] = [
+                'id' => $ent[0],
+                'sync' => $ent[1],
+                'uid' => $ent[2],
+                'struct' => $ent[3],
+                'profile' => $ent[4],
+                'archived' => $ent[5],
+                'archivedsince' => $ent[6]
+            ];
+        }
+    }
+    
+    static function get_users_ent_ens2() {
+        global $DB;
+        $sql = "SELECT
+            a.id as id, a.firstname as firstname, a.lastname as lastname, a.username as username,
+            IF((SUBSTRING(a.password,1 , 8) = 'entsync\\\\'), SUBSTRING(a.password,9), NULL) as password,
+            BIT_OR(b.profile) as profiles,
+            GROUP_CONCAT(CONCAT_WS(';', b.ent, b.sync, b.uid, b.struct, b.profile, b.archived, b.archivedsince)) as ents
+            FROM {user} a
+            JOIN {auth_entsync_user} b on b.userid = a.id
+            WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0
+            GROUP BY a.id
+            HAVING profiles = 2
+            ORDER BY a.lastname, a.firstname";
+        
+        $ret = $DB->get_records_sql($sql);
+        foreach($ret as $u) {
+            self::cleanu($u);
+        }
+        return $ret;
     }
     
     static function get_users_ent_elev($cohortid) {
@@ -84,7 +122,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         $sql = "SELECT {$select}
             FROM {user} a
             JOIN {cohort_members} c on c.userid = a.id
-            JOIN `mdl_auth_entsync_user` b on b.userid = a.id
+            JOIN {auth_entsync_user} b on b.userid = a.id
             WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0 AND c.cohortid = :cohortid
             GROUP BY a.id
             HAVING profiles = 1
