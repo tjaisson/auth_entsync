@@ -40,7 +40,7 @@ class user_select_form extends moodleform {
     function definition () {
         $mform = $this->_form;
         $mform->addElement('header', 'filter', get_string('choose'));
-        $this->_form->setExpanded('filter');
+        $mform->setExpanded('filter');
         $cllst = auth_entsync_cohorthelper::get_cohorts();
         $grp=array();
         $grp[] = $mform->createElement('select', 'cohort', 'classe', $cllst);
