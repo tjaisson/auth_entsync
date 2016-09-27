@@ -109,14 +109,61 @@ class init_form extends moodleform {
         $mform->setDefault('ownerrole', $chk);
         
         
-        
         $this->add_action_buttons();
-            
     }
-
 }
 
-$form = new init_form(null, $data); 
+$posturl = new moodle_url('/auth/entsync/init.php', ['do' => 'init']);
+$form = new init_form($posturl, $data); 
+
+if($form->is_cancelled()) {
+    redirect(new moodle_url('/'));
+}
+
+if($formdata = $form->get_data())
+{
+    //on effectue les opération demandée
+    //thème
+    if((isset($formdata->theme)) && ($data->acparistheme) && ($data->currentthemename !== $data->acparistheme)) {
+        $theme = theme_config::load('acparis');
+        $themename = core_useragent::get_device_type_cfg_var_name('default');
+        set_config($themename, $theme->name);
+    }
+    
+    //rôles
+    $systemcontext = context_system::instance();
+    if((isset($formdata->catrole)) && (!$data->catrole)) {
+        //créateur de catégorie
+        $roleid = create_role('Créateur de cours et catégories', 'catcreator',
+            'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
+            'coursecreator');
+        set_role_contextlevels($roleid, [CONTEXT_SYSTEM, CONTEXT_COURSECAT]);
+        
+        $allows = [
+            'moodle/category:manage', 
+            'moodle/category:viewhiddencategories',
+            'moodle/course:create',
+            'moodle/course:viewhiddencourses',
+            'moodle/restore:rolldates',
+            'repository/coursefiles:view',
+            'repository/filesystem:view',
+            'repository/local:view',
+            'repository/webdav:view'
+        ];
+        foreach ($allows as $cap) {
+            assign_capability($cap, CAP_ALLOW, $roleid, $systemcontext);
+        }
+        $systemcontext->mark_dirty();
+    }
+    
+    if((isset($formdata->ownerrole)) && (!$data->ownerrole)) {
+        //propriétaire de cours
+        
+    }
+    
+    redirect($posturl, 'Effectué');
+}
+
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading('Initialisation de cette instance Moodle');
