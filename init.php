@@ -61,22 +61,27 @@ if(array_key_exists('acparis', $themes)) {
 
 class init_form extends moodleform {
     function definition () {
+        global $OUTPUT;
+        $validico = $OUTPUT->pix_icon('i/valid', 'OK').' ';
+        $warningico = $OUTPUT->pix_icon('i/warning', 'KO').' ';
+        
         $mform = $this->_form;
         $data = $this->_customdata;
         $mform->addElement('header', 'themehdr', 'Thème');
         $mform->setExpanded('themehdr');
         if($data->acparistheme) {
             if($data->currentthemename === $data->acparistheme) {
-                $msg = 'Le thème \'acparis\' est déjà sélectionné.';
+                $msg = $validico . 'Le thème \'acparis\' est déjà sélectionné.';
                 $chk = false;
             } else {
-                $msg = 'Le thème sélectionné n\'est pas \'acparis\'.';
+                $msg = $warningico . 'Le thème sélectionné n\'est pas \'acparis\'.';
                 $chk = true;
             }
             $mform->addElement('html', $msg);
             $mform->addElement('checkbox', 'theme', 'Sélectionner le thème \'acparis\'');
             $mform->setType('theme', PARAM_BOOL);
             $mform->setDefault('theme', $chk);
+            $mform->freeze('theme');
         } else {
             $mform->addElement('html', 'Le thème \'acparis\' n\'est pas installé.');
         }
@@ -85,26 +90,30 @@ class init_form extends moodleform {
         $mform->setExpanded('rolehdr');
         
         if($data->catrole) {
-            $msg = 'Rôle \'catcreator\' déjà créé.';
+            $msg = $validico . 'Rôle \'catcreator\' déjà créé.';
+            $cblabel = 'Réinitialiser le rôle \'catcreator\'';
             $chk = false;
         } else {
-            $msg = 'Le rôle \'catcreator\' n\'existe pas.';
+            $msg = $warningico . 'Le rôle \'catcreator\' n\'existe pas.';
+            $cblabel = 'Créer le rôle \'catcreator\'';
             $chk = true;
         }
         $mform->addElement('html', $msg);
-        $mform->addElement('checkbox', 'catrole', 'Créer le rôle \'catcreator\'');
+        $mform->addElement('checkbox', 'catrole', $cblabel);
         $mform->setType('catrole', PARAM_BOOL);
         $mform->setDefault('catrole', $chk);
         
         if($data->ownerrole) {
-            $msg = 'Rôle \'courseowner\' déjà créé.';
+            $msg = $validico . 'Rôle \'courseowner\' déjà créé.';
+            $cblabel = 'Réinitialiser le rôle \'courseowner\'';
             $chk = false;
         } else {
-            $msg = 'Le rôle \'courseowner\' n\'existe pas.';
+            $msg = $warningico . 'Le rôle \'courseowner\' n\'existe pas.';
+            $cblabel = 'Créer le rôle \'courseowner\'';
             $chk = true;
         }
         $mform->addElement('html', $msg);
-        $mform->addElement('checkbox', 'ownerrole', 'Créer le rôle \'courseowner\'');
+        $mform->addElement('checkbox', 'ownerrole', $cblabel);
         $mform->setType('ownerrole', PARAM_BOOL);
         $mform->setDefault('ownerrole', $chk);
         
@@ -132,12 +141,29 @@ if($formdata = $form->get_data())
     
     //rôles
     $systemcontext = context_system::instance();
-    if((isset($formdata->catrole)) && (!$data->catrole)) {
-        //créateur de catégorie
-        $roleid = create_role('Créateur de cours et catégories', 'catcreator',
-            'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
-            'coursecreator');
-        set_role_contextlevels($roleid, [CONTEXT_SYSTEM, CONTEXT_COURSECAT]);
+    if(isset($formdata->catrole)) {
+        if($data->catrole) {
+            //réinitialiser le rôle créateur de catégorie
+            $roleid = $data->catrole;
+            
+        } else {
+            //créer le rôle créateur de catégorie
+            $roleid = create_role('Créateur de cours et catégories', 'catcreator',
+                'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
+                'coursecreator');
+        }
+        
+        set_role_contextlevels($roleid, get_default_contextlevels('coursecreator'));
+        
+        foreach (array('assign', 'override', 'switch') as $type) {
+            $function = 'allow_'.$type;
+            $allows = get_default_role_archetype_allows($type, 'coursecreator');
+            foreach ($allows as $allowid) {
+                $function($role->id, $allowid);
+            }
+        }
+        
+        $defaultpermissions = get_default_capabilities('coursecreator');
         
         $allows = [
             'moodle/category:manage', 

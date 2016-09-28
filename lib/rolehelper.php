@@ -75,6 +75,17 @@ class auth_entsync_rolehelper {
     }
     
     static function getsysrolemenu() {
-        return get_assignable_roles(context_system::instance(), ROLENAME_ORIGINALANDSHORT);
+        static $ret;
+        if(isset($ret)) return $ret;
+        global $DB;
+        $lst = get_assignable_roles(context_system::instance(), ROLENAME_ORIGINALANDSHORT);
+        $ret = array();
+        foreach($lst as $roleid => $rolename) {
+            $archetype = $DB->get_field('role', 'archetype', ['id' => $roleid]);
+            if($archetype === 'coursecreator') {
+                $ret[$roleid] = $rolename;
+            }
+        }
+        return $ret;
     }
 }
