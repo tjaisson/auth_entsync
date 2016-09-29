@@ -129,6 +129,60 @@ if($form->is_cancelled()) {
     redirect(new moodle_url('/'));
 }
 
+function init_role($roleid, $archetype, $caps = []) {
+    global $DB;
+    $systemcontext = context_system::instance();
+    
+    set_role_contextlevels($roleid, get_default_contextlevels('coursecreator'));
+    
+    foreach (['assign', 'override', 'switch'] as $type) {
+        $sql = "SELECT r.*
+        FROM {role} r
+        JOIN {role_allow_{$type}} a ON a.allow{$type} = r.id
+        WHERE a.roleid = :roleid
+        ORDER BY r.sortorder ASC";
+        $current = array_keys($DB->get_records_sql($sql, array('roleid'=>$roleid)));
+        
+        $addfunction = 'allow_'.$type;
+        $deltable = 'role_allow_'.$type;
+        $field = 'allow'.$type;
+        
+        $wanted = get_default_role_archetype_allows($type, $archetype);
+        
+        foreach ($current as $sroleid) {
+            if (!in_array($sroleid, $wanted)) {
+                $DB->delete_records($deltable, array('roleid'=>$roleid, $field=>$sroleid));
+                continue;
+            }
+            $key = array_search($sroleid, $wanted);
+            unset($wanted[$key]);
+        }
+        
+        foreach ($wanted as $sroleid) {
+            if ($sroleid == -1) {
+                $sroleid = $roleid;
+            }
+            $addfunction($roleid, $sroleid);
+        }
+    }
+    
+    $wanted = get_default_capabilities($archetype);
+    foreach ($caps as $cap) $wanted[$cap] = CAP_ALLOW;
+    
+    $current = $DB->get_records_menu('role_capabilities', array('roleid' => $roleid,
+                'contextid' => $systemcontext->id), '', 'capability,permission');
+    foreach($current as $cap => $perm) {
+        if(!array_key_exists($cap, $wanted)) {
+            unassign_capability($cap, $roleid, $systemcontext->id);
+        }
+    }
+    foreach($wanted as $cap => $perm) {
+        assign_capability($cap, $perm, $roleid, $systemcontext->id, true);
+    }
+    $systemcontext->mark_dirty();
+}
+
+
 if($formdata = $form->get_data())
 {
     //on effectue les opération demandée
@@ -140,7 +194,6 @@ if($formdata = $form->get_data())
     }
     
     //rôles
-    $systemcontext = context_system::instance();
     if(isset($formdata->catrole)) {
         if($data->catrole) {
             //réinitialiser le rôle créateur de catégorie
@@ -152,34 +205,7 @@ if($formdata = $form->get_data())
                 'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
                 'coursecreator');
         }
-        
-        set_role_contextlevels($roleid, get_default_contextlevels('coursecreator'));
-        
-        foreach (array('assign', 'override', 'switch') as $type) {
-            $function = 'allow_'.$type;
-            $allows = get_default_role_archetype_allows($type, 'coursecreator');
-            foreach ($allows as $allowid) {
-                $function($role->id, $allowid);
-            }
-        }
-        
-        $defaultpermissions = get_default_capabilities('coursecreator');
-        
-        $allows = [
-            'moodle/category:manage', 
-            'moodle/category:viewhiddencategories',
-            'moodle/course:create',
-            'moodle/course:viewhiddencourses',
-            'moodle/restore:rolldates',
-            'repository/coursefiles:view',
-            'repository/filesystem:view',
-            'repository/local:view',
-            'repository/webdav:view'
-        ];
-        foreach ($allows as $cap) {
-            assign_capability($cap, CAP_ALLOW, $roleid, $systemcontext);
-        }
-        $systemcontext->mark_dirty();
+        init_role($roleid, 'catcreator', ['moodle/category:manage', 'moodle/category:viewhiddencategories']);
     }
     
     if((isset($formdata->ownerrole)) && (!$data->ownerrole)) {
