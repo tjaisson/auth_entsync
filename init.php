@@ -206,29 +206,46 @@ function entsync_updatesort($data) {
         unset($rolelst[$data->ownerrole]);
     }
     
-    $prev = '';
     $i=1;
     foreach($rolelst as $roleid => $role) {
         switch($role->shortname) {
             case 'editingteacher' :
                 if($data->ownerrole) {
                     $ownerrole->neworder = $i++;
+                }
                 break;
-        }
-        
-        if(($data->ownerrole) && ($role->shortname == 'editingteacher')){
-            $ownerrole->neworder = $i++;
-            $role->neworder = $i++;
-            continue;
-        }
-        if(($data->catrole) && ($role->shortname == 'coursecreator')){
-            $catrole->neworder = $i++;
-            $role->neworder = $i++;
-            continue;
+            case 'coursecreator' :
+                if($data->catrole) {
+                    $catrole->neworder = $i++;
+                }
+                break;
         }
         $role->neworder = $i++;
     }
-}
+    if($data->catrole) {
+        $rolelst[$data->catrole] = $catrole;
+    }
+    if($data->ownerrole) {
+        $rolelst[$data->ownerrole] = $ownerrole;
+    }
+    $temp = $DB->get_field('role', 'MAX(sortorder) + 1', array());
+    foreach($rolelst as $roleid => $role) {
+        if($role->sortorder != $role->neworder) {
+            $rec = new stdClass();
+            $rec->id = $roleid;
+            $rec->sortorder = $temp + $role->sortorder;
+            $DB->update_record('role', $rec);
+        }
+    }
+    foreach($rolelst as $roleid => $role) {
+        if($role->sortorder != $role->neworder) {
+            $rec = new stdClass();
+            $rec->id = $roleid;
+            $rec->sortorder = $role->neworder;
+            $DB->update_record('role', $rec);
+        }
+    }
+    }
 
 function entsync_settheme() {
     $theme = theme_config::load('acparis');
