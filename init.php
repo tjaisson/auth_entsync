@@ -33,8 +33,7 @@ require_login();
 admin_externalpage_setup('authentsyncparam');
 require_capability('moodle/site:config', context_system::instance());
 
-$deverrou = optional_param('do', 'no', PARAM_TEXT);
-if($deverrou !== 'init') {
+if(optional_param('do', 'no', PARAM_TEXT) !== 'init') {
     redirect(new moodle_url('/'));
 }
 
@@ -45,19 +44,21 @@ $data->catrole = $DB->get_field('role', 'id', ['shortname' => 'catcreator']);
 $data->ownerrole = $DB->get_field('role', 'id', ['shortname' => 'courseowner']);
 
 $data->restorersnewrole = $CFG->restorernewroleid;
-$data->creatornewroles = $CFG->creatornewroleid;
+$data->creatornewrole = $CFG->creatornewroleid;
 
 //theme
 $data->currentthemename = core_useragent::get_device_type_theme('default');
 if (!$data->currentthemename) {
     $data->currentthemename = theme_config::DEFAULT_THEME;
 }
-$themes = core_component::get_plugin_list('theme');
-if(array_key_exists('acparis', $themes)) {
+if(array_key_exists('acparis', core_component::get_plugin_list('theme'))) {
     $data->acparistheme = 'acparis';
 } else {
     $data->acparistheme = false;
 }
+
+//homepage
+$data->defaulthomepage = $CFG->defaulthomepage;
 
 class init_form extends moodleform {
     function definition () {
@@ -67,25 +68,50 @@ class init_form extends moodleform {
         
         $mform = $this->_form;
         $data = $this->_customdata;
+        
+        //theme
         $mform->addElement('header', 'themehdr', 'Thème');
         $mform->setExpanded('themehdr');
         if($data->acparistheme) {
             if($data->currentthemename === $data->acparistheme) {
                 $msg = $validico . 'Le thème \'acparis\' est déjà sélectionné.';
                 $chk = false;
+                $freeze = true;
             } else {
                 $msg = $warningico . 'Le thème sélectionné n\'est pas \'acparis\'.';
                 $chk = true;
+                $freeze = false;
             }
             $mform->addElement('html', $msg);
-            $mform->addElement('checkbox', 'theme', 'Sélectionner le thème \'acparis\'');
-            $mform->setType('theme', PARAM_BOOL);
-            $mform->setDefault('theme', $chk);
-            $mform->freeze('theme');
+            if(!$freeze) {
+                $mform->addElement('checkbox', 'theme', 'Sélectionner le thème \'acparis\'');
+                $mform->setType('theme', PARAM_BOOL);
+                $mform->setDefault('theme', $chk);
+            }
         } else {
             $mform->addElement('html', 'Le thème \'acparis\' n\'est pas installé.');
         }
+
+        //Home page
+        $mform->addElement('header', 'homehdr', 'Page d\'accueil');
+        $mform->setExpanded('homehdr');
+        if($data->defaulthomepage == HOMEPAGE_SITE) {
+            $freeze = true;
+            $chk = false;
+            $msg = $validico . 'La page d\'accueil est déjà réglée sur \'Site\'.';
+        } else {
+            $freeze = false;
+            $chk = true;
+            $msg = $warningico . 'La page d\'accueil n\'est pas réglée sur \'Site\'.';
+        }
+        $mform->addElement('html', $msg);
+        if(!$freeze) {
+            $mform->addElement('checkbox', 'homepage', 'Régler la page d\'accueil sur \'Site\'');
+            $mform->setType('homepage', PARAM_BOOL);
+            $mform->setDefault('homepage', $chk);
+        }
         
+        //rôles
         $mform->addElement('header', 'rolehdr', 'Rôles');
         $mform->setExpanded('rolehdr');
         
@@ -107,34 +133,113 @@ class init_form extends moodleform {
             $msg = $validico . 'Rôle \'courseowner\' déjà créé.';
             $cblabel = 'Réinitialiser le rôle \'courseowner\'';
             $chk = false;
+            
+            if($data->ownerrole === $data->creatornewrole) {
+                $msg2 =  $validico . 'Rôle \'courseowner\' déjà défini comme rôle par défaut dans les nouveaux cours.';
+                $freeze2 = true;
+                $chk2 = false;
+            } else {
+                $msg2 =  $warningico . 'Le rôle \'courseowner\' n\'est pas défini comme rôle par défaut dans les nouveaux cours.';
+                $freeze2 = false;
+                $chk2 = true;
+            }
+            if($data->ownerrole === $data->restorersnewrole) {
+                $msg3 =  $validico . 'Rôle \'courseowner\' déjà défini comme rôle par défaut dans les cours restaurés.';
+                $freeze3 = true;
+                $chk3 = false;
+            } else {
+                $msg3 =  $warningico . 'Le rôle \'courseowner\' n\'est pas défini comme rôle par défaut dans les cours restaurés.';
+                $freeze3 = false;
+                $chk3 = true;
+            }
+            
         } else {
             $msg = $warningico . 'Le rôle \'courseowner\' n\'existe pas.';
             $cblabel = 'Créer le rôle \'courseowner\'';
             $chk = true;
+            
+            $msg2 = 0; $msg3 = 0;
+            $freeze2 = false; $freeze3 = false;
+            $chk2 = true; $chk3 = true;
         }
         $mform->addElement('html', $msg);
         $mform->addElement('checkbox', 'ownerrole', $cblabel);
         $mform->setType('ownerrole', PARAM_BOOL);
         $mform->setDefault('ownerrole', $chk);
         
+        if($msg2) $mform->addElement('html', $msg2);
+        if(!$freeze2) {
+            $mform->addElement('checkbox', 'creatornewrole', 'Définir \'courseowner\' comme rôle par défaut dans les nouveaux cours');
+            $mform->setType('creatornewrole', PARAM_BOOL);
+            $mform->setDefault('creatornewrole', $chk2);
+        } else {
+            $mform->addElement('html', '<br />');
+        }
         
+        if($msg3) $mform->addElement('html', $msg3);
+        if(!$freeze3) {
+            $mform->addElement('checkbox', 'restorernewrole', 'Définir \'courseowner\' comme rôle par défaut dans les cours restaurés');
+            $mform->setType('restorernewrole', PARAM_BOOL);
+            $mform->setDefault('restorernewrole', $chk3);
+        }
+
         $this->add_action_buttons();
     }
 }
 
-$posturl = new moodle_url('/auth/entsync/init.php', ['do' => 'init']);
-$form = new init_form($posturl, $data); 
+$data->posturl = new moodle_url('/auth/entsync/init.php', ['do' => 'init']);
+$form = new init_form($data->posturl, $data); 
 
 if($form->is_cancelled()) {
     redirect(new moodle_url('/'));
 }
 
-function init_role($roleid, $archetype, $caps = []) {
+function entsync_updatesort($data) {
+    global $DB;
+    $rolelst = $DB->get_records('role', [], 'sortorder');
+    if($data->catrole) {
+        $catrole = $rolelst[$data->catrole];
+        unset($rolelst[$data->catrole]);
+    }
+    if($data->ownerrole) {
+        $ownerrole = $rolelst[$data->ownerrole];
+        unset($rolelst[$data->ownerrole]);
+    }
+    
+    $prev = '';
+    $i=1;
+    foreach($rolelst as $roleid => $role) {
+        switch($role->shortname) {
+            case 'editingteacher' :
+                if($data->ownerrole) {
+                    $ownerrole->neworder = $i++;
+                break;
+        }
+        
+        if(($data->ownerrole) && ($role->shortname == 'editingteacher')){
+            $ownerrole->neworder = $i++;
+            $role->neworder = $i++;
+            continue;
+        }
+        if(($data->catrole) && ($role->shortname == 'coursecreator')){
+            $catrole->neworder = $i++;
+            $role->neworder = $i++;
+            continue;
+        }
+        $role->neworder = $i++;
+    }
+}
+
+function entsync_settheme() {
+    $theme = theme_config::load('acparis');
+    $themename = core_useragent::get_device_type_cfg_var_name('default');
+    set_config($themename, $theme->name);
+}
+
+function entsync_init_role($roleid, $archetype, $caps = []) {
     global $DB;
     $systemcontext = context_system::instance();
-    
     set_role_contextlevels($roleid, get_default_contextlevels('coursecreator'));
-    
     foreach (['assign', 'override', 'switch'] as $type) {
         $sql = "SELECT r.*
         FROM {role} r
@@ -188,32 +293,57 @@ if($formdata = $form->get_data())
     //on effectue les opération demandée
     //thème
     if((isset($formdata->theme)) && ($data->acparistheme) && ($data->currentthemename !== $data->acparistheme)) {
-        $theme = theme_config::load('acparis');
-        $themename = core_useragent::get_device_type_cfg_var_name('default');
-        set_config($themename, $theme->name);
+        entsync_settheme();
     }
     
     //rôles
+    $data->updatesort = false;
     if(isset($formdata->catrole)) {
+        $data->updatesort = true;
         if($data->catrole) {
             //réinitialiser le rôle créateur de catégorie
-            $roleid = $data->catrole;
             
         } else {
             //créer le rôle créateur de catégorie
-            $roleid = create_role('Créateur de cours et catégories', 'catcreator',
+            $data->catrole = create_role('Créateur de cours et catégories', 'catcreator',
                 'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
                 'coursecreator');
         }
-        init_role($roleid, 'catcreator', ['moodle/category:manage', 'moodle/category:viewhiddencategories']);
+        entsync_init_role($data->catrole, 'coursecreator', ['moodle/category:manage']);
+    }
+
+    if(isset($formdata->ownerrole)) {
+        $data->updatesort = true;
+        if($data->ownerrole) {
+            //réinitialiser le rôle propriétaire de cours
+    
+        } else {
+            //créer le rôle propriétaire de cours
+            $data->ownerrole = create_role('Propriétaire du cours', 'courseowner',
+                'Le propriétaire du cours peut le gérer et le supprimer',
+                'editingteacher');
+        }
+        entsync_init_role($data->ownerrole, 'editingteacher', ['moodle/course:delete']);
     }
     
-    if((isset($formdata->ownerrole)) && (!$data->ownerrole)) {
-        //propriétaire de cours
-        
+    if($data->updatesort) {
+        entsync_updatesort($data);
     }
     
-    redirect($posturl, 'Effectué');
+    if($data->ownerrole) {
+        if(isset($formdata->creatornewrole)) {
+            set_config('creatornewroleid', $data->ownerrole); 
+        }
+        if(isset($formdata->restorernewrole)) {
+            set_config('restorernewroleid', $data->ownerrole);
+        }
+    }
+    
+    if(isset($formdata->homepage)) {
+        set_config('defaulthomepage', HOMEPAGE_SITE);
+    }
+    
+    redirect($data->posturl, 'Effectué');
 }
 
 
