@@ -43,7 +43,10 @@ $string['sso'] = 'SSO';
 $string['connecturl'] = 'URL du connecteur ou du signet à mettre en place côté ENT';
 $string['rolepersselect'] = 'Rôle système des personnels';
 $string['roleensselect'] = 'Rôle système des enseignants';
-$string['roleensselect_help'] = 'Choisissez le rôle système que vous voulez attribuer aux enseignants.';
+$string['roleensselect_help'] = 'Choisissez le rôle système que vous voulez attribuer aux enseignants&nbsp;:<ul>
+<li>choissisez \'Aucun\' si vous voulez que l\'administrateur crée les cours pour les enseignants,</li>
+<li>choissisez \'Créateur de cours\' ou \'Créateur de cours et catégories\'
+si vous voulez que les enseignants soient autonomes pour créer leurs cours.</li></ul>';
 $string['entspecparam'] = 'Configuration pour {$a}';
 
 
