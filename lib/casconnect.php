@@ -191,7 +191,6 @@ class auth_entsync_casconnect {
     public function buildloginurl($gw = false)
     {
         $param = ['service' => $this->_clienturl->out(false)];
-        var_dump($param);
         if($gw) $param['gateway'] = 'true';
         return new moodle_url($this->_getServerBaseURL().'login', $param);
     }
