@@ -22,6 +22,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+//TODO : gérer le format de cours par défaut
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
