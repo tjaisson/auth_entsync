@@ -41,6 +41,12 @@ $PAGE->set_url("{$CFG->httpswwwroot}/auth/entsync/login.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
+if(!isset($CFG->sitemaitre)) {
+    die();
+}
+
+
+
 $entclass = optional_param('ent', '', PARAM_RAW);
 
 if(empty($entclass))
