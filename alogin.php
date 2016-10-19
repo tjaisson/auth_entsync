@@ -25,10 +25,6 @@
 require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/../../login/lib.php');
 
-//require_once($CFG->libdir.'/adminlib.php');
-//require_once($CFG->libdir.'/moodlelib.php');
-require_once('ent_defs.php');
-
 // Try to prevent searching for sites that allow sign-up.
 if (!isset($CFG->additionalhtmlhead)) {
     $CFG->additionalhtmlhead = '';
@@ -41,10 +37,9 @@ redirect_if_major_upgrade_required();
 $PAGE->https_required();
 
 $context = context_system::instance();
-$PAGE->set_url("$CFG->httpswwwroot/auth/entsync/login.php");
+$PAGE->set_url("{$CFG->httpswwwroot}/auth/entsync/login.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
-
 
 $entclass = optional_param('ent', '', PARAM_RAW);
 

@@ -61,6 +61,9 @@ if(array_key_exists('acparis', core_component::get_plugin_list('theme'))) {
 //homepage
 $data->defaulthomepage = $CFG->defaulthomepage;
 
+//plugin entsync
+$data->pluginenabled = is_enabled_auth('entsync');
+
 class init_form extends moodleform {
     function definition () {
         global $OUTPUT;
@@ -69,6 +72,25 @@ class init_form extends moodleform {
         
         $mform = $this->_form;
         $data = $this->_customdata;
+        
+        //plugin entsync
+        $mform->addElement('header', 'pluginhdr', 'Thème');
+        $mform->setExpanded('pluginhdr');
+        if($data->pluginenabled) {
+            $msg = $validico . 'Le plugin \'entsync\' est déjà activé.';
+            $chk = false;
+            $freeze = true;
+        } else {
+            $msg = $warningico . 'Le plugin \'entsync\' n\'est pas activé.';
+            $chk = true;
+            $freeze = false;
+        }
+        $mform->addElement('html', $msg);
+        if(!$freeze) {
+            $mform->addElement('checkbox', 'plugin', 'Activer le plugin \'entsync\'');
+            $mform->setType('plugin', PARAM_BOOL);
+            $mform->setDefault('plugin', $chk);
+        }
         
         //theme
         $mform->addElement('header', 'themehdr', 'Thème');
@@ -246,7 +268,7 @@ function entsync_updatesort($data) {
             $DB->update_record('role', $rec);
         }
     }
-    }
+}
 
 function entsync_settheme() {
     $theme = theme_config::load('acparis');
@@ -305,10 +327,36 @@ function entsync_init_role($roleid, $archetype, $caps = []) {
     $systemcontext->mark_dirty();
 }
 
+function entsync_enableplugin() {
+    get_enabled_auth_plugins(true); // fix the list of enabled auths
+    if (empty($CFG->auth)) {
+        $authsenabled = array();
+    } else {
+        $authsenabled = explode(',', $CFG->auth);
+    }
+    
+    if (!exists_auth_plugin('entsync')) {
+        print_error('pluginnotinstalled', 'auth', $returnurl, $auth);
+    }
+    
+    if (!in_array('entsync', $authsenabled)) {
+        $authsenabled[] = 'entsync';
+        $authsenabled = array_unique($authsenabled);
+        set_config('auth', implode(',', $authsenabled));
+    }
+    core_plugin_manager::reset_caches();
+}
+
 
 if($formdata = $form->get_data())
 {
     //on effectue les opération demandée
+    
+    //plugin entsync
+    if((isset($formdata->plugin)) && (!$data->pluginenabled)) {
+        entsync_enableplugin();
+    }
+    
     //thème
     if((isset($formdata->theme)) && ($data->acparistheme) && ($data->currentthemename !== $data->acparistheme)) {
         entsync_settheme();
