@@ -17,7 +17,7 @@
 /**
  * Définition des ents de l'académie de paris
  *
- * -> lilie (bientôt monlycee.net)
+ * -> monlycee.net
  * -> pcn
  * -> open ent ng
  *
@@ -29,7 +29,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 /**
- * -> lilie (bientôt monlycee.net)
+ * monlycee.net
  *
  * @package    tool_entsync
  * @copyright 2016 Thomas Jaisson
@@ -41,8 +41,8 @@ class  auth_entsync_ent_monlyceenet extends auth_entsync_entcas {
      * Constructor.
      */
     public function __construct() {
-        $this->nomcourt = 'Lilie';
-        $this->nomlong = 'Lilie';
+        $this->nomcourt = 'monlycée.net';
+        $this->nomlong = 'monlycée.net';
     }
     
     public function get_casparams() {
