@@ -117,7 +117,7 @@ Vous devez par ailleurs importer les comptes utilisateurs des élèves et des en
 
 //lilie
 $string['entmonlyceenet'] = 'Lilie';
-$string['entmonlyceenet_help'] = 'Activez "Lilie" si votre établissement utilise l\'ENT Lilie.<br />
+$string['entmonlyceenet_help'] = 'Activez "monlycée.net" si votre établissement utilise l\'ENT régional monlycée.net.<br />
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
     
 //Open ENT NG

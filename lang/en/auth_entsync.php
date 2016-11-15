@@ -100,8 +100,8 @@ $string['entpcn_help'] = 'Activate "PCN" if you use Paris Classe Numérique.';
 $string['entpcn_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //lilie
-$string['entmonlyceenet'] = 'Lilie';
-$string['entmonlyceenet_help'] = 'Activate "Lilie" if you use Lilie.';
+$string['entmonlyceenet'] = 'monlycée.net';
+$string['entmonlyceenet_help'] = 'Activate "monlycée.net" if you use monlycée.net.';
 $string['entmonlyceenet_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //Open ENT NG
