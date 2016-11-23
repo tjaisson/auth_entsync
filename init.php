@@ -64,6 +64,16 @@ $data->defaulthomepage = $CFG->defaulthomepage;
 //plugin entsync
 $data->pluginenabled = is_enabled_auth('entsync');
 
+//format de cours par défaut
+if (get_config('format_topics', 'disabled')) {
+    $data->format_topics_enabled = false;
+} else {
+    $data->format_topics_enabled = true;
+    $data->default_format = get_config('moodlecourse', 'format');
+}
+$data->default_numsections = get_config('moodlecourse', 'numsections');
+if(!$data->default_numsections) $data->default_numsections = 10; 
+
 class init_form extends moodleform {
     function definition () {
         global $OUTPUT;
@@ -204,6 +214,70 @@ class init_form extends moodleform {
             $mform->addElement('checkbox', 'restorernewrole', 'Définir \'courseowner\' comme rôle par défaut dans les cours restaurés');
             $mform->setType('restorernewrole', PARAM_BOOL);
             $mform->setDefault('restorernewrole', $chk3);
+        }
+
+        //format de cours par défaut
+        $mform->addElement('header', 'formathdr', 'Format de cours par défaut');
+        $mform->setExpanded('formathdr');
+        
+        if($data->format_topics_enabled) {
+            $msg = $validico . 'Le format de cours \'Thématique\' est activé.';
+            $freeze = true;
+            $chk = false;
+            if($data->default_format == 'topics'){
+                $msg2 = $validico . 'Le format de cours par défaut est le format \'Thématique\'.';
+                $freeze2 = true;
+                $chk2 = false;
+            }else{
+                $msg2 = $warningico . 'Le format de cours par défaut n\'est pas le format \'Thématique\'.';
+                $freeze2 = false;
+                $chk2 = true;
+            }
+            
+        } else {
+            $msg = $warningico . 'Le format de cours \'Thématique\' est désactivé.';
+            $freeze = false;
+            $chk = true;
+            $msg2 = $warningico . 'Le format de cours par défaut n\'est pas le format \'Thématique\'.';
+            $freeze2 = false;
+            $chk2 = true;
+        }
+        
+        if($data->default_numsections == 4) {
+            $msg3 = $validico . 'Le nombre de sections par défaut est égal à 4.';
+            $freeze3 = true;
+            $chk3 = false;
+        } else {
+            $msg3 = $warningico . 'Le nombre de sections par défaut n\'est pas égal à 4.';
+            $freeze3 = false;
+            $chk3 = true;
+        }
+        
+        $mform->addElement('html', $msg);
+        if(!$freeze){
+            $mform->addElement('checkbox', 'enabletopicsformat', 'Activer le format de cours \'Thématique\'.');
+            $mform->setType('enabletopicsformat', PARAM_BOOL);
+            $mform->setDefault('enabletopicsformat', $chk);
+        } else {
+            $mform->addElement('html', '<br />');
+        }
+        
+        $mform->addElement('html', $msg2);
+        if(!$freeze2){
+            $mform->addElement('checkbox', 'settopicsformatasdef', 'Régler le format de cours par défaut sur \'Thématique\'.');
+            $mform->setType('settopicsformatasdef', PARAM_BOOL);
+            $mform->setDefault('settopicsformatasdef', $chk2);
+        } else {
+            $mform->addElement('html', '<br />');
+        }
+
+        $mform->addElement('html', $msg3);
+        if(!$freeze3){
+            $mform->addElement('checkbox', 'setnumsections', 'Régler le nombre de sections à 4.');
+            $mform->setType('setnumsections', PARAM_BOOL);
+            $mform->setDefault('setnumsections', $chk3);
+        } else {
+            $mform->addElement('html', '<br />');
         }
 
         $this->add_action_buttons();
@@ -408,6 +482,20 @@ if($formdata = $form->get_data())
     if(isset($formdata->homepage)) {
         set_config('defaulthomepage', HOMEPAGE_SITE);
     }
+    
+    //format de cours 'enabletopicsformat' 'settopicsformatasdef' 'setnumsections'
+    if(isset($formdata->enabletopicsformat)) {
+        unset_config('disabled', 'format_topics');
+        core_plugin_manager::reset_caches();
+    }
+    if(isset($formdata->settopicsformatasdef)) {
+        set_config('format', 'topics', 'moodlecourse');
+    }
+    if(isset($formdata->setnumsections)) {
+        set_config('numsections', 4, 'moodlecourse');
+    }
+    
+    
     
     redirect($data->posturl, 'Effectué');
 }
