@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Connexion sso
+ * Connexion sso depuis le site maitre
  *
  * @package auth_entsync
  * @copyright 2016 Thomas Jaisson
@@ -37,13 +37,22 @@ redirect_if_major_upgrade_required();
 $PAGE->https_required();
 
 $context = context_system::instance();
-$PAGE->set_url("{$CFG->httpswwwroot}/auth/entsync/login.php");
+$PAGE->set_url("{$CFG->httpswwwroot}/auth/entsync/alogin.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
-if(!isset($CFG->sitemaitre)) {
-    die();
+$sitemaitre = "0753291v";
+
+list(,$sitecourant) = explode('/',$_SERVER['REQUEST_URI'],3);
+
+if($sitemaitre == $sitecourant) {
+    
+} else {
+    
 }
+
+die();
+
 
 
 
