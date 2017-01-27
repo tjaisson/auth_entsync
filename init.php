@@ -84,7 +84,7 @@ class init_form extends moodleform {
         $data = $this->_customdata;
         
         //plugin entsync
-        $mform->addElement('header', 'pluginhdr', 'Thème');
+        $mform->addElement('header', 'pluginhdr', 'Entsync');
         $mform->setExpanded('pluginhdr');
         if($data->pluginenabled) {
             $msg = $validico . 'Le plugin \'entsync\' est déjà activé.';
