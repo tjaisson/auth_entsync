@@ -28,3 +28,5 @@ Cela se fait dans la <b>console d'administration</b>&nbsp;:</p>
 <ol start="7">
 <li>Cliquer sur "Droits d'accès" du connecteur nouvellement créé puis cocher les groupes d'utilisateurs qui auront accès à Moodle.</li>
 </ol>
+<p>Vous devez ensuite importer les utilisateurs dans "Importation des utilisateurs".</p>
+<p>Les élèves et les enseignants accèderont ainsi à Moodle avec leurs codes d'accès Open ENT NG.</p>

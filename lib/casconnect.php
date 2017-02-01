@@ -68,13 +68,18 @@ class auth_entsync_casconnect {
         if(! array_key_exists('casversion', $this->_casparams)) $this->_casparams['casversion'] = '2.0';
         if(! array_key_exists('port', $this->_casparams)) $this->_casparams['port'] = 443;
         if(! array_key_exists('supportGW', $this->_casparams)) $this->_casparams['supportGW'] = false;
+        if(! array_key_exists('allowUntrust', $this->_casparams)) $this->_casparams['allowUntrust'] = false;
         if(! array_key_exists('homeuri', $this->_casparams)) $this->_casparams['homeuri'] = '/';
         if(! array_key_exists('homehost', $this->_casparams))
             $this->_casparams['homehost'] = $this->_casparams['hostname'];
     }
     
     public function support_gw() {
-        return $this->_casparams['supportGW'];
+    	return $this->_casparams['supportGW'];
+    }
+    
+    public function allow_Untrust() {
+    	return $this->_casparams['allowUntrust'];
     }
     
     public function  redirtocas($gw = false) {
@@ -128,6 +133,11 @@ class auth_entsync_casconnect {
         $valurl  = $this->buildvalidateurl()->out(false);
         
         $cu = new curl();
+        
+        if($this->allow_Untrust()) {
+        	$cu->setopt(['SSL_VERIFYHOST' => false]);
+        	$cu->setopt(['SSL_VERIFYPEER' => false]);
+        }
         
         $maxretries = $this->_casparams['retries'];
         $retries = 0;

@@ -136,3 +136,10 @@ $string['educhoruscashost_help'] = 'Habituellement : educhorus.enteduc.fr';
 $string['educhoruscaspath'] = 'URI de base';
 $string['educhoruscaspath_help'] = 'Habituellement le RNE de l\'établissement.<br />Par exemple : 0750677D';
 
+//scribe/envole
+$string['entenvole'] = 'Scribe / Envole';
+$string['entenvole_help'] = 'Activez "Scribe / Envole" si vous utilisez un serveur Scribe dans votre établissement et que vous souhaitez mettre en place l\'authentification par l\'extranet Envole.<br /> 
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+
+$string['envolecashost'] = 'Nom d\'hôte de l\'extranet Envole de l\'établissement';
+$string['envolecashost_help'] = 'Par exemple : extranet.lyc-elisa-lemonnier.ac-paris.fr';

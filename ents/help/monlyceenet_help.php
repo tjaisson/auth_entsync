@@ -17,3 +17,5 @@ Il est possible d'utiliser le logo suivant&nbsp;: <img style = "border: 1px soli
 <li>Pensez à cocher la case d’acceptation de la convention,</li>
 <li>Cliquer sur "Enregistrer". Confirmer le premier message d'avertissement puis patienter jusqu'au message de confirmation.</li>
 </ol>
+<p>Vous devez ensuite importer les utilisateurs dans "Importation des utilisateurs".</p>
+<p>Les élèves et les enseignants accèderont ainsi à Moodle avec leurs codes d'accès monlycée.net.</p>

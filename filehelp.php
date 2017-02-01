@@ -34,16 +34,18 @@ admin_externalpage_setup('authentsyncbulk');
 require_capability('moodle/site:uploadusers', context_system::instance());
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('entsyncfilehelp', 'auth_entsync'));
-$i=1;
+echo $OUTPUT->heading(get_string('entsyncfilehelp', 'auth_entsync')); ?>
+<p>Quel que soit l'ENT utilisé, vous devez importer les comptes des élèves et des enseignants de l'ENT dans Moodle. Le format des fichiers utilisateurs
+est différent d'un ENT à l'autre. Cette page d'aide
+détaille la façon dont ces fichiers sont obtenus. Vous pouvez ensuite les importer dans Moodle <a href="<?php echo "{$CFG->wwwroot}/auth/entsync/bulk.php"; ?>">ici</a>.</p>
+<p>Seuls les ENT activés sont listés ici.</p><br />
+<?php $i=1;
 foreach(auth_entsync_ent_base::get_ents() as $ent) {
     if($ent->is_enabled()) {
         echo "{$i}.&nbsp;<a href='#ent{$ent->get_code()}'>{$ent->nomlong}</a><br />";
         ++$i;
     }
 }
-
-echo '<br /><p>Seuls les ENT activés sont listés ici.</p>';
 
 $i=1;
 

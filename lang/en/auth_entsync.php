@@ -119,3 +119,10 @@ $string['educhoruscashost_help'] = 'eg: educhorus.enteduc.fr';
 $string['educhoruscaspath'] = 'Base URI';
 $string['educhoruscaspath_help'] = 'Usually RNE.<br />eg: 0750677D';
 
+//scribe/envole
+$string['entenvole'] = 'Scribe / Envole';
+$string['entenvole_help'] = 'Activate "Scribe / Envole" if you use Scribe.';
+$string['entenvole_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
+
+$string['envolecashost'] = 'Hostname of Envole extranet';
+$string['envolecashost_help'] = 'eg: extranet.lyc-elisa-lemonnier.ac-paris.fr';

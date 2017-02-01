@@ -43,20 +43,22 @@ $PAGE->set_pagelayout('login');
 
 $entclass = optional_param('ent', '', PARAM_RAW);
 
+$redirect = $CFG->wwwroot.'/';
+
 if(empty($entclass)) {
-    redirect('/');
+    redirect($redirect);
 }
 
 if(!$ent = auth_entsync_ent_base::get_ent($entclass)) {
-    redirect('/');
+    redirect($redirect);
 }
 
 if(!$ent->is_sso()) {
-    redirect('/');
+    redirect($redirect);
 }
     
 if($ent->get_mode() !== 'cas') {
-    redirect('/');
+    redirect($redirect);
 }
 
 $cas = $ent->get_casconnector();
@@ -64,11 +66,11 @@ $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/logout.php", ['ent'
 $cas->set_clienturl($clienturl);
 
 if(!$cas->read_ticket()) {
-    redirect('/');
+    redirect($redirect);
 }
 
 if($val = $cas->validate_ticket()) {
     $cas->redirtohome();
 } else {
-    redirect('/');
+    redirect($redirect);
 }
