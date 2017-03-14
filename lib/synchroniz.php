@@ -534,8 +534,6 @@ class auth_entsync_sync_cas extends auth_entsync_sync {
 /**
  * Synchronizer spécifique pour le mode d'authentification 'local'
  * 
- * TODO : n'est pas encore fonctionnel
- *
  * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
