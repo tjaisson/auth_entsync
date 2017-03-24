@@ -40,7 +40,8 @@ class auth_plugin_entsync extends auth_plugin_base {
     public function __construct() {
         $this->authtype = 'entsync';
         $this->config = new stdClass();
-        $locked = ['firstname', 'lastname', 'email'];
+        //$locked = ['firstname', 'lastname', 'email']; On ne bloque plus le champ email.
+        $locked = ['firstname', 'lastname'];
         foreach($this->locked as $field) {
             $cfgname = "field_lock_{$field}";
             $this->config->{$cfgname} =  'locked';
