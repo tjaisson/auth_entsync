@@ -25,23 +25,23 @@
 $string['auth_entsyncdescription'] = 'ENT users authentication plugin.';
 $string['pluginname'] = 'ENTSYNC authentication';
 //admin menu
-$string['enttool'] = 'Managed users';
+$string['enttool'] = 'School users';
 
 //auth
 $string['mdlauth'] = 'Other user';
 
 //param
 $string['entsyncparam'] = 'Settings';
-$string['entsyncparam_help'] = 'ENT users authentication plugin.';
-$string['entlist'] = 'Available WNEs';
-$string['entlist_help'] = 'You can configure WNE connector settings';
+$string['entsyncparam_help'] = 'School users management simplify teacher and student account creation.';
+$string['entlist'] = 'Available systems (ENT)';
+$string['entlist_help'] = 'You can configure ENT connector settings';
 $string['entlist_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 $string['entname'] = 'Name';
 $string['sso'] = 'SSO';
 $string['connecturl'] = 'Connect URL';
 $string['rolepersselect'] = 'Employe\'s system role';
 $string['roleensselect'] = 'Teacher\'s system role';
-$string['roleensselect_help'] = 'Choose system role you vant to assign to teachers.';
+$string['roleensselect_help'] = 'Choose system role you want to assign to teachers.';
 $string['entspecparam'] = '{$a} settings';
 
 $string['plugindesc'] = 'ENT users authentication plugin.';
@@ -51,8 +51,8 @@ $string['paramredirect'] = 'Settings are in "Managed users".<br />
 Go to <a href=\'{$a}\'>Settings</a>';
 
 //aide ent
-$string['entsyncenthelp'] = 'Help on ENT';
-$string['entsyncenthelpintro'] = 'This page';
+$string['entsyncenthelp'] = 'Help on ENT SSO connectors';
+$string['entsyncenthelpintro'] = 'This page present help on SSO';
 
 //bulk
 $string['entsyncbulk'] = 'Synchronize users';

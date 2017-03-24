@@ -49,7 +49,6 @@ $string['roleensselect_help'] = 'Choisissez le rôle système que vous voulez at
 si vous voulez que les enseignants soient autonomes pour créer leurs cours.</li></ul>';
 $string['entspecparam'] = 'Configuration pour {$a}';
 
-
 $string['pluginnotenabledwarn'] = 'NOTE : le plugin d\'authentification ENTSYNC n\'est pas activé.<br />
 La gestion des utilisateurs de l\'établissement ne sera pas fonctionnelle tant que vous ne l\'aurez pas activé<br />
 Aller à <a href=\'{$a}\'>Gestion de l\'authentification</a>';
