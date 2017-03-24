@@ -25,13 +25,36 @@ class auth_entsync_stringhelper {
         . rand(1, 9) . rand(0, 9);
     }
     
-    private static $translit;
+    private static $name_translit;
+    private static $cohort_translit;
     
+    /**
+     * Simplifie les noms et prénoms
+     * met en minuscule, enlève les lettres accentuées remplace les espaces par des "-"
+     *
+     * @param string $str Le nom à simplifier
+     * @return string
+     */
     public static function simplify_name($str) {
-        if(!isset(self::$translit)) {
-            self::$translit = Transliterator::createFromRules(
-                "::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
-        }
-        return trim(self::$translit->transliterate($str), '-');
+    	if(!isset(self::$name_translit)) {
+    		self::$name_translit = Transliterator::createFromRules(
+    				"::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
+    	}
+    	return trim(self::$name_translit->transliterate($str), '-');
+    }
+
+    /**
+     * Simplifie les noms de cohorte
+     * met en minuscule, enlève les lettres accentuées remplace les espaces par des "-"
+     *
+     * @param string $str Le nom à simplifier
+     * @return string
+     */
+    public static function simplify_cohort($str) {
+    	if(!isset(self::$name_translit)) {
+    		self::$name_translit = Transliterator::createFromRules(
+    				"::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
+    	}
+    	return trim(self::$name_translit->transliterate($str), '-');
     }
 }
