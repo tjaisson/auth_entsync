@@ -53,7 +53,7 @@ class auth_entsync_stringhelper {
     public static function simplify_cohort($str) {
     	if(!isset(self::$name_translit)) {
     		self::$name_translit = Transliterator::createFromRules(
-    				"::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
+    				"::Latin-ASCII; ::upper ;");
     	}
     	return trim(self::$name_translit->transliterate($str), '-');
     }
