@@ -508,7 +508,8 @@ class auth_entsync_sync_cas extends auth_entsync_sync {
 
     protected function applycreds($_mdlu, $iu) {
         global $DB, $CFG;
-	    $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}";
+	    $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}"; //TODO : gérer le cas où le username est déjà utilisé 
+	                                                              //ne devrait pas se produire mais déjà vu suite à bugg
 	    $clean = core_user::clean_field($_mdlu->username, 'username');
 	    if ($_mdlu->username !== $clean) {
 	        if(0 === $DB->count_records('user', ['username' => $clean])) {

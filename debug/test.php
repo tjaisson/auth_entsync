@@ -26,32 +26,103 @@
 require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
+require_once($CFG->dirroot.'/cohort/lib.php');
 require_once(__DIR__ . '/../lib/synchroniz.php');
 require_once(__DIR__ . '/../lib/table.php');
 require_once(__DIR__ . '/../ent_defs.php');
 
 require_login();
-admin_externalpage_setup('authentsyncparam');
+admin_externalpage_setup('authentsyncuser');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading('debug');
 
 
-$entus = auth_entsync_usertbl::get_entus(-1, 6);
-$_existingentu = array();
-$_existingentuother = array();
-while($entus) {
-	$entu = array_pop($entus);
-	if(in_array($entu->profile, [ 2 ])) {
-		$entu->checked = false;
-		$_existingentu[$entu->uid] = $entu;
+$sql = "SELECT a.id, a.uid
+FROM {auth_entsync_user} a
+WHERE (SELECT COUNT(1) FROM {user} b
+WHERE (a.userid = b.id) AND (b.deleted=0)
+) = 0";
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	//something posted
+	
+	if (isset($_POST['purge'])) {
+		$list = $DB->get_records_sql($sql);
+		foreach($list as $entu) {
+			$DB->delete_records('auth_entsync_user', ['id' => $entu->id]);
+		}
+		echo "<p>purged</p>";
 	} else {
-		$_existingentuother[$entu->uid] = 1;
+		if (isset($_POST['release'])) {
+			if(isset($_POST['selectc'])) {
+				$select = $_POST['selectc'];
+				foreach($select as $cid) {
+					$c = $DB->get_record('cohort', ['id' => $cid]);
+					$c->component = '';
+					cohort_update_cohort($c);
+				}
+				echo "<p>released</p>";
+			}
+		}
 	}
 }
 
+?>
+<form method="post">
 
-var_dump($_existingentuother);
+<h1>Utilisateurs non reliés</h1>
+
+<?php
+
+$list = $DB->get_records_sql($sql);
+
+$t = new html_table();
+
+$t->head = ['id', 'Id ENT'];
+
+foreach($list as $entu) {
+	$row = [$entu->id, $entu->uid];
+	$t->data[] = new html_table_row($row);
+}
+
+
+echo html_writer::table($t);
+
+
+?>
+
+<input name="purge" type="submit" value="Purge" />
+
+<h1>Cohortes gérées</h1>
+
+<?php
+
+
+$clist = $DB->get_records('cohort', ['component' => 'auth_entsync']);
+
+$ct = new html_table();
+
+$ct->head = ['coche', 'Nom', 'Identifiant cohorte'];
+
+foreach($clist as $c) {
+	$cb = "<input type=\"checkbox\" name=\"selectc[]\" value=\"{$c->id}\"></input>";
+	$row = [$cb, $c->name, $c->idnumber];
+	$ct->data[] = new html_table_row($row);
+}
+
+
+
+echo html_writer::table($ct);
+
+?>
+
+<input name="release" type="submit" value="Release" />
+</form>
+
+<?php
+
 
 echo $OUTPUT->footer();
 die;
