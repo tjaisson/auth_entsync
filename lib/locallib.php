@@ -51,10 +51,10 @@ class auth_entsync_stringhelper {
      * @return string
      */
     public static function simplify_cohort($str) {
-    	if(!isset(self::$name_translit)) {
-    		self::$name_translit = Transliterator::createFromRules(
+    	if(!isset(self::$cohort_translit)) {
+    		self::$cohort_translit = Transliterator::createFromRules(
     				"::Latin-ASCII; ::upper ;");
     	}
-    	return trim(self::$name_translit->transliterate($str), '-');
+    	return trim(self::$cohort_translit->transliterate($str), '-');
     }
 }

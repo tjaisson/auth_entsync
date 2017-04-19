@@ -29,6 +29,7 @@ require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once(__DIR__ . '/../lib/synchroniz.php');
 require_once(__DIR__ . '/../lib/table.php');
+require_once(__DIR__ . '/../lib/locallib.php');
 require_once(__DIR__ . '/../ent_defs.php');
 
 require_login();
@@ -45,6 +46,9 @@ WHERE (a.userid = b.id) AND (b.deleted=0)
 ) = 0";
 
 
+const COHORT_PRFX = 'auto_';
+$_prfx_len = strlen(COHORT_PRFX);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	//something posted
 	
@@ -60,8 +64,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				$select = $_POST['selectc'];
 				foreach($select as $cid) {
 					$c = $DB->get_record('cohort', ['id' => $cid]);
-					$c->component = '';
-					cohort_update_cohort($c);
+					//$c->idnumber = COHORT_PRFX . auth_entsync_stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
+					//$c->component = '';
+					//cohort_update_cohort($c);
 				}
 				echo "<p>released</p>";
 			}
