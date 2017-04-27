@@ -9,7 +9,7 @@
 <p>Se connecter à SIECLE BEE&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/bee.jpg' /></p>
 <ol>
-<li>Cliquer sur "EXPORTATIONS",</li>
+<li>Cliquer sur "Exportations",</li>
 <li>Cliquer sur "En XML",</li>
 <li>Cliquer sur "Elèves sans adresse".</li>
 </ol>
