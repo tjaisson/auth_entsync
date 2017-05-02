@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once('locallib.php');
+
 
 class auth_entsync_cohorthelper {
     const COHORT_PRFX = 'auto_';
@@ -43,17 +45,19 @@ class auth_entsync_cohorthelper {
      */
     protected static function fillcohortsarrays() {
         global $DB;
+        self::$_cohortsbyname = array();
         self::$_cohortsbyid = array();
         $_prfx_len = strlen(self::COHORT_PRFX);
-        self::$_cohortsbyid = array();
-        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'], "SUBSTRING(idnumber, {$_prfx_len})", 'id, idnumber');
+        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'], "SUBSTRING(idnumber, {$_prfx_len})", 'id, name, idnumber');
         foreach ($lst as $id => $c) {
             $id = (int)$id;
             if(0 === strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {
-                self::$_cohortsbyid[$id] = substr($c->idnumber, $_prfx_len);
+            	$_cohort_name = auth_entsync_stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
+            	self::$_cohortsbyname[$_cohort_name] = $id;
+            	self::$_cohortsbyid[$id] = $c->name;
             }
         }
-        self::$_cohortsbyname = array_flip(self::$_cohortsbyid);
+//        self::$_cohortsbyid = array_flip(self::$_cohortsbyname);
     }
 
     /**
@@ -63,27 +67,28 @@ class auth_entsync_cohorthelper {
      * @return int cohortid
      */
     protected static function getorcreate_cohort($cohortname) {
+    	$_cohort_simp_name = auth_entsync_stringhelper::simplify_cohort($cohortname);
         if(!isset(self::$_cohortsbyid)) self::fillcohortsarrays();
-        if(array_key_exists($cohortname, self::$_cohortsbyname)) {
-            return (int)self::$_cohortsbyname[$cohortname];
+        if(array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
+        	return (int)self::$_cohortsbyname[$_cohort_simp_name];
         }
         $newcohort = new stdClass();
         $newcohort->name = $cohortname;
-        $newcohort->idnumber = self::COHORT_PRFX . $cohortname;
+        $newcohort->idnumber = self::COHORT_PRFX . $_cohort_simp_name;
         $newcohort->component = 'auth_entsync';
         $newcohort->contextid = context_system::instance()->id;
         $cohortid = cohort_add_cohort($newcohort);
-        self::$_cohortsbyid[$cohortid] = $cohortname;
-        self::$_cohortsbyname[$cohortname] = $cohortid;
+        self::$_cohortsbyid[$cohortid] = $_cohort_simp_name;
+        self::$_cohortsbyname[$_cohort_simp_name] = $cohortid;
         return $cohortid;
     }
     
     public static function get_cohorts() {
-        if(!isset(self::$_cohortsbyid)) self::fillcohortsarrays();
-        return self::$_cohortsbyid;
+    	if(!isset(self::$_cohortsbyid)) self::fillcohortsarrays();
+    	return self::$_cohortsbyid;
     }
     
-    /**
+/**
      * Retourne la liste des cohortes gérées de cet utilisateur
      *
      * @param int $userid

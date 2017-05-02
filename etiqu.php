@@ -15,7 +15,7 @@ $profile = required_param('profile', PARAM_INT);
 if($profile === 1) {
     $cohort =  required_param('cohort', PARAM_INT);
     $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
-    $ttl = $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+    $ttl = auth_entsync_cohorthelper::get_cohorts()[$cohort];
 } else if($profile === 2) {
     $lst = auth_entsync_usertbl::get_users_ent_ens();
     $ttl = "Enseignant";

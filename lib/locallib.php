@@ -45,7 +45,7 @@ class auth_entsync_stringhelper {
 
     /**
      * Simplifie les noms de cohorte
-     * met en minuscule, enlève les lettres accentuées remplace les espaces par des "-"
+     * met en majuscule, enlève les lettres accentuées
      *
      * @param string $str Le nom à simplifier
      * @return string
