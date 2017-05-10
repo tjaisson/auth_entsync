@@ -47,17 +47,20 @@ $code = '';
 $cu = new curl();
 $cu->setopt(['CURLOPT_USERPWD' => $user . ':' . $code]);
 
-//$url = new moodle_url('https://ent-ng.paris.fr/directory/structures?format=json');
+$url = new moodle_url('https://ent-ng.paris.fr/directory/structures?format=json');
 //$url = new moodle_url('https://ent-ng.paris.fr/directory/user/admin/list?structureId=ab7650e7-d370-4018-a4a7-8bbe5d7744ce&profile=Teacher');
-$url = new moodle_url('https://ent-ng.paris.fr/directory/user/structures/list?format=xml&uai=0752606A');
+//$url = new moodle_url('https://ent-ng.paris.fr/directory/user/structures/list?format=xml&uai=0752606A');
 
 
-$ret = $cu->get($url);
+//$ret = $cu->get($url);
 
-echo '<pre>' . htmlspecialchars($ret) . '</pre>';
+//echo '<pre>' . htmlspecialchars($ret) . '</pre>';
 
-$dec = json_decode($ret);
-var_dump($dec);
+echo '<pre>' . urlencode('http://educ.arte.tv/?ent=parisng') . '</pre>';
+
+
+//$dec = json_decode($ret);
+//var_dump($dec);
 
 echo $OUTPUT->footer();
 die;
