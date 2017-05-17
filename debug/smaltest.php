@@ -23,7 +23,7 @@
  */
 
 
-//require(__DIR__ . '/../../../config.php');
+require(__DIR__ . '/../../../config.php');
 
 function parse_size($size) {
 	$unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
@@ -53,11 +53,12 @@ function returnBytes($val) {
 }
 
 //$val = ini_get('upload_max_filesize');
-$val = "200kK";
+$val = "200k";
 
 echo $val . ' ';
 echo returnBytes($val) . ' ';
 echo parse_size($val) . ' ';
+echo get_real_size($val) . ' ';
 
 
 die;
