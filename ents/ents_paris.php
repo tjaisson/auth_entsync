@@ -177,7 +177,32 @@ class  auth_entsync_ent_pcn extends auth_entsync_entcas {
  * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class  auth_entsync_ent_ng extends auth_entsync_entcas {
+abstract class auth_entsync_entng extends auth_entsync_entcas {
+    public function can_switch() {
+        return true;
+    }
+    
+    public function get_casparams() {
+        return [
+                        'baseuri' => '/cas/',
+                        'homeuri' => '/',
+                        'supportGW' => false,
+                        'decodecallback' => [$this, 'decodecallback']
+        ];
+    }
+    
+    public function decodecallback($attr, $elem) {
+        //ENTPersonStructRattachRNE
+        $attr->rnes = [];
+        $rnenodelist = $elem->getElementsByTagName("ENTPersonStructRattachRNE");
+        foreach($rnenodelist as $rnenode) {
+            $attr->rnes[] = $rnenode->nodeValue;
+        }
+    }
+    
+}
+
+class  auth_entsync_ent_ng extends auth_entsync_entng {
 
     /**
      * Constructor.
@@ -188,14 +213,11 @@ class  auth_entsync_ent_ng extends auth_entsync_entcas {
     }
     
     public function get_casparams() {
-        return [
-        'hostname' => 'ent-ng.paris.fr',
-        'baseuri' => '/cas/',
-        'homeuri' => '/',
-        'supportGW' => false
-        ];
+        $cp = parent::get_casparams();
+        $cp['hostname'] = 'ent-ng.paris.fr';
+        return $cp;
     }
-
+    
     public function get_profileswithcohorts() {
         return [1];
     }

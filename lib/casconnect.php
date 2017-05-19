@@ -55,7 +55,7 @@ class auth_entsync_casconnect {
     protected $_clienturl;
     
     protected $_ticket;
-    
+
     /**
      * Constructor.
      */
@@ -83,11 +83,13 @@ class auth_entsync_casconnect {
     }
     
     public function  redirtocas($gw = false) {
-        redirect($this->buildloginurl($gw));
+//        redirect($this->buildloginurl($gw));
+        self::_redirect($this->buildloginurl($gw));
     }
     
     public function  redirtohome() {
-        redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
+//        redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
+    	self::_redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
     }
     
     /**
@@ -228,38 +230,6 @@ class auth_entsync_casconnect {
         return new moodle_url($ret, $param);
     }
 
-    protected function getURL()
-    {
-        $final_uri = '';
-            // remove the ticket if present in the URL
-            $final_uri = ($this->_isHttps()) ? 'https' : 'http';
-            $final_uri .= '://';
-
-            $final_uri .= $this->_getClientUrl();
-            
-            //hack
-            if (isset($_SERVER['REQUEST_URI'])) {
-                $_REQUEST_URI = $_SERVER['REQUEST_URI'];
-            } else {
-                $_REQUEST_URI = $_SERVER['SCRIPT_NAME'] . '?' . $_SERVER['QUERY_STRING'];
-            }
-            
-            
-            $request_uri	= explode('?', $_REQUEST_URI, 2);
-            $final_uri		.= $request_uri[0];
-
-            if (isset($request_uri[1]) && $request_uri[1]) {
-                $query_string= $this->_removeParameterFromQueryString('ticket', $request_uri[1]);
-
-                // If the query string still has anything left,
-                // append it to the final URI
-                if ($query_string !== '') {
-                    $final_uri	.= "?$query_string";
-                }
-            }
-            return $final_uri;
-    }
-
     protected function _getServerBaseURL()
     {
         $ret = 'https://' . $this->_casparams['hostname'];
@@ -270,28 +240,6 @@ class auth_entsync_casconnect {
         return $ret;
     }
 
-    protected function _buildQueryUrl($url, $query)
-    {
-        $url .= (strstr($url, '?') === false) ? '?' : '&';
-        $url .= $query;
-        return $url;
-    }
-    
-    protected function _isHttps()
-    {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-            return ($_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-        }
-        if ( isset($_SERVER['HTTPS'])
-            && !empty($_SERVER['HTTPS'])
-            && strcasecmp($_SERVER['HTTPS'], 'off') !== 0
-            ) {
-                return true;
-            } else {
-                return false;
-            }
-    }
-    
     /**
      * @param moodle_url $url
      */
@@ -299,51 +247,9 @@ class auth_entsync_casconnect {
         $this->_clienturl = $url;
         
     }
-    
-    protected function _getClientUrl()
-    {
-        $server_url = '';
-        if (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            // explode the host list separated by comma and use the first host
-            $hosts = explode(',', $_SERVER['HTTP_X_FORWARDED_HOST']);
-            // see rfc7239#5.3 and rfc7230#2.7.1: port is in HTTP_X_FORWARDED_HOST if non default
-            return $hosts[0];
-        } else if (!empty($_SERVER['HTTP_X_FORWARDED_SERVER'])) {
-            $server_url = $_SERVER['HTTP_X_FORWARDED_SERVER'];
-        } else {
-            if (empty($_SERVER['SERVER_NAME'])) {
-                $server_url = $_SERVER['HTTP_HOST'];
-            } else {
-                $server_url = $_SERVER['SERVER_NAME'];
-            }
-        }
-        if (!strpos($server_url, ':')) {
-            if (empty($_SERVER['HTTP_X_FORWARDED_PORT'])) {
-                $server_port = $_SERVER['SERVER_PORT'];
-            } else {
-                $ports = explode(',', $_SERVER['HTTP_X_FORWARDED_PORT']);
-                $server_port = $ports[0];
-            }
-    
-            if ( ($this->_isHttps() && $server_port!=443)
-                || (!$this->_isHttps() && $server_port!=80)
-                ) {
-                    $server_url .= ':';
-                    $server_url .= $server_port;
-                }
-        }
-        return $server_url;
+
+    protected static function _redirect($url) {
+        redirect($url);
     }
 
-    protected function _removeParameterFromQueryString($parameterName, $queryString)
-    {
-        $parameterName	= preg_quote($parameterName);
-        return preg_replace(
-            "/&$parameterName(=[^&]*)?|^$parameterName(=[^&]*)?&?/",
-            '', $queryString
-            );
-    }
-    
-    
-    
 }

@@ -337,7 +337,13 @@ abstract class auth_entsync_ent_base {
     
 }
 
-abstract class auth_entsync_entcas extends auth_entsync_ent_base {
+abstract class auth_entsync_entsso extends auth_entsync_ent_base {
+    public function can_switch() {
+        return false;
+    }
+}
+
+abstract class auth_entsync_entcas extends auth_entsync_entsso {
     public function get_mode() {
         return 'cas';
     }
