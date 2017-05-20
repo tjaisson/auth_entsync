@@ -1,10 +1,21 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Allows admin to edit all auth plugin settings.
- *
- * JH: copied and Hax0rd from admin/enrol.php and admin/filters.php
- *
+ * Pour activer ou déactiver les ENT.
  */
 
 require(__DIR__ . '/../../config.php');
@@ -19,16 +30,15 @@ $returnurl = new moodle_url("$CFG->wwwroot/auth/entsync/param.php");
 $PAGE->set_url($returnurl);
 
 $action = optional_param('action', '', PARAM_ALPHANUMEXT);
-$entcode   = optional_param('ent', 0, PARAM_INT);
+$entcode = optional_param('ent', 0, PARAM_INT);
 
-if(!confirm_sesskey()) {
+if (!confirm_sesskey()) {
     redirect($returnurl);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// process actions
+// Process actions.
 
-if($entsenabled = get_config('auth_entsync', 'enabledents')) {
+if ($entsenabled = get_config('auth_entsync', 'enabledents')) {
     $entsenabled = explode(';', $entsenabled);
 } else {
     $entsenabled = [];
@@ -36,12 +46,12 @@ if($entsenabled = get_config('auth_entsync', 'enabledents')) {
 
 switch ($action) {
     case 'disable':
-        // remove from enabled list
+        // Remove from enabled list.
         auth_entsync_ent_base::disable_ent($entcode);
         break;
 
     case 'enable':
-        // add to enabled list
+        // Add to enabled list.
         auth_entsync_ent_base::enable_ent($entcode);
         break;
 
@@ -50,5 +60,3 @@ switch ($action) {
 }
 
 redirect($returnurl);
-
-
