@@ -31,9 +31,9 @@ require_once('ent_defs.php');
  * Plugin for entsync authentication.
  */
 class auth_plugin_entsync extends auth_plugin_base {
-    
+
     private $locked = ['firstname', 'lastname', 'email'];
-    
+
     /**
      * Constructor.
      */
@@ -42,9 +42,9 @@ class auth_plugin_entsync extends auth_plugin_base {
         $this->config = new stdClass();
         //$locked = ['firstname', 'lastname', 'email']; On ne bloque plus le champ email.
         $locked = ['firstname', 'lastname'];
-        foreach($this->locked as $field) {
+        foreach ($this->locked as $field) {
             $cfgname = "field_lock_{$field}";
-            $this->config->{$cfgname} =  'locked';
+            $this->config->{$cfgname} = 'locked';
         }
     }
 
