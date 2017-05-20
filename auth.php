@@ -32,7 +32,8 @@ require_once('ent_defs.php');
  */
 class auth_plugin_entsync extends auth_plugin_base {
 
-    private $locked = ['firstname', 'lastname', 'email'];
+    // On ne bloque plus le champ email (private $locked = ['firstname', 'lastname', 'email'];).
+    private $locked = ['firstname', 'lastname'];
 
     /**
      * Constructor.
@@ -40,8 +41,6 @@ class auth_plugin_entsync extends auth_plugin_base {
     public function __construct() {
         $this->authtype = 'entsync';
         $this->config = new stdClass();
-        //$locked = ['firstname', 'lastname', 'email']; On ne bloque plus le champ email.
-        $locked = ['firstname', 'lastname'];
         foreach ($this->locked as $field) {
             $cfgname = "field_lock_{$field}";
             $this->config->{$cfgname} = 'locked';
@@ -64,12 +63,12 @@ class auth_plugin_entsync extends auth_plugin_base {
      * @param string $password The password
      * @return bool Authentication success or failure.
      */
-    function user_login ($username, $password) {
+    public function user_login ($username, $password) {
         global $CFG, $DB;
-        
-        if(!$mdlu = $DB->get_record('user',
-            ['username'=>$username, 'auth'=>'entsync', 'mnethostid'=>$CFG->mnet_localhost_id,
-             'deleted'=>0, 'suspended'=>0
+
+        if (!$mdlu = $DB->get_record('user',
+            ['username' => $username, 'auth' => 'entsync', 'mnethostid' => $CFG->mnet_localhost_id,
+             'deleted' => 0, 'suspended' => 0
             ])) {
             return false;
         }
@@ -77,16 +76,18 @@ class auth_plugin_entsync extends auth_plugin_base {
         $entus = $DB->get_records('auth_entsync_user', ['userid' => $mdlu->id, 'archived' => 0]);
         $hasenabledent = false;
         foreach ($entus as $entu) {
-            if($ent = auth_entsync_ent_base::get_ent($entu->ent)) {
-                if($ent->is_enabled() && (!$ent->is_sso())) {
+            if ($ent = auth_entsync_ent_base::get_ent($entu->ent)) {
+                if ($ent->is_enabled() && (!$ent->is_sso())) {
                     $hasenabledent = true;
                     break;
                 }
             }
         }
-        if(!$hasenabledent) return false;
+        if (!$hasenabledent) {
+            return false;
+        }
         $firstpw = "entsync\\{$password}";
-        if($firstpw === $mdlu->password) {
+        if ($firstpw === $mdlu->password) {
             set_user_preference('auth_forcepasswordchange', true, $mdlu->id);
             return true;
         } else {
@@ -104,7 +105,7 @@ class auth_plugin_entsync extends auth_plugin_base {
      * @return boolean result
      *
      */
-    function user_update_password($user, $newpassword) {
+    public function user_update_password($user, $newpassword) {
         $user = get_complete_user_data('id', $user->id);
         // This will also update the stored hash to the latest algorithm
         // if the existing hash is using an out-of-date algorithm (or the
@@ -122,12 +123,12 @@ class auth_plugin_entsync extends auth_plugin_base {
      * @return boolean true if updated or update ignored; false if error
      *
      */
-    function user_update($olduser, $newuser) {
-        //override if needed
+    public function user_update($olduser, $newuser) {
+        // Override if needed.
         return true;
     }
 
-    function prevent_local_passwords() {
+    public function prevent_local_passwords() {
         return false;
     }
 
@@ -136,7 +137,7 @@ class auth_plugin_entsync extends auth_plugin_base {
      *
      * @return bool
      */
-    function is_internal() {
+    public function is_internal() {
         return false;
     }
 
@@ -146,7 +147,7 @@ class auth_plugin_entsync extends auth_plugin_base {
      *
      * @return bool
      */
-    function can_change_password() {
+    public function can_change_password() {
         return true;
     }
 
@@ -156,7 +157,7 @@ class auth_plugin_entsync extends auth_plugin_base {
      *
      * @return moodle_url
      */
-    function change_password_url() {
+    public function change_password_url() {
         return null;
     }
 
@@ -165,7 +166,7 @@ class auth_plugin_entsync extends auth_plugin_base {
      *
      * @return bool
      */
-    function can_reset_password() {
+    public function can_reset_password() {
         return true;
     }
 
@@ -174,16 +175,16 @@ class auth_plugin_entsync extends auth_plugin_base {
      *
      * @return bool
      */
-    function can_be_manually_set() {
+    public function can_be_manually_set() {
         return false;
     }
 
-    function loginpage_idp_list($wantsurl) {
+    public function loginpage_idp_list($wantsurl) {
         global $CFG;
         $lst = array();
         $ents = auth_entsync_ent_base::get_ents();
         foreach ($ents as $ent) {
-            if($ent->is_enabled() && $ent->is_sso()) {
+            if ($ent->is_enabled() && $ent->is_sso()) {
                 $entclass = $ent->get_entclass();
                 $lst[] = [
                     'url' => new moodle_url("{$CFG->wwwroot}/auth/entsync/login.php", ['ent' => $entclass]),
@@ -192,17 +193,17 @@ class auth_plugin_entsync extends auth_plugin_base {
                 ];
             }
         }
-        
+
         return $lst;
     }
-    
+
     public function postlogout_hook($user) {
         global $CFG;
-        if(($user->auth == 'entsync') && isset($user->entsync)) {
+        if (($user->auth == 'entsync') && isset($user->entsync)) {
             $ent = auth_entsync_ent_base::get_ent($user->entsync);
-            if($ent->get_mode() == 'cas') {
+            if ($ent->get_mode() == 'cas') {
                 $cas = $ent->get_casconnector();
-                if($cas->support_gw()) {
+                if ($cas->support_gw()) {
                     $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php", ['ent' => $ent->get_entclass()]);
                     $cas->set_clienturl($clienturl);
                     $cas->redirtocas(true);
@@ -210,11 +211,7 @@ class auth_plugin_entsync extends auth_plugin_base {
                     $cas->redirtohome();
                 }
             }
-            
         }
     }
-    
-    
+
 }
-
-

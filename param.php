@@ -35,19 +35,14 @@ require_login();
 admin_externalpage_setup('authentsyncparam');
 require_capability('moodle/site:config', context_system::instance());
 
-$errorstr                   = get_string('error');
-
-$stryes                     = get_string('yes');
-$strno                      = get_string('no');
-$stryesnooptions = array(0=>$strno, 1=>$stryes);
-
 $returnurl = new moodle_url('/auth/entsync/param.php');
 
-if(!is_enabled_auth('entsync')) {
-    // le plugin d'authentification doit être activé
+if (!is_enabled_auth('entsync')) {
+    // Le plugin d'authentification doit être activé.
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('entsyncparam', 'auth_entsync'));
-    echo $OUTPUT->notification(get_string('entsyncparam_help', 'auth_entsync'), core\output\notification::NOTIFY_INFO);
+    echo $OUTPUT->notification(get_string('entsyncparam_help', 'auth_entsync'),
+        core\output\notification::NOTIFY_INFO);
     echo $OUTPUT->notification(get_string('pluginnotenabledwarn', 'auth_entsync',
         "$CFG->wwwroot/$CFG->admin/settings.php?section=manageauths"), core\output\notification::NOTIFY_INFO);
     echo $OUTPUT->footer();
@@ -57,7 +52,9 @@ if(!is_enabled_auth('entsync')) {
 $mform = new admin_entparam_form();
 $config = get_config('auth_entsync');
 
-if(!isset($config->role_ens)) $config->role_ens = 0;
+if (!isset($config->role_ens)) {
+    $config->role_ens = 0;
+}
 $mform->set_data(['role_ens' => $config->role_ens]);
 
 auth_entsync_ent_base::set_formdata($config, $mform);
@@ -66,9 +63,9 @@ auth_entsync_ent_base::set_formdata($config, $mform);
 if ($formdata = $mform->is_cancelled()) {
     redirect($returnurl);
 } else if ($formdata = $mform->get_data()) {
-    //application des paramètres	
-	if($formdata->role_ens != $config->role_ens) {
-	    if ($formdata->role_ens == 0) {
+    // Application des paramètres.
+    if ($formdata->role_ens != $config->role_ens) {
+        if ($formdata->role_ens == 0) {
             unset_config('role_ens', 'auth_entsync');
             auth_entsync_rolehelper::removerolesallusers(2);
         } else {
@@ -77,12 +74,12 @@ if ($formdata = $mform->is_cancelled()) {
         }
     }
     auth_entsync_ent_base::save_formdata($config, $formdata);
-	redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
+    redirect($PAGE->url, get_string('changessaved'), null, \core\output\notification::NOTIFY_SUCCESS);
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'entsyncparam', 'auth_entsync');
-//liste des ents enable/disable
+// Liste des ents enable/disable.
 $mform->display();
 echo $OUTPUT->footer();
 die;
