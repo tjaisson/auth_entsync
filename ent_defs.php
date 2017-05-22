@@ -21,10 +21,10 @@
  * 2 -> pcn
  * 3 -> open ent ng
  *
- * Il est possible d'ajouter de nouveaux ENT 
+ * Il est possible d'ajouter de nouveaux ENT
  * mais le code de chacun doit être non nul, unique et immuable
  * le code 0 est réservé pour 'aucun ent'
- * 
+ *
  * TODO : définir le pseudo ent 'siecle' avec méthode d'authentification 'manual'
  *
  * @package    tool_entsync

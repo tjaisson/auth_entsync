@@ -14,20 +14,30 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * lib de fonctions utilisées pour la simplification des noms
+ *
+ * @package    auth_entsync
+ * @copyright 2016 Thomas Jaisson
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
 class auth_entsync_stringhelper {
 
     private static $lettres = 'abcdefghijkmnpqrstuvwxyz';
-    
+
     public static function rnd_string() {
         return self::$lettres[rand(0, 23)]
         . rand(1, 9)
         . self::$lettres[rand(0, 23)]
         . rand(1, 9) . rand(0, 9);
     }
-    
+
     private static $name_translit;
     private static $cohort_translit;
-    
+
     /**
      * Simplifie les noms et prénoms
      * met en minuscule, enlève les lettres accentuées remplace les espaces par des "-"
@@ -36,11 +46,11 @@ class auth_entsync_stringhelper {
      * @return string
      */
     public static function simplify_name($str) {
-    	if(!isset(self::$name_translit)) {
-    		self::$name_translit = Transliterator::createFromRules(
-    				"::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
-    	}
-    	return trim(self::$name_translit->transliterate($str), '-');
+        if (!isset(self::$name_translit)) {
+            self::$name_translit = Transliterator::createFromRules(
+                    "::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
+        }
+        return trim(self::$name_translit->transliterate($str), '-');
     }
 
     /**
@@ -51,10 +61,10 @@ class auth_entsync_stringhelper {
      * @return string
      */
     public static function simplify_cohort($str) {
-    	if(!isset(self::$cohort_translit)) {
-    		self::$cohort_translit = Transliterator::createFromRules(
-    				"::Latin-ASCII; ::upper ;");
-    	}
-    	return trim(self::$cohort_translit->transliterate($str), '-');
+        if (!isset(self::$cohort_translit)) {
+            self::$cohort_translit = Transliterator::createFromRules(
+                    "::Latin-ASCII; ::upper ;");
+        }
+        return trim(self::$cohort_translit->transliterate($str), '-');
     }
 }

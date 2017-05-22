@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once $CFG->libdir.'/formslib.php';
+require_once($CFG->libdir.'/formslib.php');
 
 /**
  * Définition du formulaire de synchronisation
@@ -35,64 +35,61 @@ require_once $CFG->libdir.'/formslib.php';
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class auth_entsync_bulk_form extends moodleform {
-    function definition () {
-    	$displayproceed = (isset($this->_customdata['displayproceed'])) ? $this->_customdata['displayproceed'] : false;
-    	$advanced = (isset($this->_customdata['advanced'])) ? $this->_customdata['advanced'] : false;
-    	$mform = $this->_form;
+    protected function definition () {
+        $displayproceed = (isset($this->_customdata['displayproceed'])) ? $this->_customdata['displayproceed'] : false;
+        $advanced = (isset($this->_customdata['advanced'])) ? $this->_customdata['advanced'] : false;
+        $mform = $this->_form;
 
-    	if($advanced) {
-    	    $mform->addElement('hidden', 'advanced', true);
-    	    $mform->setType('advanced', PARAM_BOOL);
-    	}
+        if ($advanced) {
+            $mform->addElement('hidden', 'advanced', true);
+            $mform->setType('advanced', PARAM_BOOL);
+        }
 
-        if($displayproceed)
-        {
-        	$infohtml = $this->_customdata['displayhtml'];
-        	$displayupload = $this->_customdata['multi'];
-        	$storeid = $this->_customdata['storeid'];
-        	
-        	$mform->addElement('header', 'proceedgrp', get_string('proceed', 'auth_entsync'));
-        	$mform->addElement('html', $infohtml);
-        	$mform->addElement('hidden', 'storeid', $storeid);
+        if ($displayproceed) {
+            $infohtml = $this->_customdata['displayhtml'];
+            $displayupload = $this->_customdata['multi'];
+            $storeid = $this->_customdata['storeid'];
+            $mform->addElement('header', 'proceedgrp', get_string('proceed', 'auth_entsync'));
+            $mform->addElement('html', $infohtml);
+            $mform->addElement('hidden', 'storeid', $storeid);
             $mform->setType('storeid', PARAM_INT);
-            if($advanced) {
+            if ($advanced) {
                 $mform->addElement('checkbox', 'recupcas', 'Récupérer les utilisateurs de auth_cas');
                 $mform->setDefault('recupcas', false);
             }
 
-        	$mform->addElement('submit', 'proceed', get_string('dosync', 'auth_entsync'));
-            if($displayupload) {
-            	$mform->addElement('header', 'settingsheader', get_string('uploadadd', 'auth_entsync'));
-            	$mform->addElement('html', get_string('uploadaddinfo', 'auth_entsync'));
+            $mform->addElement('submit', 'proceed', get_string('dosync', 'auth_entsync'));
+            if ($displayupload) {
+                $mform->addElement('header', 'settingsheader', get_string('uploadadd', 'auth_entsync'));
+                $mform->addElement('html', get_string('uploadaddinfo', 'auth_entsync'));
             }
         } else {
-        	$mform->addElement('header', 'settingsheader', get_string('upload'));
-        	$displayupload = true;
+            $mform->addElement('header', 'settingsheader', get_string('upload'));
+            $displayupload = true;
         }
 
-        if($displayupload) {
+        if ($displayupload) {
             $mform->addElement('filepicker', 'userfile', get_string('file'));
-           
+
             $options = array();
             $txt = get_string('filetypemissingwarn', 'auth_entsync');
             $options[$txt] = [0 => '...'];
-            foreach (auth_entsync_ent_base::get_ents() as $entcode=>$ent) {
-                if($ent->is_enabled()) {
+            foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+                if ($ent->is_enabled()) {
                     $suboption = array();
-                    foreach($ent->get_filetypes() as $i => $desc) {
+                    foreach ($ent->get_filetypes() as $i => $desc) {
                         $suboption[$ent->get_code().'.'.$i] = "{$ent->nomcourt} - {$desc}";
                     }
                     $options[$ent->nomcourt] = $suboption;
                 }
             }
-            
+
             $mform->addElement('selectgroups', 'entfiletype', get_string('filetypeselect', 'auth_entsync'), $options);
             $mform->addRule('entfiletype', $txt, 'nonzero', null, 'client');
             $mform->setType('entfiletype', PARAM_TEXT);
-            if($displayproceed)
-            {
+            if ($displayproceed) {
                 $mform->freeze(['entfiletype']);
-            	$mform->addElement('submit', 'deposer', get_string('upload'));
+                $mform->addElement('submit', 'deposer', get_string('upload'));
             } else {
                 $mform->addElement('submit', 'deposer', get_string('next'));
                 $mform->addHelpButton('entfiletype', 'filetypeselect', 'auth_entsync');

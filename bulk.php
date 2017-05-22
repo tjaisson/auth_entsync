@@ -34,7 +34,7 @@ require_once(__DIR__ . '/lib/table.php');
 require_once(__DIR__ . '/lib/tmpstore.php');
 require_once('bulk_forms.php');
 
-core_php_time_limit::raise(60*60); // 1 hour should be enough.
+core_php_time_limit::raise(60 * 60); // 1 hour should be enough.
 raise_memory_limit(MEMORY_HUGE);
 
 require_login();
@@ -44,19 +44,19 @@ require_capability('moodle/site:uploadusers', context_system::instance());
 $returnurl = new moodle_url('/auth/entsync/bulk.php');
 
 $config = get_config('auth_entsync');
-if(auth_entsync_ent_base::count_enabled() <= 0) {
+if (auth_entsync_ent_base::count_enabled() <= 0) {
     // Aucun ent paramétré, on ne peut pas synchroniser.
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
     echo $OUTPUT->notification(get_string('notconfigwarn', 'auth_entsync',
-        	   		"$CFG->wwwroot/auth/entsync/param.php"));
+        "$CFG->wwwroot/auth/entsync/param.php"));
     echo $OUTPUT->footer();
     die;
 }
 
-if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
+if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     // Il faut effectuer la synchro.
-    if(!isset($config->role_ens)) {
+    if (!isset($config->role_ens)) {
         $config->role_ens = 0;
     }
 
@@ -75,25 +75,25 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     $tmpstore = auth_entsync_tmpstore::get_store($storeid);
 
     $readytosyncusers = $tmpstore->count();
-    if($readytosyncusers <= 0) {
+    if ($readytosyncusers <= 0) {
         // Ne devrait pas se produire.
         redirect($returnurl,
             'Aucun utilisateur à synchroniser', null, \core\output\notification::NOTIFY_ERROR);
     }
 
     $synchronizer = $ent->get_synchronizer($filetype);
-    
+
     // Mode avancé.
-    if(optional_param('advanced', false, PARAM_BOOL)) {
-        if(optional_param('recupcas', false, PARAM_BOOL) && ($ent->get_mode() === 'cas')) {
-            $synchronizer->set_recupcas(true);            
+    if (optional_param('advanced', false, PARAM_BOOL)) {
+        if (optional_param('recupcas', false, PARAM_BOOL) && ($ent->get_mode() === 'cas')) {
+            $synchronizer->set_recupcas(true);
         }
     }
 
     $synchronizer->roles[2] = $config->role_ens;
 
-	echo $OUTPUT->header();
-	$progress = new \core\progress\display_if_slow('Synchronisation', 0);
+    echo $OUTPUT->header();
+    $progress = new \core\progress\display_if_slow('Synchronisation', 0);
 
     $synchronizer->set_progress_reporter($progress);
 
@@ -112,11 +112,11 @@ if(optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
         $msg = $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
     }
 
-	echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
-	echo $msg;
-	echo $OUTPUT->continue_button($returnurl);
-	echo $OUTPUT->footer();
-	die;
+    echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
+    echo $msg;
+    echo $OUTPUT->continue_button($returnurl);
+    echo $OUTPUT->footer();
+    die;
 }
 
 
@@ -152,8 +152,8 @@ if ($formdata = $mform->get_data()) {
         $fileparser->set_progress_reporter($progress);
         $filename = $mform->get_new_filename('userfile');
         $progress->start_progress('', 2);
-        $ius= $fileparser->parse($filename, $mform->get_file_content('userfile'));
-        
+        $ius = $fileparser->parse($filename, $mform->get_file_content('userfile'));
+
         if ($ius) {
             // Le chargement s'est bien passé.
             $report = $fileparser->get_report();
@@ -172,8 +172,8 @@ if ($formdata = $mform->get_data()) {
             ]);
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
         } else {
-            // il y a eu une erreur
-            if($ius === false) {
+            // Il y a eu une erreur.
+            if ($ius === false) {
                 $parseerror = $fileparser->get_error();
                 $msg = "Erreur de chargement du fichier. $parseerror";
             } else {
@@ -182,10 +182,10 @@ if ($formdata = $mform->get_data()) {
             $progress->end_progress();
             echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
         }
-	} else {
-	    $msg = get_string('filemissingwarn', 'auth_entsync');
-	    echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_WARNING);
-	}
+    } else {
+        $msg = get_string('filemissingwarn', 'auth_entsync');
+        echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_WARNING);
+    }
     unset($_POST['userfile']);
 } else {
     $storeid = null;
@@ -198,7 +198,7 @@ if ($storeid) {
         // Déjà au moins un utilisateur en attente de synchro,
         // on donne la possibilité de procéder à la synchronisation.
         $formparams['displayproceed'] = true;
-        $already = auth_entsync_usertbl::count_users($ent->get_profilesintype($filetype)  ,$ent->get_code());
+        $already = auth_entsync_usertbl::count_users($ent->get_profilesintype($filetype), $ent->get_code());
         $formparams['displayhtml'] = $OUTPUT->notification(get_string('infoproceed', 'auth_entsync',
             ['nbusers' => $readytosyncusers, 'profiltype' => $ent->get_filetypes()[$filetype],
                 'alreadyusers' => $already
@@ -206,7 +206,7 @@ if ($storeid) {
             \core\output\notification::NOTIFY_INFO);
         $formparams['storeid'] = $storeid;
         $formparams['multi'] = $ent->accept_multifile($filetype);
-        $mform =  new auth_entsync_bulk_form(null, $formparams);
+        $mform = new auth_entsync_bulk_form(null, $formparams);
         // On donne la possibilité d'envoyer un autre fichier mais le type de fichier ne doit pas changer.
     } else {
         $mform = new auth_entsync_bulk_form(null, $formparams);
@@ -219,7 +219,7 @@ $mform->display();
 
 $i = auth_entsync_usertbl::count_users(1);
 $ii = auth_entsync_usertbl::count_users(2);
-$iii =  auth_entsync_usertbl::count_users([1, 2]);
+$iii = auth_entsync_usertbl::count_users([1, 2]);
 echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
 
 echo $OUTPUT->footer();

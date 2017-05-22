@@ -1,43 +1,38 @@
 <?php
 
+// Pas besoin de la session.
+define('NO_MOODLE_COOKIE', true);
+
 require(__DIR__ . '/../../config.php');
 require_once('ent_defs.php');
 
-
-//$url = 'https://pam.scola.ac-paris.fr/0750677D';
-
-//@header($_SERVER['SERVER_PROTOCOL'] . ' 303 See Other');
-//@header('Location: '. $url);
-
-
 $entclass = optional_param('ent', '', PARAM_RAW);
 
-if(empty($entclass)) {
+if (empty($entclass)) {
 	printerrorpage('Accès non autorisé&nbsp;!');
 }
 
-if(!$ent = auth_entsync_ent_base::get_ent($entclass)) {
-	//le code ne correspond pas à un ent, display erreur et redirect button
+if (!$ent = auth_entsync_ent_base::get_ent($entclass)) {
+	// Le code ne correspond pas à un ent, display erreur.
 	printerrorpage('Accès non autorisé&nbsp;!');
 }
 
-if(!$ent->is_sso()) {
-    //si ce n'est pas sso, l'authentification ne passe pas par là
+if (!$ent->is_sso()) {
+    // Si ce n'est pas sso, l'aiguillage n'est pas possible.
     printerrorpage('Accès non autorisé&nbsp;!');
 }
 
-if(!$ent->can_switch()) {
-    //si ce n'est pas sso, l'authentification ne passe pas par là
+if (!$ent->can_switch()) {
+    // Cet ENT ne gère pas l'aiguillage.
     printerrorpage('Accès non autorisé&nbsp;!');
 }
 
-if(!$cas = $ent->get_casconnector()) {
+if (!$cas = $ent->get_casconnector()) {
     printerrorpage('Accès non autorisé&nbsp;!');
 }
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/switch.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
-
-if($val = $cas->validateorredirect()) {
+if ($val = $cas->validateorredirect()) {
     
     
 }
@@ -81,6 +76,7 @@ div.msg p {
 </head>
 <body>
 <?php }
+
 function PrintTail() {
 ?>
 </body>

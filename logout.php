@@ -23,7 +23,6 @@
  */
 
 require(__DIR__ . '/../../config.php');
-
 require_once('ent_defs.php');
 
 // Try to prevent searching for sites that allow sign-up.
@@ -32,7 +31,7 @@ if (!isset($CFG->additionalhtmlhead)) {
 }
 $CFG->additionalhtmlhead .= '<meta name="robots" content="noindex" />';
 
-//HTTPS is required in this page when $CFG->loginhttps enabled
+// HTTPS is required in this page when $CFG->loginhttps enabled.
 $PAGE->https_required();
 
 $context = context_system::instance();
@@ -45,19 +44,19 @@ $entclass = optional_param('ent', '', PARAM_RAW);
 
 $redirect = $CFG->wwwroot.'/';
 
-if(empty($entclass)) {
+if (empty($entclass)) {
     redirect($redirect);
 }
 
-if(!$ent = auth_entsync_ent_base::get_ent($entclass)) {
+if (!$ent = auth_entsync_ent_base::get_ent($entclass)) {
     redirect($redirect);
 }
 
-if(!$ent->is_sso()) {
+if (!$ent->is_sso()) {
     redirect($redirect);
 }
-    
-if($ent->get_mode() !== 'cas') {
+
+if ($ent->get_mode() !== 'cas') {
     redirect($redirect);
 }
 
@@ -65,11 +64,11 @@ $cas = $ent->get_casconnector();
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/logout.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
 
-if(!$cas->read_ticket()) {
+if (!$cas->read_ticket()) {
     redirect($redirect);
 }
 
-if($val = $cas->validate_ticket()) {
+if ($val = $cas->validate_ticket()) {
     $cas->redirtohome();
 } else {
     redirect($redirect);
