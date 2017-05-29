@@ -16,7 +16,7 @@
 
 /**
  * files parsers (csv xml)
- * 
+ *
  * TODO : implémenter les parsers xml pour siècle
  *
  * @package    auth_entsync
@@ -39,15 +39,15 @@ abstract class auth_entsync_parser {
      * @var string|null Null if ok, error msg otherwise
      */
     protected $_error;
-    
+
     protected $_report;
 
     protected $_buffer;
-    
+
     protected $_progressreporter = null;
-    
+
     protected $_validatecallback = null;
-    
+
     /**
      * Get last error
      *
@@ -56,24 +56,24 @@ abstract class auth_entsync_parser {
     public function get_error() {
         return $this->_error;
     }
-    
+
     public function set_progress_reporter($progressreporter) {
         $this->_progressreporter = $progressreporter;
     }
-    
+
     public function set_validatecallback($callback) {
         $this->_validatecallback = $callback;
     }
-    
+
     /**
-     * Get repport
+     * Get report
      *
      * @return stdClass avec les champs parsedlines, addedusers, uidcollision
      */
     public function get_report() {
         return $this->_report;
     }
-    
+
     /**
      * Lit un fichier d'utilisateurs
      *
@@ -82,18 +82,21 @@ abstract class auth_entsync_parser {
      * @return false|array le tableau des $iu indexé par uid
      */
     public function parse($filename, $filecontent) {
+        if (is_null($this->_progressreporter)) {
+            $this->_progressreporter = new \core\progress\none();
+        }
         $this->_report = new stdClass();
         $this->_report->parsedlines = 0;
         $this->_report->addedusers = 0;
         $this->_report->uidcollision = 0;
         $this->_buffer = array();
-        if($this->do_parse($filename, $filecontent)) {
+        if ($this->do_parse($filename, $filecontent)) {
             return $this->_buffer;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Lit un fichier d'utilisateurs
      *
@@ -102,10 +105,10 @@ abstract class auth_entsync_parser {
      * @return bool si réussi ou non
      */
     protected abstract function do_parse($filename, $filecontent);
-    
+
     protected function validate_record($iu) {
-        if(isset($this->_validatecallback)) {
-            return call_user_func($this->_validatecallback, $iu);            
+        if (isset($this->_validatecallback)) {
+            return call_user_func($this->_validatecallback, $iu);
         } else {
             return true;
         }
@@ -113,8 +116,8 @@ abstract class auth_entsync_parser {
 
     protected function add_iu($iu) {
         ++$this->_report->parsedlines;
-        if($this->validate_record($iu)) {
-            if(array_key_exists($iu->uid, $this->_buffer)) {
+        if ($this->validate_record($iu)) {
+            if (array_key_exists($iu->uid, $this->_buffer)) {
                 ++$this->_report->uidcollision;
             } else {
                 $this->_buffer[$iu->uid] = $iu;
@@ -122,10 +125,10 @@ abstract class auth_entsync_parser {
             }
         }
     }
-    
+
     protected function unzipone($filename, $filecontent) {
-        $this->_progressreporter->start_progress('unzip',3);
-        //il faut enregistrer le fichier temporairement
+        $this->_progressreporter->start_progress('unzip', 3);
+        // Il faut enregistrer le fichier temporairement.
         $tempdir = make_request_directory();
         $tempfile = $tempdir . '/archiv.zip';
         $extractdir = make_unique_writable_directory($tempdir);
@@ -136,14 +139,14 @@ abstract class auth_entsync_parser {
         $files = $fp->extract_to_pathname($tempfile, $extractdir);
         unlink($tempfile);
         $this->_progressreporter->progress(2);
-        
-        if(count($files) !== 1) {
+
+        if (count($files) !== 1) {
             $this->_error = 'Le fichier zip ne doit contenir qu\'un fichier.';
             $this->_progressreporter->end_progress();
             return false;
         }
         foreach ($files as $file => $status) {
-            if($status !== true) {
+            if ($status !== true) {
                 $this->_error = 'Fichier zip corrompu.';
                 $this->_progressreporter->end_progress();
                 return false;
@@ -171,81 +174,85 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
     public $match;
     public $delim;
     protected function do_parse($filename, $filecontent) {
-        $this->_progressreporter->start_progress('Lecture du fichier',10,1);
-        $this->_progressreporter->start_progress('En tête',1,1);
+        $this->_progressreporter->start_progress('Lecture du fichier', 10, 1);
+        $this->_progressreporter->start_progress('En tête', 1, 1);
 
-        if(strtoupper(pathinfo($filename, PATHINFO_EXTENSION)) != 'CSV') {
-        	$this->_error = 'Fichier csv requis';
-        	$this->_progressreporter->end_progress();
-        	$this->_progressreporter->end_progress();
-        	return false;
+        if (strtoupper(pathinfo($filename, PATHINFO_EXTENSION)) != 'CSV') {
+            $this->_error = 'Fichier csv requis';
+            $this->_progressreporter->end_progress();
+            $this->_progressreporter->end_progress();
+            return false;
         }
 
         $this->_error = null;
         $this->_parsedlines = 0;
         $this->_addedusers = 0;
 
-        //on sépare les lignes
+        // On sépare les lignes.
         $lines = preg_split("/\\r\\n|\\r|\\n/", $filecontent);
         unset($filecontent);
 
         $linessize = count($lines);
 
         $this->_progressreporter->end_progress();
-        if($linessize < 2) {
-            //pas assez de lignes
+        if ($linessize < 2) {
+            // Pas assez de lignes.
             $this->_error = "Le fichier $filename n'est pas lisible";
-        	$this->_progressreporter->end_progress();
+            $this->_progressreporter->end_progress();
             return false;
         }
 
-        $this->_progressreporter->start_progress('En tête',1,1);
-        
-        //on retire le bom si nécessaire
+        $this->_progressreporter->start_progress('En tête', 1, 1);
+
+        // On retire le bom si nécessaire.
         $bom = pack("CCC", 0xef, 0xbb, 0xbf);
         if (0 === strncmp($lines[0], $bom, 3)) {
             $this->encoding = 'utf-8';
             $lines[0] = substr($lines[0], 3);
         }
 
-        //on lit les entêtes
+        // On lit les entêtes.
         $line = core_text::convert($lines[0], $this->encoding, 'utf-8');
         $fields = str_getcsv($line, $this->delim);
-        for($i = 0, $fieldssize = count($fields); $i < $fieldssize; ++$i) {
+        for ($i = 0, $fieldssize = count($fields); $i < $fieldssize; ++$i) {
             $fields[$i] = trim($fields[$i]);
         }
         $revfields = array_flip($fields);
         $columns = array();
-        
+
         $minfiedssize = 0;
         foreach ($this->match as $key => $value) {
-            if(!array_key_exists($value, $revfields)) {
+            if (!array_key_exists($value, $revfields)) {
                 $this->_error = 'Le fichier CSV ne contient pas toutes les colonnes nécessaires';
-        	   $this->_progressreporter->end_progress();
-        	   $this->_progressreporter->end_progress();
-        	   return false;
+                $this->_progressreporter->end_progress();
+                $this->_progressreporter->end_progress();
+                return false;
             }
             $i = $revfields[$value];
             $columns[$key] = $i;
-            if($minfiedssize < $i) $minfiedssize = $i;
+            if ($minfiedssize < $i) {
+                $minfiedssize = $i;
+            }
         }
         ++$minfiedssize;
 
         $this->_progressreporter->end_progress();
-        
-        $this->_progressreporter->start_progress('Liste',$linessize-1,8);
-        //on traite chaque ligne
-        //TODO : economie de mémoire avec array_pop
-        for($i = 1; $i < $linessize; ++$i) {
+
+        $this->_progressreporter->start_progress('Liste', $linessize - 1, 8);
+        // On traite chaque ligne.
+        // TODO : economie de mémoire avec array_pop.
+        for ($i = 1; $i < $linessize; ++$i) {
             $this->_progressreporter->progress($i);
             $line = core_text::convert($lines[$i], $this->encoding, 'utf-8');
-            //on sépare les champs
+            // On sépare les champs.
             $fields = str_getcsv($line, $this->delim);
-            //y a t-il assez de champs dans la ligne ?
-            if(count($fields) < $minfiedssize) continue;
-            //on constitue un stdClass de l'utilisateur
+            // Y a t-il assez de champs dans la ligne ?
+            if (count($fields) < $minfiedssize) {
+                continue;
+            }
+            // On constitue un stdClass de l'utilisateur.
             $iu = new stdClass();
-                    foreach ($columns as $key => $ii) {
+            foreach ($columns as $key => $ii) {
                 $iu->$key = trim($fields[$ii]);
             }
             $this->add_iu($iu);
@@ -267,16 +274,14 @@ class auth_entsync_parser_CSV extends auth_entsync_parser {
 abstract class auth_entsync_parser_XML extends auth_entsync_parser {
     protected $_record;
     protected $_field = '';
-    
+
     protected function do_parse($filename, $filecontent) {
-        
-        $this->_progressreporter->start_progress('lecture',10);
-        
+        $this->_progressreporter->start_progress('lecture', 10);
         $_ext = strtoupper(pathinfo($filename, PATHINFO_EXTENSION));
-        //unzip si nécessaire
-        if($_ext == 'ZIP') {
+        // Unzip si nécessaire.
+        if ($_ext == 'ZIP') {
             $ret = $this->unzipone($filename, $filecontent);
-            if(!$ret) {
+            if (!$ret) {
                 $this->_progressreporter->end_progress();
                 return false;
             }
@@ -285,9 +290,9 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
         } else {
             $this->_progressreporter->increment_progress();
         }
-        
-        //ce doit être un xml
-        if($_ext != 'XML') {
+
+        // Ce doit être un xml.
+        if ($_ext != 'XML') {
             $this->_error = 'Fichier xml requis';
             $this->_progressreporter->end_progress();
             return false;
@@ -296,9 +301,9 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
         $this->_progressreporter->end_progress();
         return $bf;
     }
-    
+
     private function doparse($filecontent) {
-        $this->_progressreporter->start_progress('lecture', \core\progress\display_if_slow::INDETERMINATE ,9);
+        $this->_progressreporter->start_progress('lecture', \core\progress\display_if_slow::INDETERMINATE , 9);
         $parser = xml_parser_create('UTF-8');
         xml_set_element_handler($parser, [$this, 'on_open'], [$this, 'on_close']);
         xml_set_character_data_handler($parser, [$this, 'on_data']);
@@ -309,15 +314,16 @@ abstract class auth_entsync_parser_XML extends auth_entsync_parser {
         $this->_progressreporter->end_progress();
         return $this->_buffer;
     }
-    
-    function on_data($parser, $data) {
-        if(!empty($this->_field)) {
-            if(isset($this->_record))
+
+    public function on_data($parser, $data) {
+        if (!empty($this->_field)) {
+            if (isset($this->_record)) {
                 $this->_record->{$this->_field} .= $data;
+            }
         }
     }
-    
-    public abstract function on_open($parser, $name, $attribs); 
+
+    public abstract function on_open($parser, $name, $attribs);
     public abstract function on_close($parser, $name);
     protected function afterparse() {
     }
@@ -336,10 +342,9 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
     private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
     private $match;
     public function on_open($parser, $name, $attribs) {
-        switch($name) {
+        switch ($name) {
             case 'ELEVE' :
                 $this->_record = new stdClass();
-//                $this->_record->uid = 'BEE.' . $attribs['ELEVE_ID'];
                 $this->_record->uid = $attribs['ELEVE_ID'];
                 $this->match = $this->match1;
                 return;
@@ -349,9 +354,9 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
                 $this->match = $this->match2;
                 return;
         }
-        
-        if(isset($this->_record)) {
-            if($key =  array_search($name, $this->match)) {
+
+        if (isset($this->_record)) {
+            if ($key = array_search($name, $this->match)) {
                 $this->_field = $key;
                 $this->_record->{$key} = '';
             }
@@ -360,14 +365,14 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
 
     public function on_close($parser, $name) {
         $this->_field = '';
-        switch($name) {
+        switch ($name) {
             case 'ELEVE' :
                 $this->add_iu($this->_record);
                 unset($this->_record);
                 $this->_progressreporter->progress();
                 return;
             case 'STRUCTURES_ELEVE' :
-                if(array_key_exists($this->_record->uid, $this->_buffer)) {
+                if (array_key_exists($this->_record->uid, $this->_buffer)) {
                     $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
                     $this->_progressreporter->progress();
                 }
@@ -380,13 +385,17 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
         $lst = $this->_buffer;
         $this->_buffer = array();
         $this->_report->addedusers = 0;
-        while($lst) {
+        while ($lst) {
             $iu = array_pop($lst);
-            if(!empty($iu->cohortname)) {
+            if (!empty($iu->cohortname)) {
                 $iu->cohortname = trim($iu->cohortname);
-                if(!empty($iu->firstname)) $iu->firstname = trim($iu->firstname);
-                if(!empty($iu->lastname)) $iu->lastname = trim($iu->lastname);
-                $iu->uid =  'BEE.' . $iu->uid;
+                if (!empty($iu->firstname)) {
+                    $iu->firstname = trim($iu->firstname);
+                }
+                if (!empty($iu->lastname)) {
+                    $iu->lastname = trim($iu->lastname);
+                }
+                $iu->uid = 'BEE.' . $iu->uid;
                 $iu->profile = 1;
                 ++$this->_report->addedusers;
                 $this->_buffer[$iu->uid] = $iu;
@@ -406,15 +415,15 @@ class auth_entsync_parser_bee extends auth_entsync_parser_XML {
 class auth_entsync_parser_sts extends auth_entsync_parser_XML {
     private $match = ['lastname' => 'NOM_USAGE', 'firstname' => 'PRENOM', 'fct' => 'FONCTION'];
     public function on_open($parser, $name, $attribs) {
-        switch($name) {
+        switch ($name) {
             case 'INDIVIDU' :
                 $this->_record = new stdClass();
                 $this->_record->uid = $attribs['ID'];
                 return;
         }
 
-        if(isset($this->_record)) {
-            if($key =  array_search($name, $this->match)) {
+        if (isset($this->_record)) {
+            if ($key = array_search($name, $this->match)) {
                 $this->_field = $key;
                 $this->_record->{$key} = '';
             }
@@ -423,7 +432,7 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
 
     public function on_close($parser, $name) {
         $this->_field = '';
-        switch($name) {
+        switch ($name) {
             case 'INDIVIDU' :
                 $this->add_iu($this->_record);
                 unset($this->_record);
@@ -436,13 +445,17 @@ class auth_entsync_parser_sts extends auth_entsync_parser_XML {
         $lst = $this->_buffer;
         $this->_buffer = array();
         $this->_report->addedusers = 0;
-        while($lst) {
+        while ($lst) {
             $iu = array_pop($lst);
-            if(!empty($iu->fct) && ($iu->fct == 'ENS')) {
+            if (!empty($iu->fct) && ($iu->fct == 'ENS')) {
                 unset($iu->fct);
-                if(!empty($iu->firstname)) $iu->firstname = trim($iu->firstname);
-                if(!empty($iu->lastname)) $iu->lastname = trim($iu->lastname);
-                $iu->uid =  'STS.' . $iu->uid;
+                if (!empty($iu->firstname)) {
+                    $iu->firstname = trim($iu->firstname);
+                }
+                if (!empty($iu->lastname)) {
+                    $iu->lastname = trim($iu->lastname);
+                }
+                $iu->uid = 'STS.' . $iu->uid;
                 $iu->profile = 2;
                 ++$this->_report->addedusers;
                 $this->_buffer[$iu->uid] = $iu;

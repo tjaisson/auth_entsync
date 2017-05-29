@@ -125,7 +125,7 @@ if($profile === 1) {
                 <hr />
                 <?php if($u->username) { ?>
                     <p class="tt">Codes Moodle</p>
-                    <p class="id">id.&nbsp: <?php echo $u->username; ?></p>
+                    <p class="id">id.&nbsp;: <?php echo $u->username; ?></p>
                     <p class="pw">pw&nbsp;: <?php echo $u->password; ?></p>
                 <?php } ?>
                 </div>

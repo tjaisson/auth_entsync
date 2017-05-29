@@ -20,7 +20,7 @@
  * @package    auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,47 +39,47 @@ require_once('cohorthelper.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class auth_entsync_sync {
-	/**
-	 * Durée d'archivage des utilisateurs en secondes
-	 */
-    const ARCHIVDURATION = 15552000; //php 5.4 ne permet pas : 3600*24*30*6 environ 6 mois;
-    
-	/**
-	 * Fausse email attribuée aux utilisateurs
-	 */
-	const FAKEEMAIL = 'inconnu@ac-paris.invalid';
-	const FAKEEMAIL_ELEV = 'eleve@ac-paris.invalid';
-	const FAKEEMAIL_ENS = 'enseignant@ac-paris.invalid';
-	const FAKEEMAIL_PERS = 'personnel@ac-paris.invalid';
-	
-	const COHORT_PRFX = 'auto_';
-	const COHORT_PRFX_LEN = 5;
+    /**
+     * Durée d'archivage des utilisateurs en secondes
+     */
+    const ARCHIVDURATION = 15552000; // Php 5.4 ne permet pas : 3600*24*30*6 environ 6 mois.
+
+    /**
+     * Fausse email attribuée aux utilisateurs
+     */
+    const FAKEEMAIL = 'inconnu@ac-paris.invalid';
+    const FAKEEMAIL_ELEV = 'eleve@ac-paris.invalid';
+    const FAKEEMAIL_ENS = 'enseignant@ac-paris.invalid';
+    const FAKEEMAIL_PERS = 'personnel@ac-paris.invalid';
+
+    const COHORT_PRFX = 'auto_';
+    const COHORT_PRFX_LEN = 5;
 
     /**
      * @var string|null Null if ok, error msg otherwise
      */
     protected $_error;
-    
+
     protected $_report;
 
     protected $_progressreporter = null;
-    
-    protected $_readytosyncusers = [1=>-1,2=>-1];
-    
+
+    protected $_readytosyncusers = [1 => -1, 2 => -1];
+
     protected $_currenttime;
-    
+
     protected $_limitarchiv;
-    
+
     protected $_otherlookup;
 
     protected $_profilestosync;
-    
+
     protected $_profileswithcohort = [];
-    
+
     protected $_existingentu;
 
     protected $_existingentuother;
-    
+
     /**
      * @var int Code de l'ent synchronisé
      */
@@ -90,35 +90,30 @@ abstract class auth_entsync_sync {
      */
     public $structcode = 0;
 
-/**
+    /**
      * @var array Indique les rôles système par profil
      */
-    public $roles = [1=>0,2=>0];
-    
+    public $roles = [1 => 0, 2 => 0];
+
     /**
      * Get last error
      *
      * @return string error text of null if none
      */
     public function get_error() {
-    	return $this->_error;
+        return $this->_error;
     }
-    
+
     public function set_progress_reporter($progressreporter) {
         $this->_progressreporter = $progressreporter;
     }
-    
+
     public function set_profilestosync($profilelist) {
         $this->_profilestosync = $profilelist;
     }
-    
+
     public function set_profileswithcohorts($profilelist) {
         $this->_profileswithcohort = $profilelist;
-    }
-    
-    protected function uncheckusers() {
-    	global $DB;
-    	$DB->set_field('auth_entsync_user', 'checked', false);
     }
 
     protected function get_fakeemail($profile) {
@@ -129,7 +124,7 @@ abstract class auth_entsync_sync {
         }
         return $this::FAKEEMAIL;
     }
-    
+
     /**
      * effectue la mise à jour ou la création de l'utilisateur
      *
@@ -142,31 +137,46 @@ abstract class auth_entsync_sync {
      */
     protected function update($entu, $mdlu, $iu) {
         global $DB;
-        // $_mdlu : record pour la mise à jour
+        // Crée $_mdlu : record pour la mise à jour.
         $_mdlu = new stdClass();
         $_mdlu->isdirty = false;
 
-        if($mdlu && $mdlu->deleted) {
+        if ($mdlu && $mdlu->deleted) {
             $mdlu = false;
         }
-        
-        //création ou mise à jour de l'utilisateur moodle
-        if($mdlu) {
-            //mise à jour de l'utilisateur
+
+        // Création ou mise à jour de l'utilisateur moodle.
+        if ($mdlu) {
+            // Mise à jour de l'utilisateur.
             $_mdlu->id = $mdlu->id;
             $this->updatecreds($mdlu, $_mdlu, $iu);
-            if($mdlu->auth != 'entsync') {$_mdlu->auth = 'entsync'; $_mdlu->isdirty = true;}
-            if($mdlu->suspended) {$_mdlu->suspended = 0; $_mdlu->isdirty = true;}
-            if(!$mdlu->confirmed) {$_mdlu->confirmed = 1; $_mdlu->isdirty = true;}
-            if($mdlu->firstname != $iu->firstname) {$_mdlu->firstname = $iu->firstname; $_mdlu->isdirty = true;}
-            if($mdlu->lastname != $iu->lastname) {$_mdlu->lastname = $iu->lastname; $_mdlu->isdirty = true;}
-            if($_mdlu->isdirty) {
+            if ($mdlu->auth != 'entsync') {
+                $_mdlu->auth = 'entsync';
+                $_mdlu->isdirty = true;
+            }
+            if ($mdlu->suspended) {
+                $_mdlu->suspended = 0;
+                $_mdlu->isdirty = true;
+            }
+            if (!$mdlu->confirmed) {
+                $_mdlu->confirmed = 1;
+                $_mdlu->isdirty = true;
+            }
+            if ($mdlu->firstname != $iu->firstname) {
+                $_mdlu->firstname = $iu->firstname;
+                $_mdlu->isdirty = true;
+            }
+            if ($mdlu->lastname != $iu->lastname) {
+                $_mdlu->lastname = $iu->lastname;
+                $_mdlu->isdirty = true;
+            }
+            if ($_mdlu->isdirty) {
                 unset($_mdlu->isdirty);
                 user_update_user($_mdlu, false, true);
                 ++$this->_report->updated;
             }
         } else {
-            //création de l'utilisateur
+            // Création de l'utilisateur.
             $_mdlu->isdirty = true;
             $this->applycreds($_mdlu, $iu);
             $_mdlu->auth = 'entsync';
@@ -181,49 +191,64 @@ abstract class auth_entsync_sync {
             ++$this->_report->created;
         }
 
-        // $_entu : record pour la mise à jour
+        // Crée $_entu : record pour la mise à jour.
         $_entu = new stdClass();
         $_entu->isdirty = false;
 
-        //création ou mise à jour de l'utilisateur géré
-        if($entu) {
-        	//l'utilisateur existe déjà dans la table ent
-        	$entu->checked = true;
-        	$_entu->id = $entu->id;
-        	if($entu->archived) {
-        	    $_entu->archived = 0;
-        	    $_entu->archivedsince = 0;
-        	    $_entu->isdirty = true;
-        	}
-        	if($entu->sync != 1) {$_entu->sync = 1; $_entu->isdirty = true;}
-            if($entu->userid != $_mdlu->id) {$_entu->userid = $_mdlu->id; $_entu->isdirty = true;}
-        	if($entu->ent != $this->entcode) {$_entu->ent = $this->entcode; $_entu->isdirty = true;}
-        	if($entu->profile != $iu->profile) {$_entu->profile = $iu->profile; $_entu->isdirty = true;}
-        	if($entu->uid != $iu->uid) {$_entu->uid = $iu->uid; $_entu->isdirty = true;}
-        	if($_entu->isdirty) {
-        	    unset($_entu->isdirty);
+        // Création ou mise à jour de l'utilisateur géré.
+        if ($entu) {
+            // L'utilisateur existe déjà dans la table ent.
+            $entu->checked = true;
+            $_entu->id = $entu->id;
+            if ($entu->archived) {
+                $_entu->archived = 0;
+                $_entu->archivedsince = 0;
+                $_entu->isdirty = true;
+            }
+            if ($entu->sync != 1) {
+                $_entu->sync = 1;
+                $_entu->isdirty = true;
+            }
+            if ($entu->userid != $_mdlu->id) {
+                $_entu->userid = $_mdlu->id;
+                $_entu->isdirty = true;
+            }
+            if ($entu->ent != $this->entcode) {
+                $_entu->ent = $this->entcode;
+                $_entu->isdirty = true;
+            }
+            if ($entu->profile != $iu->profile) {
+                $_entu->profile = $iu->profile;
+                $_entu->isdirty = true;
+            }
+            if ($entu->uid != $iu->uid) {
+                $_entu->uid = $iu->uid;
+                $_entu->isdirty = true;
+            }
+            if ($_entu->isdirty) {
+                unset($_entu->isdirty);
                 $DB->update_record('auth_entsync_user', $_entu);
-        	}
+            }
         } else {
-        	//il s'agit d'un nouvel utilisateur dans la table ent
+            // Il s'agit d'un nouvel utilisateur dans la table ent.
             $_entu->isdirty = true;
             $_entu->sync = 1;
-    	    $_entu->archived = 0;
-    	    $_entu->archivedsince = 0;
+            $_entu->archived = 0;
+            $_entu->archivedsince = 0;
             $_entu->userid = $_mdlu->id;
-        	$_entu->ent = $this->entcode;
-        	$_entu->profile = $iu->profile;
-        	$_entu->uid = $iu->uid;
-        	unset($_entu->isdirty);
+            $_entu->ent = $this->entcode;
+            $_entu->profile = $iu->profile;
+            $_entu->uid = $iu->uid;
+            unset($_entu->isdirty);
             $_entu->id = $DB->insert_record('auth_entsync_user', $_entu, true);
         }
 
         auth_entsync_rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
-        
-        if(in_array($iu->profile, $this->_profileswithcohort)) {
+
+        if (in_array($iu->profile, $this->_profileswithcohort)) {
             auth_entsync_cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
         }
-        
+
         return [$_entu, $_mdlu];
     }
 
@@ -234,196 +259,188 @@ abstract class auth_entsync_sync {
      */
     protected function archive($entu) {
         global $DB;
-        if(!$entu->archived) {
-            //il n'était pas déjà archivé
+        if (!$entu->archived) {
+            // Il n'était pas déjà archivé.
             $_entu = new stdClass();
             $_entu->id = $entu->id;
             $_entu->archived = 1;
             $_entu->archivedsince = $this->_currenttime;
             $DB->update_record('auth_entsync_user', $_entu);
-            
-            if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
-                //il est archivé dans tous les ent
-                //on retire son éventuel rôle système (si c'est un prof)
+
+            if (0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
+                // Il est archivé dans tous les ent
+                // on retire son éventuel rôle système (si c'est un prof).
                 auth_entsync_rolehelper::removeroles($entu->userid);
                 
-                //on le sort de sa cohorte éventuelle (si c'est un élève)
+                // On le sort de sa cohorte éventuelle (si c'est un élève).
                 auth_entsync_cohorthelper::removecohorts($entu->userid);
             }
         }
-        
-        //le reste doit êter géré dans la tâche programmée 
-        
-        
-//         //on supprime les $entu expirés
-//         $select = "userid = :userid AND archived = 1 AND archivedsince < :limit";
-//         $DB->delete_records_select('auth_entsync_user', $select,
-//             ['userid' => $entu->userid, 'limit' => $this->_limitarchiv]);
 
-//         //on recherche le $mdlu
-//         if( $mdlu = $DB->get_record('user',
-//             ['id' => $entu->userid, 'deleted' => 0], 'id, username, suspended') )  {
+/*         // Le reste doit êter géré dans la tâche programmée. 
+        //         //on supprime les $entu expirés
+        //         $select = "userid = :userid AND archived = 1 AND archivedsince < :limit";
+        //         $DB->delete_records_select('auth_entsync_user', $select,
+        //             ['userid' => $entu->userid, 'limit' => $this->_limitarchiv]);
+        //         //on recherche le $mdlu
+        //         if( $mdlu = $DB->get_record('user',
+        //             ['id' => $entu->userid, 'deleted' => 0], 'id, username, suspended') )  {
+        //             if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid])) {
+        //                 //il n'est plus référencé
+        //                 delete_user($mdlu);
+        //             } else {
+        //                 if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
+        //                     //il est archivé
+        //                     $_mdlu = new stdClass();
+        //                     $_mdlu->id = $mdlu->id;
+        //                     $_mdlu->suspended = true;
+        //                     $DB->update_record('user', $_mdlu);
+        //                 }
+        //             }
+        //         }.
+ */    }
 
-//             if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid])) {
-//                 //il n'est plus référencé
-//                 delete_user($mdlu);
-//             } else {
-//                 if(0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
-//                     //il est archivé
-//                     $_mdlu = new stdClass();
-//                     $_mdlu->id = $mdlu->id;
-//                     $_mdlu->suspended = true;
-//                     $DB->update_record('user', $_mdlu);
-//                 }
-//             }
-//         }
-    }
+    public function dosync($iurs) {
+        global $DB;
+        if (is_null($this->_progressreporter)) {
+            $this->_progressreporter = new \core\progress\none();
+        }
 
-	public function dosync($iurs) {
-		global $DB;
-		$this->_report = (object) [
-		  'errors' => 0,
-		  'byid' => 0,
-		  'bynames' => 0,
-		  'notbynames' => 0,
-		  'multinames' => 0,
-		  'profilmismatched' => 0,
-		  'checkedcollision' => 0,
-		  'entcollision' => 0,
-		  'created' => 0,
-		  'updated' => 0
-		];
-		
-		$this->_progressreporter->start_progress('',10);
-		$this->_progressreporter->start_progress('',1,1);
-		
-		$this->_currenttime = time();
-		//on décoche tous les utilisateurs de l'ent
-        //$this->uncheckusers();
+        $this->_report = (object) [
+            'errors' => 0,
+            'byid' => 0,
+            'bynames' => 0,
+            'notbynames' => 0,
+            'multinames' => 0,
+            'profilmismatched' => 0,
+            'checkedcollision' => 0,
+            'entcollision' => 0,
+            'created' => 0,
+            'updated' => 0
+        ];
 
+        $this->_progressreporter->start_progress('', 10);
+        $this->_progressreporter->start_progress('', 1, 1);
+        $this->_currenttime = time();
         $this->_profileswithcohort = array_intersect($this->_profileswithcohort, $this->_profilestosync);
-
         $this->_otherlookup = $DB->count_records_select('auth_entsync_user', "ent <> :ent",
             ['ent' => $this->entcode]) > 0;
-
         $this->buildexistinglst();
-            
         $this->_progressreporter->end_progress();
-        $this->_progressreporter->start_progress('',count($iurs),6);
-		$progresscnt = 0;
-		//on itère sur tous les utilisateurs importés
-		foreach ($iurs as $iu) {
+        $this->_progressreporter->start_progress('', count($iurs), 6);
+        $progresscnt = 0;
+        // On itère sur tous les utilisateurs importés.
+        foreach ($iurs as $iu) {
             $this->_progressreporter->progress($progresscnt);
             ++$progresscnt;
 
-		    if(in_array($iu->profile, $this->_profilestosync) && $this->validate_user($iu)) {
-                //cherche l'utilsateur
-                if($ret = $this->lookforuser($iu)) {
-                   // if($iu->id == 302) var_dump($ret);
+            if (in_array($iu->profile, $this->_profilestosync) && $this->validate_user($iu)) {
+                // Chercher l'utilisateur.
+                if ($ret = $this->lookforuser($iu)) {
                     list($entu, $mdlu) = $ret;
                     list($_entu, $_mdlu) = $this->update($entu, $mdlu, $iu);
                 }
             }
-		}
-		unset($iurs);
+        }
+        unset($iurs);
         $this->_progressreporter->end_progress();
 
         $this->_limitarchiv = $this->_currenttime - $this::ARCHIVDURATION;
 
-        $this->_progressreporter->start_progress('',count($this->_existingentu),3);
-		$progresscnt = 0;
-        foreach($this->_existingentu as $entu) {
+        $this->_progressreporter->start_progress('', count($this->_existingentu), 3);
+        $progresscnt = 0;
+        foreach ($this->_existingentu as $entu) {
             $this->_progressreporter->progress($progresscnt);
-		    ++$progresscnt;
-		    if(!$entu->checked) {
+            ++$progresscnt;
+            if (!$entu->checked) {
                 $_entu = $this->archive($entu);
-		    }
+            }
         }
         unset($this->_existingentu);
         unset($this->_existingentuother);
         $this->_progressreporter->end_progress();
         $this->_progressreporter->end_progress();
         return $this->_report;
-	}
+    }
 
-	protected function buildexistinglst() {
-	    $entus = auth_entsync_usertbl::get_entus(-1, $this->entcode);
-	    $this->_existingentu = array();
-	    $this->_existingentuother = array();
-	    while($entus) {
-	        $entu = array_pop($entus);
-	        if(in_array($entu->profile, $this->_profilestosync)) {
-	            $entu->checked = false;
-	            $this->_existingentu[$entu->uid] = $entu;
-	        } else {
-	            $this->_existingentuother[$entu->uid] = 1;
+    protected function buildexistinglst() {
+        $entus = auth_entsync_usertbl::get_entus(-1, $this->entcode);
+        $this->_existingentu = array();
+        $this->_existingentuother = array();
+        while ($entus) {
+            $entu = array_pop($entus);
+            if (in_array($entu->profile, $this->_profilestosync)) {
+                $entu->checked = false;
+                $this->_existingentu[$entu->uid] = $entu;
+            } else {
+                $this->_existingentuother[$entu->uid] = 1;
             }
-	    }
-	}
-	
+        }
+    }
+
     /**
      * Recherche l'utilisateur dans les utilisateurs existants
      *
      * valeurs de retour :
      *  - false signifie que l'utilisateur ne pourra pas être créé (rare)
      *  - [$entu, $mdlu]
-     *  
+     *
      *  [set, set]     ->utilisateurs rappochés par uid
      *  [set, false]   ->ne devrait pas se produire, utilisateur moodle probablement effacé
      *  [false, set]   ->utilisateur trouvé par nom / prénom
      *  [false, false] ->nouvel utilisateurs
-     *    
+     *
      * @param stdClass $iu l'utilisateur à rechercher
      * @return false|array l'utilisateur trouvé sous la forme [$entu, $mdlu]. Peuvent être null, false
      * si l'utilisateur devrait être ignoré
      */
     protected function lookforuser($iu) {
         global $DB, $CFG;
-        if(array_key_exists($iu->uid, $this->_existingentu)) {
+        if (array_key_exists($iu->uid, $this->_existingentu)) {
             $entu = $this->_existingentu[$iu->uid];
         } else {
-            if(array_key_exists($iu->uid, $this->_existingentuother)) {
-                //même ent mais autre profil
-                //ne devrait pas se produire
+            if (array_key_exists($iu->uid, $this->_existingentuother)) {
+                // Même ent mais autre profil
+                // ne devrait pas se produire.
                 ++$this->_report->profilmismatched;
                 return false;
             } else {
                 $entu = null;
             }
-       }
-       if($entu) {
-            if($entu->checked) {
-                //ne devrait pas se produire
+        }
+        if ($entu) {
+            if ($entu->checked) {
+                // Ne devrait pas se produire.
                 ++$this->_report->checkedcollision;
                 return false;
             }
-            if($entu->profile == $iu->profile) {
-                //même ent et même profil, c'est bien lui
-                if($mdlu = $DB->get_record('user', ['id' => $entu->userid, 'deleted' => 0,
-                   'mnethostid' => $CFG->mnet_localhost_id],
-                   'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname'
-                   )) {
-                   ++$this->_report->byid;
-                   return [$entu, $mdlu];
+            if ($entu->profile == $iu->profile) {
+                // Même ent et même profil, c'est bien lui.
+                if ($mdlu = $DB->get_record('user', ['id' => $entu->userid, 'deleted' => 0,
+                    'mnethostid' => $CFG->mnet_localhost_id],
+                    'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname'
+                    )) {
+                    ++$this->_report->byid;
+                    return [$entu, $mdlu];
                 }
-                //si $mdlu n'est pas là -> recherche par nom prenom
+                // Si $mdlu n'est pas là, alors recherche par nom prenom.
                 return [$entu, $this->lookforuserbynames($iu)];
 
             } else {
-                //même ent mais autre profil
-                //ne devrait pas se produire
+                // Même ent mais autre profil
+                // ne devrait pas se produire.
                 ++$this->_report->profilmismatched;
                 return false;
             }
         } else {
-            //cherche par nom prenom
+            // Chercher par nom prenom.
             return [false, $this->lookforuserbynames($iu)];
         }
     }
 
     protected function lookforuserbynames($iu) {
         global $DB, $CFG;
-        if(!$this->_otherlookup) {
+        if (!$this->_otherlookup) {
             ++$this->_report->notbynames;
             return false;
         }
@@ -439,22 +456,22 @@ abstract class auth_entsync_sync {
         AND UPPER(a.lastname) = UPPER(:lastname)";
         $lst = $DB->get_records_sql($sql,
             ['firstname' => $iu->firstname, 'lastname' => $iu->lastname, 'mnethostid' => $CFG->mnet_localhost_id]);
-        if(count($lst) === 0) {
+        if (count($lst) === 0) {
             ++$this->_report->notbynames;
             return false;
         }
         $userids = array();
         foreach ($lst as $rec) {
-            if($this->entcode == $rec->ent) {
+            if ($this->entcode == $rec->ent) {
                 ++$this->_report->notbynames;
                 ++$this->_report->entcollision;
                 return false;
             }
-            if($iu->profile == $rec->profile)
+            if ($iu->profile == $rec->profile)
                 $userids[] = $rec->userid;
         }
         $userids = array_unique($userids);
-        if(count($userids) === 1) {
+        if (count($userids) === 1) {
             ++$this->_report->bynames;
             return $DB->get_record('user', ['id' => $userids[0]],
                     'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname'
@@ -472,8 +489,8 @@ abstract class auth_entsync_sync {
      * @return boolean
      */
     protected abstract function validate_user($iu);
-	protected abstract function applycreds($_mdlu, $iu);
-	protected abstract function updatecreds($mdlu, $_mdlu, $iu);
+    protected abstract function applycreds($_mdlu, $iu);
+    protected abstract function updatecreds($mdlu, $_mdlu, $iu);
 }
 
 /**
@@ -485,56 +502,58 @@ abstract class auth_entsync_sync {
  */
 class auth_entsync_sync_cas extends auth_entsync_sync {
     protected $recupcas = false;
-    
+
     public function set_recupcas($val) {
         $this->recupcas = $val;
     }
-    
+
     protected function lookforuserbynames($iu) {
         global $DB, $CFG;
-        if($this->recupcas) {
-            if($mdlu = $DB->get_record('user', ['auth' => 'cas', 'username' => $iu->uid, 'mnethostid' => $CFG->mnet_localhost_id],
+        if ($this->recupcas) {
+            if ($mdlu = $DB->get_record('user', ['auth' => 'cas', 'username' => $iu->uid, 'mnethostid' => $CFG->mnet_localhost_id],
                 'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname')) {
                 return $mdlu;
             }
         }
         return parent::lookforuserbynames($iu);
     }
-    
+
     protected function validate_user($iu) {
-        if(empty($iu->uid)) return false;
+        if (empty($iu->uid)) {
+            return false;
+        }
         return true;
     }
 
     protected function applycreds($_mdlu, $iu) {
         global $DB, $CFG;
-	    $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}"; //TODO : gérer le cas où le username est déjà utilisé 
-	                                                              //ne devrait pas se produire mais déjà vu suite à bugg
-	    $clean = core_user::clean_field($_mdlu->username, 'username');
-	    if ($_mdlu->username !== $clean) {
-	        if(0 === $DB->count_records('user', ['username' => $clean])) {
-	            $_mdlu->username = $clean;
-	        } else {
-	            $i = 1;
-	            while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
-	                ++$i;
-	            }
-	            $_mdlu->username = $clean . $i;
-	        }
-	    }
+        $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}";
+        // TODO : gérer le cas où le username est déjà utilisé
+        // ne devrait pas se produire mais déjà vu suite à bugg.
+        $clean = core_user::clean_field($_mdlu->username, 'username');
+        if ($_mdlu->username !== $clean) {
+            if (0 === $DB->count_records('user', ['username' => $clean])) {
+                $_mdlu->username = $clean;
+            } else {
+                $i = 1;
+                while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
+                    ++$i;
+                }
+                $_mdlu->username = $clean . $i;
+            }
+        }
 
-	    $_mdlu->mnethostid = $CFG->mnet_localhost_id;
-	    $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
-	}
+        $_mdlu->mnethostid = $CFG->mnet_localhost_id;
+        $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
+    }
 
-	protected function updatecreds($mdlu, $_mdlu, $iu) {
-	}
-
+    protected function updatecreds($mdlu, $_mdlu, $iu) {
+    }
 }
 
 /**
  * Synchronizer spécifique pour le mode d'authentification 'local'
- * 
+ *
  * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -547,10 +566,10 @@ class auth_entsync_sync_local extends auth_entsync_sync {
     protected function applycreds($_mdlu, $iu) {
         global $CFG, $DB;
         $_mdlu->isdirty = true;
-        $_fn = core_text::substr(auth_entsync_stringhelper::simplify_name($iu->firstname),0,1);
+        $_fn = core_text::substr(auth_entsync_stringhelper::simplify_name($iu->firstname), 0, 1);
         $_ln = auth_entsync_stringhelper::simplify_name($iu->lastname);
         $clean = core_user::clean_field($_fn . $_ln, 'username');
-        if(0 === $DB->count_records('user', ['username' => $clean])) {
+        if (0 === $DB->count_records('user', ['username' => $clean])) {
             $_mdlu->username = $clean;
         } else {
             $i = 1;
@@ -565,7 +584,7 @@ class auth_entsync_sync_local extends auth_entsync_sync {
     }
 
     protected function updatecreds($mdlu, $_mdlu, $iu) {
-        if($mdlu->password == AUTH_PASSWORD_NOT_CACHED) {
+        if ($mdlu->password == AUTH_PASSWORD_NOT_CACHED) {
             $this->applycreds($_mdlu, $iu);
         }
     }

@@ -47,7 +47,7 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
 
     public function __construct($storecode = null) {
         $this->_storecode = $storecode;
-        if($storecode) {
+        if ($storecode) {
             $dir = make_temp_directory('entsync');
             $file = $dir . '/' . $storecode;
             $this->_tmparray = (array)json_decode(file_get_contents($file));
@@ -57,7 +57,7 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
     }
     public function save() {
         $dir = make_temp_directory('entsync');
-        if($this->_storecode) {
+        if ($this->_storecode) {
             $file = $dir . '/' . $this->_storecode;
         } else  {
             $i = 100;
@@ -71,9 +71,9 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
         return $this->_storecode;
     }
     public function add_ius($ius) {
-        if(empty($ius)) return;
+        if (empty($ius)) return;
         $i = 1;
-        while($ius) {
+        while ($ius) {
             $iu = array_pop($ius);
             $this->_tmparray[$iu->uid] = $iu;
         }
@@ -82,7 +82,7 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
         return $this->_tmparray;
     }
     public function clear() {
-        if($this->_storecode) {
+        if ($this->_storecode) {
             $dir = make_temp_directory('entsync');
             $file = $dir . '/' . $this->_storecode;
             unlink($file);
@@ -93,13 +93,11 @@ class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
     }
 }
 
-
-
 class auth_entsync_dbtmpstore extends auth_entsync_tmpstore {
     protected $_storecode;
     public function __construct($storecode = null) {
         global $DB;
-        if($storecode === null) {
+        if ($storecode === null) {
             $DB->delete_records('auth_entsync_tmpul');
             $this->_storecode = 1;
         } else {
@@ -109,7 +107,10 @@ class auth_entsync_dbtmpstore extends auth_entsync_tmpstore {
     public function save() {return $this->_storecode;}
     public function add_ius($ius) {
         global $DB;
-        if(empty($ius)) return;
+        if (empty($ius)) return;
+        if (is_null($this->_progressreporter)) {
+            $this->_progressreporter = new \core\progress\none();
+        }
         $this->_progressreporter->start_progress('Préparation',count($ius),1);
         $i = 1;
         while($ius) {

@@ -48,26 +48,26 @@ abstract class auth_entsync_ent_base {
     protected $_code;
     protected $_entclass;
     protected $_settings;
-    
+
     public function get_code() {
         return $this->_code;
     }
-    
+
     public function get_entclass() {
         return $this->_entclass;
     }
-    
+
     public function is_enabled() {
         return in_array($this->_code, self::$_enabledents);
     }
-    
+
     public function is_sso() {
         return $this->get_mode() !== 'local';
     }
-    
-/**
+
+    /**
      * Enregistre un ent dans la liste des ents disponibles
-     * 
+     *
      * Il faut attribuer à l'ent un code entier non nul, unique et immuable
      * L'ordre dans lequel les ents sont enregistrés définit l'ordre dans la liste
      * déroulante
@@ -85,12 +85,12 @@ abstract class auth_entsync_ent_base {
         $ent->_code = $entcode;
         self::$_entinsts[$entcode] = $ent;
     }
-    
+
     public static function end_register() {
-        if($entsenabled = get_config('auth_entsync', 'enabledents')) {
+        if ($entsenabled = get_config('auth_entsync', 'enabledents')) {
             $entsenabled = array_unique(explode(';', $entsenabled));
             foreach ($entsenabled as $entcode) {
-                if(self::ent_exists($entcode)) {
+                if (self::ent_exists($entcode)) {
                     self::$_enabledents[] = $entcode;
                 }
             }
@@ -102,57 +102,65 @@ abstract class auth_entsync_ent_base {
             self::$_entclasses[$ent->_entclass] = $entcode;
         }
     }
-    
-    /**
-     *
-     * Retourne l'instance de la classe définissant l'ent du code donné.
-     * 
-     * @param int|string $entcode Code de l'ent dont il faut retourner une instance
-     * @return false|auth_entsync_ent_base false si aucun ent ne correspond au
-     *                         code
-     */
+
+     /**
+      *
+      * Retourne l'instance de la classe définissant l'ent du code donné.
+      *
+      * @param int|string $entcode Code de l'ent dont il faut retourner une instance
+      * @return false|auth_entsync_ent_base false si aucun ent ne correspond au
+      *                         code
+      */
     public static function get_ent($entcode) {
-        if(is_number($entcode)) {
+        if (is_number($entcode)) {
             $entcode = (int)$entcode;
         } else {
-            if(!array_key_exists($entcode, self::$_entclasses)) return false;
+            if (!array_key_exists($entcode, self::$_entclasses)) {
+                return false;
+            }
             $entcode = (int)self::$_entclasses[$entcode];
         }
-        if(!self::ent_exists($entcode)) return false;
+        if (!self::ent_exists($entcode)) {
+            return false;
+        }
         return self::$_entinsts[$entcode];
     }
-    
+
     /**
-     * @return array[auth_entsync_ent_base] 
+     * @return array[auth_entsync_ent_base]
      */
     public static function get_ents() {
         return self::$_entinsts;
     }
-    
+
     public static function count_enabled() {
         return count(self::$_enabledents);
     }
-    
+
     public static function ent_exists($entcode) {
         return array_key_exists($entcode, self::$_entinsts);
     }
-    
+
     public static function ent_isenabled($entcode) {
-        if(!self::ent_exists($entcode)) return false;
+        if(!self::ent_exists($entcode)) {
+            return false;
+        }
         return in_array($entcode, self::$_enabledents);
     }
 
-    public static function enable_ent($entcode){
-        // add to enabled list
-        if(!self::ent_exists($entcode)) return;
-        
+    public static function enable_ent($entcode) {
+        // Add to enabled list.
+        if (!self::ent_exists($entcode)) {
+            return;
+        }
+
         if (!in_array($entcode, self::$_enabledents)) {
             self::$_enabledents[] = $entcode;
             self::$_enabledents = array_unique(self::$_enabledents);
             set_config('enabledents', implode(';', self::$_enabledents), 'auth_entsync');
         }
     }
-    
+
     public static function disable_ent($entcode) {
         $key = array_search($entcode, self::$_enabledents);
         if ($key !== false) {
@@ -160,15 +168,15 @@ abstract class auth_entsync_ent_base {
             set_config('enabledents', implode(';', self::$_enabledents), 'auth_entsync');
         }
     }
-    
+
     public static function set_formdata($config, $mform) {
         $datas = array();
-        foreach(self::$_entinsts as $ent) {
-            if($ent->is_enabled() && $ent->has_settings()) {
+        foreach (self::$_entinsts as $ent) {
+            if ($ent->is_enabled() && $ent->has_settings()) {
                 $prfx = "ent({$ent->_code})_";
-                foreach($ent->settings() as $stg) {
+                foreach ($ent->settings() as $stg) {
                     $prfxname = $prfx . $stg->name;
-                    if(isset($config->{$prfxname})) {
+                    if (isset($config->{$prfxname})) {
                         $datas[$prfxname] = $config->{$prfxname};
                     } else {
                         $datas[$prfxname] = $stg->default;
@@ -176,24 +184,25 @@ abstract class auth_entsync_ent_base {
                 }
             }
         }
-        if(! empty($datas))
+        if (!empty($datas)) {
             $mform->set_data($datas);
+        }
     }
-    
+
     public static function save_formdata($config, $formdata) {
-        foreach(self::$_entinsts as $ent) {
-            if($ent->is_enabled() && $ent->has_settings()) {
+        foreach (self::$_entinsts as $ent) {
+            if ($ent->is_enabled() && $ent->has_settings()) {
                 $prfx = "ent({$ent->_code})_";
-                foreach($ent->settings() as $stg) {
+                foreach ($ent->settings() as $stg) {
                     $prfxname = $prfx . $stg->name;
-                    if(isset($formdata->{$prfxname})) {
+                    if (isset($formdata->{$prfxname})) {
                         $new = $formdata->{$prfxname};
-                        if(isset($config->{$prfxname})) {
+                        if (isset($config->{$prfxname})) {
                             $actual = $config->{$prfxname};
                         } else {
                             $actual = $stg->default;
                         }
-                        if($new != $actual) {
+                        if ($new != $actual) {
                             set_config($prfxname, $new, 'auth_entsync');
                         }
                     }
@@ -201,15 +210,17 @@ abstract class auth_entsync_ent_base {
             }
         }
     }
-    
+
     public function get_settings() {
-        if(isset($this->_settings)) return $this->_settings;
-        if($this->has_settings()) {
+        if (isset($this->_settings)) {
+            return $this->_settings;
+        }
+        if ($this->has_settings()) {
             $lst = $this->settings();
             $prfx = "ent({$this->_code})_";
             $stgs = array();
-            foreach($lst as $setting) {
-                if($stg = get_config('auth_entsync', $prfx . $setting->name)) {
+            foreach ($lst as $setting) {
+                if ($stg = get_config('auth_entsync', $prfx . $setting->name)) {
                     $stgs[$setting->name] = $stg;
                 } else {
                     $stgs[$setting->name] = $setting->default;
@@ -221,30 +232,30 @@ abstract class auth_entsync_ent_base {
         }
         return $this->_settings;
     }
-    
+
     /**
      * Retourne l'url à utiliser pour se connecter avec cas
      *
      * @return string
      */
     public abstract function get_connector_url();
-    
+
     /**
      * Retourne la liste des profils
      *
-     * @return string[] 
+     * @return string[]
      */
     public static function get_profile_list() {
-        if(empty(self::$_profilelist)) {
+        if (empty(self::$_profilelist)) {
             self::$_profilelist = [
                 1 => 'Elèves',
                 2 => 'Enseignants',
-                3 => 'Personnels' 
+                3 => 'Personnels'
             ];
         }
         return self::$_profilelist;
     }
-    
+
     /**
      * Retourne une instance de la classe qui permet de synchroniser
      * les utilisateurs du type de fichier donné de cet ent
@@ -261,14 +272,14 @@ abstract class auth_entsync_ent_base {
         $synchroniser->set_profileswithcohorts($this->get_profileswithcohorts());
         return $synchroniser;
     }
-    
+
     /**
      * Retourne le tableau des formats de fichiers acceptés
      *
      * @return array
      */
     public abstract function get_filetypes();
-    
+
     /**
      * Indique si plusieurs fichiers de ce type peuvent être combinés
      *
@@ -278,15 +289,15 @@ abstract class auth_entsync_ent_base {
     public function accept_multifile($filetype) {
         return false;
     }
-    
-/**
+
+    /**
      * Retourne un tableau des profils contenus dans le type de fichier
      *
      * @param int $filetype le type de fichier
      * @return array
      */
     public abstract function get_profilesintype($filetype);
-    
+
     /**
      * Retourne une instance du parser adapté au format de fichier
      *
@@ -296,37 +307,37 @@ abstract class auth_entsync_ent_base {
     public abstract function get_fileparser($type);
 
     public abstract function get_mode();
-    
+
     /**
      * Retourne un tableau des profils ayant des cohortes
      *
      * @return array
      */
     public abstract function get_profileswithcohorts();
-    
+
     public function get_icon() {
         return new pix_icon('t/approve', $this->nomcourt);
     }
-    
+
     public function include_filehelp() {
         $_helphtml = __DIR__ . "/help/{$this->_entclass}_filehelp.php";
-        if(file_exists($_helphtml)) {
+        if (file_exists($_helphtml)) {
             include($_helphtml);
         } else {
             echo '<p>L\'aide n\'est pas encore disponible.</p>';
         }
     }
-    
+
     public function include_help() {
         $_helphtml = __DIR__ . "/help/{$this->_entclass}_help.php";
-        if(file_exists($_helphtml)) {
+        if (file_exists($_helphtml)) {
             include($_helphtml);
         } else {
             echo '<p>L\'aide n\'est pas encore disponible.</p>';
         }
     }
-    
-/**
+
+    /**
      * Définit si des paramètres sont nécessaires
      *
      * @return bool
@@ -334,7 +345,6 @@ abstract class auth_entsync_ent_base {
     public function has_settings() {
         return false;
     }
-    
 }
 
 abstract class auth_entsync_entsso extends auth_entsync_ent_base {
@@ -347,12 +357,14 @@ abstract class auth_entsync_entcas extends auth_entsync_entsso {
     public function get_mode() {
         return 'cas';
     }
+
     public function get_connector_url() {
         global $CFG;
         return "{$CFG->wwwroot}/auth/entsync/connect.php?ent={$this->_entclass}";
     }
+
     public abstract function get_casparams();
-    
+
     public function get_casconnector() {
         require_once(__DIR__ . '/../lib/casconnect.php');
         $con = new auth_entsync_casconnect();

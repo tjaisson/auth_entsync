@@ -29,17 +29,17 @@ require_once('locallib.php');
 
 class auth_entsync_cohorthelper {
     const COHORT_PRFX = 'auto_';
-    
+
     /**
      * @var array [$cohortname => $cohortid]
      */
     protected static $_cohortsbyname;
-    
+
     /**
      * @var array [$cohortid => $cohortname]
      */
     protected static $_cohortsbyid;
-    
+
     /**
      * Prépare les tableaux des cohortes géréess
      */
@@ -48,16 +48,16 @@ class auth_entsync_cohorthelper {
         self::$_cohortsbyname = array();
         self::$_cohortsbyid = array();
         $_prfx_len = strlen(self::COHORT_PRFX);
-        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'], "SUBSTRING(idnumber, {$_prfx_len})", 'id, name, idnumber');
+        $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'],
+            "SUBSTRING(idnumber, {$_prfx_len})", 'id, name, idnumber');
         foreach ($lst as $id => $c) {
             $id = (int)$id;
-            if(0 === strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {
-            	$_cohort_name = auth_entsync_stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
-            	self::$_cohortsbyname[$_cohort_name] = $id;
-            	self::$_cohortsbyid[$id] = $c->name;
+            if (0 === strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {
+                $_cohort_name = auth_entsync_stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
+                self::$_cohortsbyname[$_cohort_name] = $id;
+                self::$_cohortsbyid[$id] = $c->name;
             }
         }
-//        self::$_cohortsbyid = array_flip(self::$_cohortsbyname);
     }
 
     /**
@@ -67,10 +67,12 @@ class auth_entsync_cohorthelper {
      * @return int cohortid
      */
     protected static function getorcreate_cohort($cohortname) {
-    	$_cohort_simp_name = auth_entsync_stringhelper::simplify_cohort($cohortname);
-        if(!isset(self::$_cohortsbyid)) self::fillcohortsarrays();
-        if(array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
-        	return (int)self::$_cohortsbyname[$_cohort_simp_name];
+        $_cohort_simp_name = auth_entsync_stringhelper::simplify_cohort($cohortname);
+        if (!isset(self::$_cohortsbyid)) {
+            self::fillcohortsarrays();
+        }
+        if (array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
+            return (int)self::$_cohortsbyname[$_cohort_simp_name];
         }
         $newcohort = new stdClass();
         $newcohort->name = $cohortname;
@@ -82,13 +84,15 @@ class auth_entsync_cohorthelper {
         self::$_cohortsbyname[$_cohort_simp_name] = $cohortid;
         return $cohortid;
     }
-    
+
     public static function get_cohorts() {
-    	if(!isset(self::$_cohortsbyid)) self::fillcohortsarrays();
-    	return self::$_cohortsbyid;
+        if (!isset(self::$_cohortsbyid)) {
+            self::fillcohortsarrays();
+        }
+        return self::$_cohortsbyid;
     }
-    
-/**
+
+    /**
      * Retourne la liste des cohortes gérées de cet utilisateur
      *
      * @param int $userid
@@ -102,21 +106,21 @@ class auth_entsync_cohorthelper {
             JOIN {cohort_members} b ON b.cohortid = a.id
            WHERE a.component = 'auth_entsync'
              AND b.userid = :userid";
-        return array_unique($DB->get_fieldset_sql($sql, ['userid'=>$userid]));
+        return array_unique($DB->get_fieldset_sql($sql, ['userid' => $userid]));
     }
-    
+
     public static function set_cohort($userid, $cohortname) {
         $cohortid = self::getorcreate_cohort($cohortname);
         $lst = self::get_usercohorts($userid);
         $already = false;
         foreach ($lst as $id) {
-            if($id == $cohortid) {
+            if ($id == $cohortid) {
                 $already = true;
             } else {
                 cohort_remove_member($id, $userid);
             }
         }
-        if(!$already) {
+        if (!$already) {
             cohort_add_member($cohortid, $userid);
         }
         return $cohortid;

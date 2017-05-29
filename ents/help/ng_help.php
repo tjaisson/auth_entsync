@@ -7,7 +7,7 @@ Cela se fait dans la <b>console d'administration</b>&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/ng2.jpg' /></p>
 <ol>
 <li>Sélectionner "Applications",</li>
-<li>Cliquer sur "Connecteurs&nbsp;&&nbsp;liens",</li>
+<li>Cliquer sur "Connecteurs&nbsp;&amp;&nbsp;liens",</li>
 <li>Cliquer sur le bouton "+",</li>
 </ol>
 <p><img style = "border: 1px solid;" src='./ents/help/ng3.jpg' /></p>

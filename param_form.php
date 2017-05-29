@@ -26,8 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once $CFG->libdir.'/formslib.php';
-require_once $CFG->libdir.'/accesslib.php';
+require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->libdir.'/accesslib.php');
 
 /**
  * Upload a file CVS file with user information.
@@ -36,33 +36,30 @@ require_once $CFG->libdir.'/accesslib.php';
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class admin_entparam_form extends moodleform {
-    function definition () {
+    protected function definition() {
         $mform = $this->_form;
 
-        //ent list
+        // Ent list.
         $mform->addElement('header', 'entlistheader', get_string('entlist', 'auth_entsync'));
         $mform->setExpanded('entlistheader');
         $mform->addHelpButton('entlistheader', 'entlist', 'auth_entsync');
         $mform->addElement('html', $this->buildentlist());
-        
-        //rôles par profil
+
+        // Rôles par profil.
         $mform->addElement('header', 'rolesheader', get_string('entsyncparam', 'auth_entsync'));
         $mform->setExpanded('rolesheader');
         $sysroles[0] = get_string('none');
-        $roles =  auth_entsync_rolehelper::getsysrolemenu();
+        $roles = auth_entsync_rolehelper::getsysrolemenu();
         foreach ($roles as $roleid => $rolename) {
             $sysroles[$roleid] = $rolename;
         }
         $mform->addElement('select', 'role_ens', get_string('roleensselect', 'auth_entsync'), $sysroles);
         $mform->setType('role_ens', PARAM_INT);
         $mform->addHelpButton('role_ens', 'roleensselect', 'auth_entsync');
-        
-
         $this->add_entsettings($mform);
-        
         $this->add_action_buttons(false, get_string("savechanges"));
     }
-    
+
     private function buildentlist() {
         global $OUTPUT;
         $t = new html_table();
@@ -71,38 +68,35 @@ class admin_entparam_form extends moodleform {
         $t->head = [$txt->entname, $txt2->enable, $txt->sso, $txt->connecturl];
 
         foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
-            
             $url = "entenable.php?sesskey=" . sesskey();
             $class = '';
-            // hide/show link
+            // Hide/show link.
             if ($ent->is_enabled()) {
-                $hideshow = "<a href=\"$url&amp;action=disable&amp;ent=$entcode\">";
-                $hideshow .= "<img src=\"" . $OUTPUT->pix_url('t/hide') . "\" class=\"iconsmall\" alt=\"disable\" /></a>";
-                // $hideshow = "<a href=\"$url&amp;action=disable&amp;auth=$auth\"><input type=\"checkbox\" checked /></a>";
-            }
-            else {
-                $hideshow = "<a href=\"$url&amp;action=enable&amp;ent=$entcode\">";
-                $hideshow .= "<img src=\"" . $OUTPUT->pix_url('t/show') . "\" class=\"iconsmall\" alt=\"enable\" /></a>";
-                // $hideshow = "<a href=\"$url&amp;action=enable&amp;auth=$auth\"><input type=\"checkbox\" /></a>";
+                $hideshow = "<a href=\"$url&amp;action=disable&amp;ent={$entcode}\">"
+                    . "<img src=\"" . $OUTPUT->pix_url('t/hide')
+                    . "\" class=\"iconsmall\" alt=\"disable\" /></a>";
+            } else {
+                $hideshow = "<a href=\"$url&amp;action=enable&amp;ent={$entcode}\">"
+                    . "<img src=\"" . $OUTPUT->pix_url('t/show')
+                    . "\" class=\"iconsmall\" alt=\"enable\" /></a>";
                 $class = 'dimmed_text';
             }
-            if($ent->is_sso()) {
+            if ($ent->is_sso()) {
                 $yn = $txt2->yes;
             } else {
                 $yn = $txt2->no;
             }
-            
-            $helpname = $ent->nomlong . $OUTPUT->help_icon("ent{$ent->get_entclass()}",'auth_entsync'); 
+
+            $helpname = $ent->nomlong . $OUTPUT->help_icon("ent{$ent->get_entclass()}", 'auth_entsync');
             $row = new html_table_row([$helpname, $hideshow, $yn, $ent->get_connector_url()]);
             if ($class) {
                 $row->attributes['class'] = $class;
             }
             $t->data[] = $row;
         }
-        
         return html_writer::table($t);
     }
-    
+
     private function add_entsettings($mform) {
         foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
             if ($ent->is_enabled() && $ent->has_settings()) {
