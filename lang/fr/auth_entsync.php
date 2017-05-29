@@ -90,6 +90,9 @@ $string['aftersyncinfo'] = 'Importation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />
 {$a->created} utilisateurs créés';
 
+//instances
+$string['entsyncinst'] = 'Liste des instances';
+
 //file help
 $string['entsyncfilehelp'] = 'Comment obtenir les fichiers utilisateurs dans les ENT';
 

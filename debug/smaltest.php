@@ -52,13 +52,16 @@ function returnBytes($val) {
 	return $val;
 }
 
-//$val = ini_get('upload_max_filesize');
+/*$val = ini_get('upload_max_filesize');
 $val = "200k";
 
 echo $val . ' ';
 echo returnBytes($val) . ' ';
 echo parse_size($val) . ' ';
 echo get_real_size($val) . ' ';
+*/
 
+$entsynccfg = get_config('auth_entsync');
+var_dump($entsynccfg);
 
 die;

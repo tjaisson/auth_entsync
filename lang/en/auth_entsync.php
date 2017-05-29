@@ -74,6 +74,9 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 {$a->nbusers} users found.';
 $string['aftersyncinfo'] = 'Synchronization OK';
 
+//instances
+$string['entsyncinst'] = 'Instances list';
+
 //file help
 $string['entsyncfilehelp'] = 'How to retrieve users files';
 
