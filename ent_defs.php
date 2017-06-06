@@ -53,6 +53,8 @@ auth_entsync_ent_base::register('envole', 6);
 require_once(__DIR__ . '/ents/ents_paris.php');
 auth_entsync_ent_base::register('pcn', 2);
 auth_entsync_ent_base::register('monlyceenet', 1);
+
+require_once(__DIR__ . '/ents/ent_ng.php');
 auth_entsync_ent_base::register('ng', 3);
 
 require_once(__DIR__ . '/ents/educ.php');
