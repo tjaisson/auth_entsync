@@ -31,5 +31,15 @@ defined('MOODLE_INTERNAL') || die;
 
 class instance extends \core\persistent {
     
+    const TABLE = 'auth_entsync_instances';
+    
+    protected static function define_properties() {
+        return [
+            '' => [
+                            
+            ],
+
+        ];
+    }
 }
 
