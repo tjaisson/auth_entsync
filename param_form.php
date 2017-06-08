@@ -73,12 +73,10 @@ class admin_entparam_form extends moodleform {
             // Hide/show link.
             if ($ent->is_enabled()) {
                 $hideshow = "<a href=\"$url&amp;action=disable&amp;ent={$entcode}\">"
-                    . "<img src=\"" . $OUTPUT->pix_url('t/hide')
-                    . "\" class=\"iconsmall\" alt=\"disable\" /></a>";
+                . $OUTPUT->pix_icon('t/hide', get_string('disable')) . "</a>";
             } else {
                 $hideshow = "<a href=\"$url&amp;action=enable&amp;ent={$entcode}\">"
-                    . "<img src=\"" . $OUTPUT->pix_url('t/show')
-                    . "\" class=\"iconsmall\" alt=\"enable\" /></a>";
+                . $OUTPUT->pix_icon('t/show', get_string('enable')) . "</a>";
                 $class = 'dimmed_text';
             }
             if ($ent->is_sso()) {
