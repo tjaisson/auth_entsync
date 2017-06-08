@@ -107,9 +107,14 @@ $string['entmonlyceenet'] = 'monlycée.net';
 $string['entmonlyceenet_help'] = 'Activate "monlycée.net" if you use monlycée.net.';
 $string['entmonlyceenet_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
-//Open ENT NG
-$string['entng'] = 'Open ENT NG';
-$string['entng_help'] = 'Activate "Open ENT NG" if you use Open ENT NG.';
+//Open ENT NG Collèges
+$string['entngcrif'] = 'Open ENT NG Collèges';
+$string['entngcrif_help'] = 'Activate "Open ENT NG Collèges" if you use Open ENT NG from "Ville de Paris".';
+$string['entngcrif_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
+
+//Open ENT NG Lycées
+$string['entng'] = 'Open ENT NG Lycées';
+$string['entng_help'] = 'Activate "Open ENT NG Lycées" if you use Open ENT NG from "Île de France".';
 $string['entng_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //educ'horus

@@ -116,8 +116,8 @@ class  auth_entsync_ent_ng extends auth_entsync_entng {
      * Constructor.
      */
     public function __construct() {
-        $this->nomcourt = 'ENT NG';
-        $this->nomlong = 'Open ENT NG';
+        $this->nomcourt = 'ENT NG Collèges';
+        $this->nomlong = 'Open ENT NG des collèges';
     }
     
     public function get_casparams() {

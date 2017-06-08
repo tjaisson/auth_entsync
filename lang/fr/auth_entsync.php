@@ -118,13 +118,18 @@ $string['entpcn_help'] = 'Activez "PCN" si votre établissement utilise l\'ENT P
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
 
 //lilie
-$string['entmonlyceenet'] = 'Lilie';
+$string['entmonlyceenet'] = 'monlycée.net';
 $string['entmonlyceenet_help'] = 'Activez "monlycée.net" si votre établissement utilise l\'ENT régional monlycée.net.<br />
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
     
-//Open ENT NG
-$string['entng'] = 'Open ENT NG';
-$string['entng_help'] = 'Activez "Open ENT NG" si votre établissement utilise l\'ENT Open ENT NG.<br />
+//Open ENT NG Collèges
+$string['entng'] = 'Open ENT NG Collèges';
+$string['entng_help'] = 'Activez "Open ENT NG Collèges" si votre établissement utilise l\'ENT Open ENT NG mis à disposition par la Ville de Paris.<br />
+Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
+
+//Open ENT NG Lycées
+$string['entngcrif'] = 'Open ENT NG Lycées';
+$string['entngcrif_help'] = 'Activez "Open ENT NG Lycées" si votre établissement utilise l\'ENT Open ENT NG mis à disposition par la Région Île de France.<br />
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
 
 //educ'horus
