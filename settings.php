@@ -45,7 +45,7 @@ if ($hassiteconfig) {
                     "$CFG->wwwroot/auth/entsync/users.php",
                     'moodle/user:viewdetails'));
         }
-        if (get_config('auth_entsync', 'gw') === get_config('auth_entsync', 'inst')) {
+        if ( (get_config('auth_entsync', 'gw')) && (get_config('auth_entsync', 'gw') === get_config('auth_entsync', 'inst'))) {
             $ADMIN->add('entsynccat', new admin_externalpage('authentsyncinst',
                 new lang_string('entsyncinst', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/instances.php", 'moodle/site:config'));
     }
