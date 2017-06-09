@@ -24,33 +24,23 @@
 namespace auth_entsync\sw;
 defined('MOODLE_INTERNAL') || die;
 
-class instance extends \core\persistent {
-    const TABLE = 'auth_entsync_instances';
-
-    /**
-     * Define properties.
-     *
-     * @return array
-     */
-    protected static function define_properties() {
-        return [
-            'rne' => [
-                'type' => PARAM_TEXT,
-            ],
-            'otherrne' => [
-                'type' => PARAM_TEXT,
-            ],
-            'name' => [
-                'type' => PARAM_TEXT,
-            ],
-        ];
-    }
+class instance_form extends \core\form\persistent {
+    /** @var string Persistent class name. */
+    protected static $persistentclass = 'auth_entsync\\sw\\instance';
     
-    public function has_rne($rnes) {
-        $instrnes = array_map('trim', explode(',', $this->raw_get('otherrne')));
-        $instrnes[] = $this->raw_get('rne');
-        $i = array_uintersect($instrnes, $rnes, "strcasecmp");
-        return (count($i) > 0);
+    public function definition() {
+        $mform = $this->_form;
+        
+        // Rne.
+        $mform->addElement('text', 'rne', 'RNE de l\'instance');
+        
+        // Name.
+        $mform->addElement('text', 'name', 'Nom de l\'instance');
+        
+        // Other Rne.
+        $mform->addElement('text', 'otherrne', 'Autres RNE associés à cette instance');
+        
+        $this->add_action_buttons();
     }
 }
 
