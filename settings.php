@@ -25,28 +25,27 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($hassiteconfig) {
+    $pln = 'auth_entsync';
     $settings->add(new admin_setting_heading('entsync/head', new lang_string('settings'),
-        new lang_string('paramredirect', 'auth_entsync', "{$CFG->wwwroot}/auth/entsync/param.php")));
-    $ADMIN->add('users', new admin_category('entsynccat', new lang_string('enttool', 'auth_entsync')));
-
+        new lang_string('paramredirect', $pln, "{$CFG->wwwroot}/auth/entsync/param.php")));
+    $ADMIN->add('users', new admin_category('entsynccat', new lang_string('enttool', $pln)));
     $ADMIN->add('entsynccat', new admin_externalpage('authentsyncparam',
-        new lang_string('entsyncparam', 'auth_entsync'),
-        "$CFG->wwwroot/auth/entsync/param.php",
-        'moodle/site:config'));
-        if (is_enabled_auth('entsync')) {
-            $ADMIN->add('entsynccat',
-                new admin_externalpage('authentsyncbulk',
-                    new lang_string('entsyncbulk', 'auth_entsync'),
-                    "$CFG->wwwroot/auth/entsync/bulk.php",
-                    'moodle/site:uploadusers'));
-            $ADMIN->add('entsynccat',
-                new admin_externalpage('authentsyncuser',
-                    new lang_string('entsyncuser', 'auth_entsync'),
-                    "$CFG->wwwroot/auth/entsync/users.php",
-                    'moodle/user:viewdetails'));
-        }
-        if ( (get_config('auth_entsync', 'gw')) && (get_config('auth_entsync', 'gw') === get_config('auth_entsync', 'inst'))) {
-            $ADMIN->add('entsynccat', new admin_externalpage('authentsyncinst',
-                new lang_string('entsyncinst', 'auth_entsync'), "$CFG->wwwroot/auth/entsync/instances.php", 'moodle/site:config'));
+        new lang_string('entsyncparam', $pln),
+        "$CFG->wwwroot/auth/entsync/param.php", 'moodle/site:config'));
+    if (is_enabled_auth('entsync')) {
+        $ADMIN->add('entsynccat',
+            new admin_externalpage('authentsyncbulk',
+                new lang_string('entsyncbulk', $pln),
+                "$CFG->wwwroot/auth/entsync/bulk.php", 'moodle/site:uploadusers'));
+        $ADMIN->add('entsynccat',
+            new admin_externalpage('authentsyncuser',
+                new lang_string('entsyncuser', $pln),
+                "$CFG->wwwroot/auth/entsync/users.php", 'moodle/user:viewdetails'));
     }
+    if (($gw = get_config($pln, 'gw')) && ($gw === get_config($pln, 'inst'))) {
+        $ADMIN->add('root', new admin_externalpage('authentsyncinst',
+            new lang_string('entsyncinst', $pln),
+            "$CFG->wwwroot/auth/entsync/instances.php", 'moodle/site:config'));
+    }
+    unset($gw, $pln);
 }
