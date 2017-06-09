@@ -38,11 +38,46 @@ if (!$cas = $ent->get_casconnector()) {
 
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/switch.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
+
 if ($val = $cas->validateorredirect()) {
-    
+    if (count($val->rnes) <= 0) {
+        // L'utilisateur n'a pas d'instance.
+        printerrorpage('Accès non autorisé&nbsp;!');
+    }
+    // On constitue la liste des instances.
+    $instances = \auth_entsync\sw\instance::get_records([], 'name');
+    $userinsts = [];
+    foreach ($instances as $instance) {
+        if ($instance->has_rne($val->rnes)) {
+            $userinsts[] = $instance;
+        }
+    }
+    $instcount = count($userinsts);
+    if ($instcount <= 0) {
+        // L'utilisateur n'a pas d'instance.
+        printerrorpage('Accès non autorisé&nbsp;!');
+    } else if ($instcount == 1) {
+        // L'utilisateur n'a qu'une instance, alors on redirige directement.
+        redirect(build_connector_url($userinsts[0], $ent));
+    } else {
+        // L'utilisateur a plusieurs instances, alors on lui donne le choix.
+        echo $OUTPUT->header();
+        echo $OUTPUT->heading('Plateforme Académique Moodle');
+        echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
+        $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
+        
+        foreach ($userinsts as $instance) {
+            $lnk = html_writer::link(build_connector_url($instance, $ent), $arrowico);
+            echo html_writer::tag('p', $lnk . '&nbsp;' . $instance->get('name'));
+        }
+        echo $OUTPUT->footer();
+        die();
+    }
 }
 
-printerrorpage('Accès non autorisé&nbsp;!');
+function build_connector_url($instance, $ent) {
+    
+}
 
 function printerrorpage($msg) {
     global $OUTPUT, $PAGE;
