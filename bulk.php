@@ -131,6 +131,8 @@ $mform = new auth_entsync_bulk_form(null, $formparams);
 
 echo $OUTPUT->header();
 
+//TODO peut être checker is_canceled
+
 if ($formdata = $mform->get_data()) {
     // Il y a un fichier à charger
     // retrouver l'ent et le type de fichier.
