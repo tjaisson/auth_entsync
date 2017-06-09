@@ -139,9 +139,10 @@ if ($action == 'del') {
     }
 
     echo $OUTPUT->header();
-    echo $OUTPUT->heading('Liste des instances');
+    echo $OUTPUT->heading(get_string('entsyncinst', 'auth_entsync'));
     $nbinst = count($instances);
-    echo html_writer::tag('p', "{$nbinst} instances");
+    $plural = ($nbinst <= 1) ? '' : 's';
+    echo html_writer::tag('p', "Total&nbsp;: {$nbinst} instance{$plural}");
     echo html_writer::table($t);
     echo $OUTPUT->single_button($editurl, 'Ajouter une instance', 'get');
     echo $OUTPUT->footer();

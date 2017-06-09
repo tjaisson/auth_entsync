@@ -75,7 +75,7 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 $string['aftersyncinfo'] = 'Synchronization OK';
 
 //instances
-$string['entsyncinst'] = 'Instances list';
+$string['entsyncinst'] = 'PAM instances list';
 
 //file help
 $string['entsyncfilehelp'] = 'How to retrieve users files';
