@@ -24,8 +24,6 @@
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once $CFG->libdir . '/formslib.php';
 
 use \auth_entsync\sw\instance;
 use \auth_entsync\sw\instance_form;
@@ -50,11 +48,11 @@ if ($action == 'del') {
         // ... non, alors on demande confirmation.
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('delete'));
-        $optionsyes = ['action' => 'del', 'id' => $id, 'confirm' => md5($id), 'sesskey' => sesskey()];
-        $delurl = new moodle_url($returnurl, $optionsyes);
-        $resetbutton = new single_button($delurl, get_string('delete'), 'post');
+        $delurl = new moodle_url($returnurl,
+            ['action' => 'del', 'id' => $id, 'confirm' => md5($id), 'sesskey' => sesskey()]);
+        $confirmbutt = new single_button($delurl, get_string('delete'), 'post');
         echo $OUTPUT->confirm("Etes vous sur de vouloir supprimer l'instance {$rne}, {$name} ?",
-            $resetbutton, $returnurl);
+        	$confirmbutt, $returnurl);
         echo $OUTPUT->footer();
         die;
     } else if (confirm_sesskey() && !empty($_POST)) {
@@ -67,7 +65,6 @@ if ($action == 'del') {
         }
     }
     redirect($returnurl);
-    
 } else if ($action == 'edit') {
     // Modification d'une instance demandée.
     $id = optional_param('id', null, PARAM_INT);
