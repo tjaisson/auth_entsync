@@ -27,6 +27,15 @@ defined('MOODLE_INTERNAL') || die;
 class instance extends \core\persistent {
     const TABLE = 'auth_entsync_instances';
 
+    protected static $pamroot;
+    
+    protected static function pamroot() {
+        if (!isset(self::$pamroot)) {
+            self::$pamroot = get_config('auth_entsync', 'pamroot');
+        }
+        return self::$pamroot;
+    }
+    
     /**
      * Define properties.
      *
@@ -51,5 +60,10 @@ class instance extends \core\persistent {
         $i = array_uintersect($instrnes, $rnes, "strcasecmp");
         return (count($i) > 0);
     }
+    
+    public function wwwroot() {
+        return self::pamroot() . '/' . $this->get('dir');
+    }
+    
 }
 

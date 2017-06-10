@@ -111,7 +111,8 @@ if ($action == 'del') {
     // Il faut afficher la liste des instances.
     $editurl = new moodle_url($returnurl, ['action' => 'edit']);
     $delurl = new moodle_url($returnurl, ['action' => 'del']);
-
+    $jumpurl = new moodle_url('/auth/entsync/jump.php');
+    
     $instances = instance::get_records([], 'rne');
     $t = new html_table();
     // Icons.
@@ -127,8 +128,9 @@ if ($action == 'del') {
         $id = $instance->get('id');
         $editlnk = new moodle_url($editurl, ['id' => $id]);
         $dellnk = new moodle_url($delurl, ['id' => $id]);
+        $jumplnk = new moodle_url($jumpurl, ['id' => $id]);
         $row = [];
-        $row[] = html_writer::link($editlnk, $instance->get('dir'));
+        $row[] = html_writer::link($jumplnk, $instance->get('dir'), ['target' => '_blank']);
         $row[] = $instance->get('name');
         $row[] = $instance->get('rne');
         $buttons = [];
