@@ -21,8 +21,8 @@ function xmldb_auth_entsync_upgrade($oldversion) {
         $table->add_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('rne', XMLDB_TYPE_CHAR, '10', null, null, null, null);
-        $table->add_field('otherrne', XMLDB_TYPE_CHAR, '50', null, null, null, null);
+        $table->add_field('dir', XMLDB_TYPE_CHAR, '10', null, null, null, null);
+        $table->add_field('rne', XMLDB_TYPE_CHAR, '50', null, null, null, null);
         $table->add_field('name', XMLDB_TYPE_CHAR, '100', null, null, null, null);
 
         // Adding keys to table auth_entsync_instances.

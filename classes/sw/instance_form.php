@@ -32,13 +32,13 @@ class instance_form extends \core\form\persistent {
         $mform = $this->_form;
         
         // Rne.
-        $mform->addElement('text', 'rne', 'RNE de l\'instance');
+        $mform->addElement('text', 'dir', 'Répertoire de l\'instance');
         
         // Name.
         $mform->addElement('text', 'name', 'Nom de l\'instance');
         
         // Other Rne.
-        $mform->addElement('text', 'otherrne', 'Autres RNE associés à cette instance');
+        $mform->addElement('text', 'rne', 'Le ou les RNE séparés par \',\'');
         
         $this->add_action_buttons();
     }

@@ -34,10 +34,10 @@ class instance extends \core\persistent {
      */
     protected static function define_properties() {
         return [
-            'rne' => [
+            'dir' => [
                 'type' => PARAM_TEXT,
             ],
-            'otherrne' => [
+            'rne' => [
                 'type' => PARAM_TEXT,
             ],
             'name' => [
@@ -47,8 +47,7 @@ class instance extends \core\persistent {
     }
     
     public function has_rne($rnes) {
-        $instrnes = array_map('trim', explode(',', $this->raw_get('otherrne')));
-        $instrnes[] = $this->raw_get('rne');
+        $instrnes = array_map('trim', explode(',', $this->raw_get('rne')));
         $i = array_uintersect($instrnes, $rnes, "strcasecmp");
         return (count($i) > 0);
     }

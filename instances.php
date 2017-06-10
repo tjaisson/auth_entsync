@@ -40,7 +40,7 @@ if ($action == 'del') {
     // Suppression d'une instance demandée.
     $id = required_param('id', PARAM_INT);
     $instance = new instance($id);
-    $rne = $instance->get('rne');
+    $rne = $instance->get('dir');
     $name = $instance->get('name');
     $confirm  = optional_param('confirm', '', PARAM_ALPHANUM);   // The md5 confirmation hash.
     // ... la suppression est-elle confirmée ?
@@ -121,16 +121,16 @@ if ($action == 'del') {
     $delico = $OUTPUT->pix_icon('t/delete', get_string('delete'));
     $archivedico = ""; // Ou $OUTPUT->pix_icon('i/scheduled', get_string('no')); !
 
-    $t->head = ['RNE', 'Nom', 'Autres RNE', get_string('actions')];
+    $t->head = ['Répertoire', 'Nom', 'RNE', get_string('actions')];
 
     foreach ($instances as $instance) {
         $id = $instance->get('id');
         $editlnk = new moodle_url($editurl, ['id' => $id]);
         $dellnk = new moodle_url($delurl, ['id' => $id]);
         $row = [];
-        $row[] = html_writer::link($editlnk, $instance->get('rne'));
+        $row[] = html_writer::link($editlnk, $instance->get('dir'));
         $row[] = $instance->get('name');
-        $row[] = $instance->get('otherrne');
+        $row[] = $instance->get('rne');
         $buttons = [];
         $buttons[] = html_writer::link($editlnk, $editico);
         $buttons[] = html_writer::link($dellnk, $delico);
