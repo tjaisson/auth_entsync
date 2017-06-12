@@ -39,5 +39,34 @@ if (!$ticket) {
     die();
 }
 
+$value = get_config('auth_entsync', 'pc');
+list($storedinst, $time, $storedticket) = explode(',', $value);
 
+$time = $time + 30;
 
+if (time() > $time) {
+    set_config('pc', null, 'auth_entsync');
+    echo 'no validate';
+    die();
+}
+
+if ($storedinst !== $inst) {
+    echo 'no validate';
+    die();
+}
+
+if ($storedticket !== $ticket) {
+    echo 'no validate';
+    die();
+}
+
+$instance = \auth_entsync\sw\instance::get_record(['dir' => $inst]);
+
+if (!$instance) {
+    echo 'no validate';
+    die();
+}
+
+set_config('pc', null, 'auth_entsync');
+echo 'validate';
+die();

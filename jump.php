@@ -28,10 +28,24 @@ if (!isloggedin()) {
     die();
 }
 
+if (!is_siteadmin()) {
+    die();
+}
+
 $inst = optional_param('inst', null, PARAM_TEXT);
 
 if (!$inst) {
     die();
 }
+$instance = \auth_entsync\sw\instance::get_record(['dir' => $inst]);
+if (!$instance) {
+    die();
+}
 
+$tocken = 'PC-' . bin2hex(random_bytes_emulate(20));
+$time = time();
+$value = $inst . ',' . $time . ',' . $tocken;
+set_config('pc', $value, 'auth_entsync');
 
+$redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/alogin.php', ['ticket' => $tocken]);
+redirect($redirecturl);
