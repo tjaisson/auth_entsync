@@ -20,6 +20,8 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
+$pamroot = 'http://localhost';
+$pamdataroot = 'C:\\Users\\Tom\\moodledev\\data\\';
 list(,$repertoire) = explode('/',$_SERVER['REQUEST_URI']);
 
 $CFG->dbtype    = 'mysqli';
@@ -36,8 +38,8 @@ $CFG->dboptions = array (
   'dbcollation' => 'utf8mb4_unicode_ci',
 );
 
-$CFG->wwwroot   = 'http://localhost/' . $repertoire;
-$CFG->dataroot  = 'C:\\Users\\Tom\\moodledev\\data\\' . $repertoire;
+$CFG->wwwroot   = $pamroot . '/' . $repertoire;
+$CFG->dataroot  = $pamdataroot . $repertoire;
 $CFG->admin     = 'admin';
 
 
@@ -47,12 +49,11 @@ $CFG->skiplangupgrade  = true;
 $CFG->lang = 'fr';
 
 $CFG->forced_plugin_settings = [
-    'auth_entsync'  => ['gw' => 'm33.inst03', 'inst' => $repertoire],
-    
+    'auth_entsync'  => ['gw' => 'm33.inst01', 'inst' => $repertoire, 'pamroot' => $pamroot],
 ];
 
 
-unset($repertoire);
+unset($repertoire, $pamdataroot, $pamroot);
 
 $CFG->directorypermissions = 0777;
 
