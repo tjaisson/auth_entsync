@@ -28,15 +28,35 @@ class instance extends \core\persistent {
     const TABLE = 'auth_entsync_instances';
 
     protected static $pamroot;
+    protected static $inst;
+    protected static $gw;
     
-    protected static function pamroot() {
+    public static function pamroot() {
         if (!isset(self::$pamroot)) {
             self::$pamroot = get_config('auth_entsync', 'pamroot');
         }
         return self::$pamroot;
     }
     
-    /**
+    public static function inst() {
+        if (!isset(self::$inst)) {
+            self::$inst = get_config('auth_entsync', 'inst');
+        }
+        return self::$inst;
+    }
+    
+    public static function gw() {
+        if (!isset(self::$gw)) {
+            self::$gw = get_config('auth_entsync', 'gw');
+        }
+        return self::$gw;
+    }
+    
+    public static function is_gw() {
+        return (self::gw() === self::inst());
+    }
+    
+/**
      * Define properties.
      *
      * @return array
@@ -64,6 +84,8 @@ class instance extends \core\persistent {
     public function wwwroot() {
         return self::pamroot() . '/' . $this->get('dir');
     }
-    
-}
 
+    public static function gwroot() {
+        return self::pamroot() . '/' . self::gw();
+    }
+}

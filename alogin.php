@@ -23,7 +23,23 @@
  */
 
 require(__DIR__ . '/../../config.php');
-require_once(__DIR__ . '/../../login/lib.php');
+
+use \auth_entsync\sw\instance;
+
+if (isloggedin() || instance::is_gw()) {
+    redirect($CFG->wwwroot);
+}
+
+$ticket = optional_param('ticket', null, PARAM_RAW);
+
+if (!$ticket) {
+   // Pas de ticket.
+    $jumpurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump.php', ['inst' => instance::inst()]);
+    redirect($jumpurl);
+} else {
+    // Le ticket est présent.
+    
+}
 
 // Try to prevent searching for sites that allow sign-up.
 if (!isset($CFG->additionalhtmlhead)) {
@@ -41,15 +57,11 @@ $PAGE->set_url("{$CFG->httpswwwroot}/auth/entsync/alogin.php");
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
-$sitemaitre = "0753291v";
 
-list(,$sitecourant) = explode('/',$_SERVER['REQUEST_URI'],3);
 
-if($sitemaitre == $sitecourant) {
-    
-} else {
-    
-}
+
+
+
 
 die();
 

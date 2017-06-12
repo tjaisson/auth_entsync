@@ -28,6 +28,10 @@ require_once($CFG->libdir . '/adminlib.php');
 use \auth_entsync\sw\instance;
 use \auth_entsync\sw\instance_form;
 
+if (!instance::is_gw()) {
+    redirect($CFG->wwwroot);
+}
+
 require_login();
 admin_externalpage_setup('authentsyncinst');
 $sitecontext = context_system::instance();
@@ -111,7 +115,6 @@ if ($action == 'del') {
     // Il faut afficher la liste des instances.
     $editurl = new moodle_url($returnurl, ['action' => 'edit']);
     $delurl = new moodle_url($returnurl, ['action' => 'del']);
-    $jumpurl = new moodle_url('/auth/entsync/jump.php');
     
     $instances = instance::get_records([], 'rne');
     $t = new html_table();
@@ -128,7 +131,7 @@ if ($action == 'del') {
         $id = $instance->get('id');
         $editlnk = new moodle_url($editurl, ['id' => $id]);
         $dellnk = new moodle_url($delurl, ['id' => $id]);
-        $jumplnk = new moodle_url($jumpurl, ['id' => $id]);
+        $jumplnk = new moodle_url($instance->wwwroot() . '/auth/entsync/alogin.php');
         $row = [];
         $row[] = html_writer::link($jumplnk, $instance->get('dir'), ['target' => '_blank']);
         $row[] = $instance->get('name');
