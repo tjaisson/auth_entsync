@@ -119,11 +119,11 @@ if ($action == 'del') {
     $instances = instance::get_records([], 'rne');
     $t = new html_table();
     // Icons.
-    $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
-    $activico = $OUTPUT->pix_icon('t/approve', get_string('yes'));
     $editico = $OUTPUT->pix_icon('t/edit', get_string('edit'));
     $delico = $OUTPUT->pix_icon('t/delete', get_string('delete'));
-    $archivedico = ""; // Ou $OUTPUT->pix_icon('i/scheduled', get_string('no')); !
+
+    $editattr = ['title' => get_string('edit')];
+    $jumpattr = ['target' => '_blank', 'title' => get_string('login')];
 
     $t->head = ['Répertoire', 'Nom', 'RNE', get_string('actions')];
 
@@ -133,9 +133,9 @@ if ($action == 'del') {
         $dellnk = new moodle_url($delurl, ['id' => $id]);
         $jumplnk = new moodle_url($instance->wwwroot() . '/auth/entsync/alogin.php');
         $row = [];
-        $row[] = html_writer::link($jumplnk, $instance->get('dir'), ['target' => '_blank']);
-        $row[] = $instance->get('name');
-        $row[] = $instance->get('rne');
+        $row[] = html_writer::link($jumplnk, $instance->get('dir'), $jumpattr);
+        $row[] = html_writer::link($editlnk, $instance->get('name'), $editattr);
+        $row[] = html_writer::link($editlnk, $instance->get('rne'), $editattr);
         $buttons = [];
         $buttons[] = html_writer::link($editlnk, $editico);
         $buttons[] = html_writer::link($dellnk, $delico);
