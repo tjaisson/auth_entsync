@@ -61,7 +61,5 @@ echo parse_size($val) . ' ';
 echo get_real_size($val) . ' ';
 */
 
-$entsynccfg = get_config('auth_entsync');
-var_dump($entsynccfg);
 
 die;
