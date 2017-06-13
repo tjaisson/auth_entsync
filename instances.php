@@ -116,7 +116,7 @@ if ($action == 'del') {
     $editurl = new moodle_url($returnurl, ['action' => 'edit']);
     $delurl = new moodle_url($returnurl, ['action' => 'del']);
     
-    $instances = instance::get_records([], 'rne');
+    $instances = instance::get_records([], 'dir');
     $t = new html_table();
     // Icons.
     $editico = $OUTPUT->pix_icon('t/edit', get_string('edit'));
