@@ -11,6 +11,26 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('popup');
 $PAGE->set_title('Redirection');
 
+/*************************
+
+$ent = auth_entsync_ent_base::get_ent('ngcrif');
+echo $OUTPUT->header();
+echo $OUTPUT->heading('Plateforme Académique Moodle');
+echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
+$arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
+
+
+foreach (\auth_entsync\sw\instance::get_records([], 'name') as $instance) {
+    $lnk = $arrowico . '&nbsp;' . $instance->get('name');
+    $lnk = html_writer::link(build_connector_url($instance, $ent), $lnk);
+    echo html_writer::tag('p', $lnk);
+}
+echo $OUTPUT->footer();
+die();
+
+
+*************************/
+
 $entclass = optional_param('ent', '', PARAM_RAW);
 
 if (empty($entclass)) {
@@ -67,8 +87,9 @@ if ($val = $cas->validateorredirect()) {
         $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
         
         foreach ($userinsts as $instance) {
-            $lnk = html_writer::link(build_connector_url($instance, $ent), $arrowico);
-            echo html_writer::tag('p', $lnk . '&nbsp;' . $instance->get('name'));
+            $lnk = $arrowico . '&nbsp;' . $instance->get('name');
+            $lnk = html_writer::link(build_connector_url($instance, $ent), $lnk);
+            echo html_writer::tag('p', $lnk);
         }
         echo $OUTPUT->footer();
         die();
@@ -76,7 +97,7 @@ if ($val = $cas->validateorredirect()) {
 }
 
 function build_connector_url($instance, $ent) {
-    
+    return new moodle_url($instance->wwwroot() . '/auth/entsync/connect.php', ['ent' => $ent->get_entclass()]);
 }
 
 function printerrorpage($msg) {
