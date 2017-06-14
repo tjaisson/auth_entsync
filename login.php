@@ -125,7 +125,7 @@ if ($val = $cas->validateorredirect()) {
     printerrorpage('Ticket CAS non validé');
 }
 
-function printerrorpage($msg, $type = \core\output\notification::NOTIFY_ERROR, $url = $CFG->wwwroot) {
+function printerrorpage($msg, $type = \core\output\notification::NOTIFY_ERROR, $url = null) {
     global $OUTPUT, $CFG;
     $url = is_null($var) ? $CFG->wwwroot : $url;
     echo $OUTPUT->header();
