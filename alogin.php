@@ -26,7 +26,7 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
-use \auth_entsync\sw\instance;
+use \auth_entsync\persistent\instance;
 
 if (isloggedin() || instance::is_gw()) {
     redirect($CFG->wwwroot);

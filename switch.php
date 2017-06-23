@@ -16,7 +16,7 @@ $PAGE->set_title('Redirection');
 
 $ent = auth_entsync_ent_base::get_ent('ngcrif');
 $userrne = ['0750666d', '0750666x', '0750677d' ];
-$instances = \auth_entsync\sw\instance::get_records([], 'name');
+$instances = \auth_entsync\persistent\instance::get_records([], 'name');
 $userinsts = [];
 foreach ($instances as $instance) {
     if ($instance->has_rne($userrne)) {
@@ -50,7 +50,7 @@ if ($val = $cas->validateorredirect()) {
         printerrorpage();
     }
     // On constitue la liste des instances de cet utilisateur.
-    $instances = \auth_entsync\sw\instance::get_records([], 'name');
+    $instances = \auth_entsync\persistent\instance::get_records([], 'name');
     $userinsts = [];
     foreach ($instances as $instance) {
         if ($instance->has_rne($val->rnes)) {

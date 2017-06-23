@@ -21,12 +21,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace auth_entsync\sw;
+namespace auth_entsync\forms;
 defined('MOODLE_INTERNAL') || die;
 
 class instance_form extends \core\form\persistent {
     /** @var string Persistent class name. */
-    protected static $persistentclass = 'auth_entsync\\sw\\instance';
+    protected static $persistentclass = 'auth_entsync\\persistent\\instance';
     
     public function definition() {
         $mform = $this->_form;
