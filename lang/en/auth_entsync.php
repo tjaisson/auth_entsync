@@ -108,14 +108,16 @@ $string['entmonlyceenet_help'] = 'Activate "monlycée.net" if you use monlycée.
 $string['entmonlyceenet_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //Open ENT NG Collèges
-$string['entngcrif'] = 'Open ENT NG Collèges';
-$string['entngcrif_help'] = 'Activate "Open ENT NG Collèges" if you use Open ENT NG from "Ville de Paris".';
-$string['entngcrif_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
-
-//Open ENT NG Lycées
-$string['entng'] = 'Open ENT NG Lycées';
+$string['entng'] = 'PCN NG';
+$string['entng_sd'] = 'PCN NG';
 $string['entng_help'] = 'Activate "Open ENT NG Lycées" if you use Open ENT NG from "Île de France".';
 $string['entng_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
+
+//Open ENT NG Lycées
+$string['entngcrif'] = 'MonLycée.net NG';
+$string['entngcrif_sd'] = 'MonLycée.net NG';
+$string['entngcrif_help'] = 'Activate "Open ENT NG Collèges" if you use Open ENT NG from "Ville de Paris".';
+$string['entngcrif_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //educ'horus
 $string['enteduchorus'] = 'Educ\'Horus';

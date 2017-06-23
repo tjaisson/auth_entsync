@@ -58,8 +58,8 @@ Aller à <a href=\'{$a}\'>Configuration</a>';
 //aide ent
 $string['entsyncenthelp'] = 'Aide sur la mise en place des connecteurs ENT';
 $string['entsyncenthelpintro'] = 'Cette page présente l\'aide à la mise en place des connecteurs avec les ENT.<br /><br />
-<b>NOTE</b> : Quel que soit l\'ENT utilisé, vous devez également importer les comptes des élèves et des enseignants de l\'ENT dans Moodle.
-Ceci se fait dans <a href=\'{$a}\'>Importation des utilisateurs</a>. L\'aide concernant les fichiers d\'importation y est également disponible.';
+<b>Important</b> : Quel que soit l\'ENT utilisé, vous devez également exporter les comptes des élèves et des enseignants de l\'ENT puis les importer dans Moodle.
+Ceci se fait dans <a href=\'{$a}\'>Importation des utilisateurs</a>. L\'aide concernant l\'obtention dans l\'ENT des fichiers utilisateurs y est également disponible.';
 
 //bulk
 $string['entsyncbulk'] = 'Importation des utilisateurs';
@@ -123,13 +123,15 @@ $string['entmonlyceenet_help'] = 'Activez "monlycée.net" si votre établissemen
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
     
 //Open ENT NG Collèges
-$string['entng'] = 'Open ENT NG Collèges';
-$string['entng_help'] = 'Activez "Open ENT NG Collèges" si votre établissement utilise l\'ENT Open ENT NG mis à disposition par la Ville de Paris.<br />
+$string['entng'] = 'PCN NG';
+$string['entng_sd'] = 'PCN NG';
+$string['entng_help'] = 'Activez "PCN NG" si votre établissement utilise l\'ENT NG mis à disposition par la Ville de Paris.<br />
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
 
 //Open ENT NG Lycées
-$string['entngcrif'] = 'Open ENT NG Lycées';
-$string['entngcrif_help'] = 'Activez "Open ENT NG Lycées" si votre établissement utilise l\'ENT Open ENT NG mis à disposition par la Région Île de France.<br />
+$string['entngcrif'] = 'MonLycée.net NG';
+$string['entngcrif_sd'] = 'MonLycée.net NG';
+$string['entngcrif_help'] = 'Activez "MonLycée.net NG" si votre établissement utilise l\'ENT NG mis à disposition par la Région Île de France.<br />
 Vous devez par ailleurs importer les comptes utilisateurs des élèves et des enseignants.';
 
 //educ'horus
