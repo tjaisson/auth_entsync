@@ -56,6 +56,7 @@ auth_entsync_ent_base::register('monlyceenet', 1);
 
 require_once(__DIR__ . '/ents/ent_ng.php');
 auth_entsync_ent_base::register('ng', 3);
+auth_entsync_ent_base::register('ngcrif', 7);
 
 require_once(__DIR__ . '/ents/educ.php');
 auth_entsync_ent_base::register('educhorus', 5);

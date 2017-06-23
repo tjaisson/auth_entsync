@@ -116,8 +116,8 @@ class  auth_entsync_ent_ng extends auth_entsync_entng {
      * Constructor.
      */
     public function __construct() {
-        $this->nomcourt = 'ENT NG';
-        $this->nomlong = 'Open ENT NG';
+        $this->nomcourt = get_string('entng_sd', 'auth_entsync');
+        $this->nomlong = get_string('entng', 'auth_entsync');
     }
     
     public function get_casparams() {
@@ -133,8 +133,8 @@ class  auth_entsync_ent_ngcrif extends auth_entsync_entng {
      * Constructor.
      */
     public function __construct() {
-        $this->nomcourt = 'ENT NG CRIF';
-        $this->nomlong = 'Open ENT NG CRIF';
+        $this->nomcourt = get_string('entngcrif_sd', 'auth_entsync');
+        $this->nomlong = get_string('entngcrif', 'auth_entsync');
     }
     
     public function get_casparams() {

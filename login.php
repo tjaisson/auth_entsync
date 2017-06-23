@@ -26,6 +26,7 @@ require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/../../login/lib.php');
 require_once('ent_defs.php');
 
+
 // Try to prevent searching for sites that allow sign-up.
 if (!isset($CFG->additionalhtmlhead)) {
     $CFG->additionalhtmlhead = '';
@@ -46,33 +47,33 @@ $PAGE->set_pagelayout('login');
 $entclass = optional_param('ent', '', PARAM_RAW);
 
 if (empty($entclass)) {
-    printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Erreur');
 }
 
 if (!$ent = auth_entsync_ent_base::get_ent($entclass)) {
     // Le code ne correspond pas à un ent, display erreur et redirect button.
-    printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Erreur');
 }
 
 if (!$ent->is_sso()) {
     // Si ce n'est pas sso, l'authentification ne passe pas par là.
-    printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Erreur');
 }
 
 // On doit être en authentification cas.
 
 if (!$ent->is_enabled()) {
     // Le code ne correspond pas à un ent activé, display erreur et redirect button.
-    printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Erreur');
 }
 
 if ($ent->get_mode() !== 'cas') {
     // On ne gère que cas pout l'instant, display erreur et redirect button.
-    printerrorpage('Erreur', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Erreur');
 }
 
 if (!$cas = $ent->get_casconnector()) {
-    printerrorpage("Connecteur {$ent->nomlong} non configuré", \core\output\notification::NOTIFY_ERROR);
+    printerrorpage("Connecteur {$ent->nomlong} non configuré");
 }
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/login.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
@@ -86,19 +87,19 @@ if ($val = $cas->validateorredirect()) {
             $a->ent = $ent->nomcourt;
             $a->user = $val->user;
             $msg = get_string('notauthorized', 'auth_entsync', $a);
-            printerrorpage($msg, \core\output\notification::NOTIFY_ERROR);
+            printerrorpage($msg);
     }
     if ($entu->archived) {
-        printerrorpage('Utilisateur désactivé', \core\output\notification::NOTIFY_ERROR);
+        printerrorpage('Utilisateur désactivé');
     }
     if (!$mdlu = get_complete_user_data('id', $entu->userid)) {
         // Ne devrait pas se produire, display erreur et redirect button.
-        printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        printerrorpage('Utilisateur inconnu !');
     }
     if ($mdlu->suspended) {
         // Utilisateur suspendu, display erreur et redirect button
         // TODO : informer l'Utilisateur.
-        printerrorpage('Utilisateur inconnu !', \core\output\notification::NOTIFY_ERROR);
+        printerrorpage('Utilisateur inconnu !');
     }
     set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
     complete_user_login($mdlu);
@@ -121,11 +122,12 @@ if ($val = $cas->validateorredirect()) {
     redirect(new moodle_url(get_login_url(), array('testsession' => $mdlu->id)));
 } else {
     // Display erreur et redirect button.
-    printerrorpage('Ticket CAS non validé', \core\output\notification::NOTIFY_ERROR);
+    printerrorpage('Ticket CAS non validé');
 }
 
-function printerrorpage($msg, $type, $url = '/') {
-    global $OUTPUT, $PAGE;
+function printerrorpage($msg, $type = \core\output\notification::NOTIFY_ERROR, $url = null) {
+    global $OUTPUT, $CFG;
+    $url = is_null($var) ? $CFG->wwwroot : $url;
     echo $OUTPUT->header();
     echo $OUTPUT->notification($msg, $type);
     echo $OUTPUT->continue_button($url);

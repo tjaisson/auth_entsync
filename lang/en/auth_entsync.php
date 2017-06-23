@@ -75,7 +75,7 @@ $string['afterparseinfo'] = 'File {$a->file} upload success.<br />
 $string['aftersyncinfo'] = 'Synchronization OK';
 
 //instances
-$string['entsyncinst'] = 'Instances list';
+$string['entsyncinst'] = 'PAM instances list';
 
 //file help
 $string['entsyncfilehelp'] = 'How to retrieve users files';
@@ -107,10 +107,17 @@ $string['entmonlyceenet'] = 'monlycée.net';
 $string['entmonlyceenet_help'] = 'Activate "monlycée.net" if you use monlycée.net.';
 $string['entmonlyceenet_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
-//Open ENT NG
-$string['entng'] = 'Open ENT NG';
-$string['entng_help'] = 'Activate "Open ENT NG" if you use Open ENT NG.';
+//Open ENT NG Collèges
+$string['entng'] = 'PCN NG';
+$string['entng_sd'] = 'PCN NG';
+$string['entng_help'] = 'Activate "Open ENT NG Lycées" if you use Open ENT NG from "Île de France".';
 $string['entng_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
+
+//Open ENT NG Lycées
+$string['entngcrif'] = 'MonLycée.net NG';
+$string['entngcrif_sd'] = 'MonLycée.net NG';
+$string['entngcrif_help'] = 'Activate "Open ENT NG Collèges" if you use Open ENT NG from "Ville de Paris".';
+$string['entngcrif_link'] = '%%WWWROOT%%/auth/entsync/enthelp.php';
 
 //educ'horus
 $string['enteduchorus'] = 'Educ\'Horus';

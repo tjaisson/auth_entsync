@@ -15,11 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Définition des ents de l'académie de paris
- *
- * -> monlycee.net
- * -> pcn
- * -> open ent ng
  *
  * @package    tool_entsync
  * @copyright 2016 Thomas Jaisson
@@ -30,16 +25,67 @@ namespace auth_entsync\sw;
 defined('MOODLE_INTERNAL') || die;
 
 class instance extends \core\persistent {
-    
     const TABLE = 'auth_entsync_instances';
+
+    protected static $pamroot;
+    protected static $inst;
+    protected static $gw;
     
+    public static function pamroot() {
+        if (!isset(self::$pamroot)) {
+            self::$pamroot = get_config('auth_entsync', 'pamroot');
+        }
+        return self::$pamroot;
+    }
+    
+    public static function inst() {
+        if (!isset(self::$inst)) {
+            self::$inst = get_config('auth_entsync', 'inst');
+        }
+        return self::$inst;
+    }
+    
+    public static function gw() {
+        if (!isset(self::$gw)) {
+            self::$gw = get_config('auth_entsync', 'gw');
+        }
+        return self::$gw;
+    }
+    
+    public static function is_gw() {
+        return (self::gw() === self::inst());
+    }
+    
+/**
+     * Define properties.
+     *
+     * @return array
+     */
     protected static function define_properties() {
         return [
-            '' => [
-                            
+            'dir' => [
+                'type' => PARAM_TEXT,
             ],
-
+            'rne' => [
+                'type' => PARAM_TEXT,
+            ],
+            'name' => [
+                'type' => PARAM_TEXT,
+            ],
         ];
     }
-}
+    
+    public function has_rne($rnes) {
+        $instrnes = array_map('trim', explode(',', $this->raw_get('rne')));
+        $i = array_uintersect($instrnes, $rnes, "strcasecmp");
+        return (count($i) > 0);
+    }
+    
+    public function wwwroot() {
+        return self::pamroot() . '/' . $this->get('dir');
+    }
 
+    public static function gwroot() {
+        return self::pamroot() . '/' . self::gw();
+    }
+}

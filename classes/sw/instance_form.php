@@ -15,15 +15,32 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
  *
- * @package    auth_none
- * @copyright  2011 Petr Skoda (http://skodak.org)
+ * @package    tool_entsync
+ * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace auth_entsync\sw;
+defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2017060900;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016051900;        // Requires this Moodle version
-$plugin->component = 'auth_entsync';    // Full name of the plugin (used for diagnostics).
+class instance_form extends \core\form\persistent {
+    /** @var string Persistent class name. */
+    protected static $persistentclass = 'auth_entsync\\sw\\instance';
+    
+    public function definition() {
+        $mform = $this->_form;
+        
+        // Rne.
+        $mform->addElement('text', 'dir', 'Répertoire de l\'instance');
+        
+        // Name.
+        $mform->addElement('text', 'name', 'Nom de l\'instance');
+        
+        // Other Rne.
+        $mform->addElement('text', 'rne', 'Le ou les RNE séparés par \',\'');
+        
+        $this->add_action_buttons();
+    }
+}
+
