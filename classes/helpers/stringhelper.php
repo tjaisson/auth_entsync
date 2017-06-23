@@ -16,15 +16,17 @@
 
 /**
  * lib de fonctions utilisées pour la simplification des noms
+ * et la génération de mot de passe
  *
  * @package    auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\helpers;
 defined('MOODLE_INTERNAL') || die();
 
-class auth_entsync_stringhelper {
+class stringhelper {
 
     private static $lettres = 'abcdefghijkmnpqrstuvwxyz';
 
@@ -47,10 +49,10 @@ class auth_entsync_stringhelper {
      */
     public static function simplify_name($str) {
         if (!isset(self::$name_translit)) {
-            self::$name_translit = Transliterator::createFromRules(
+            self::$name_translit = \Transliterator::createFromRules(
                     "::Latin-ASCII; [^[:L:] [:Separator:] [- _]] >; ::Lower ; [^[:L:]]+ > '-';");
         }
-        return trim(self::$name_translit->transliterate($str), '-');
+        return \trim(self::$name_translit->transliterate($str), '-');
     }
 
     /**
@@ -62,9 +64,9 @@ class auth_entsync_stringhelper {
      */
     public static function simplify_cohort($str) {
         if (!isset(self::$cohort_translit)) {
-            self::$cohort_translit = Transliterator::createFromRules(
+            self::$cohort_translit = \Transliterator::createFromRules(
                     "::Latin-ASCII; ::upper ;");
         }
-        return trim(self::$cohort_translit->transliterate($str), '-');
+        return \trim(self::$cohort_translit->transliterate($str), '-');
     }
 }

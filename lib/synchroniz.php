@@ -24,9 +24,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once('locallib.php');
 require_once('rolehelper.php');
-require_once('cohorthelper.php');
+use \auth_entsync\helpers\stringhelper;
+use \auth_entsync\helpers\cohorthelper;
 
 /**
  * Classe qui expose les méthodes utilisées pour la synchronisation des utilisateurs
@@ -246,7 +246,7 @@ abstract class auth_entsync_sync {
         auth_entsync_rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
 
         if (in_array($iu->profile, $this->_profileswithcohort)) {
-            auth_entsync_cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
+            cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
         }
 
         return [$_entu, $_mdlu];
@@ -273,7 +273,7 @@ abstract class auth_entsync_sync {
                 auth_entsync_rolehelper::removeroles($entu->userid);
                 
                 // On le sort de sa cohorte éventuelle (si c'est un élève).
-                auth_entsync_cohorthelper::removecohorts($entu->userid);
+                cohorthelper::removecohorts($entu->userid);
             }
         }
 
@@ -566,8 +566,8 @@ class auth_entsync_sync_local extends auth_entsync_sync {
     protected function applycreds($_mdlu, $iu) {
         global $CFG, $DB;
         $_mdlu->isdirty = true;
-        $_fn = core_text::substr(auth_entsync_stringhelper::simplify_name($iu->firstname), 0, 1);
-        $_ln = auth_entsync_stringhelper::simplify_name($iu->lastname);
+        $_fn = core_text::substr(stringhelper::simplify_name($iu->firstname), 0, 1);
+        $_ln = stringhelper::simplify_name($iu->lastname);
         $clean = core_user::clean_field($_fn . $_ln, 'username');
         if (0 === $DB->count_records('user', ['username' => $clean])) {
             $_mdlu->username = $clean;
@@ -579,7 +579,7 @@ class auth_entsync_sync_local extends auth_entsync_sync {
             $_mdlu->username = $clean . $i;
         }
         $_mdlu->mnethostid = $CFG->mnet_localhost_id;
-        $pw = auth_entsync_stringhelper::rnd_string();
+        $pw = stringhelper::rnd_string();
         $_mdlu->password = "entsync\\{$pw}";
     }
 

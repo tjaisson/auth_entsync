@@ -22,14 +22,13 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->libdir.'/formslib.php');
 require_once(__DIR__ . '/lib/table.php');
-require_once(__DIR__ . '/lib/cohorthelper.php');
 require_once('ent_defs.php');
+use \auth_entsync\helpers\cohorthelper;
 
 require_login();
 admin_externalpage_setup('authentsyncuser');
@@ -41,7 +40,7 @@ class user_select_form extends moodleform {
         $mform = $this->_form;
         $mform->addElement('header', 'filter', get_string('choose'));
         $mform->setExpanded('filter');
-        $cllst = auth_entsync_cohorthelper::get_cohorts();
+        $cllst = cohorthelper::get_cohorts();
         $grp = array();
         $grp[] = $mform->createElement('select', 'cohort', 'classe', $cllst);
         $grp[] = $mform->createElement('submit', 'dispelev', '> '. get_string('show'));
@@ -130,7 +129,7 @@ if ($resetpw and confirm_sesskey()) {
     if (isset($profile)) {
         if (($profile === 1) && ($cohort > 0)) {
             $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
-            $cohortname = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+            $cohortname = cohorthelper::get_cohorts()[$cohort];
             $ttl = "Elèves de {$cohortname} :";
         } else if ($profile === 2) {
             $lst = auth_entsync_usertbl::get_users_ent_ens();

@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('ent_defs.php');
 require_once(__DIR__ . '/lib/table.php');
 require_once(__DIR__ . '/lib/tmpstore.php');
-use \auth_entsync\sync\bulk_form;
+use \auth_entsync\forms\bulk_form;
 
 core_php_time_limit::raise(60 * 60); // 1 hour should be enough.
 raise_memory_limit(MEMORY_HUGE);

@@ -22,12 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\helpers;
 defined('MOODLE_INTERNAL') || die();
 
-require_once('locallib.php');
+use \auth_entsync\helpers\stringhelper;
 
-
-class auth_entsync_cohorthelper {
+class cohorthelper {
     const COHORT_PRFX = 'auto_';
 
     /**
@@ -47,13 +47,13 @@ class auth_entsync_cohorthelper {
         global $DB;
         self::$_cohortsbyname = array();
         self::$_cohortsbyid = array();
-        $_prfx_len = strlen(self::COHORT_PRFX);
+        $_prfx_len = \strlen(self::COHORT_PRFX);
         $lst = $DB->get_records('cohort', ['component' => 'auth_entsync'],
             "SUBSTRING(idnumber, {$_prfx_len})", 'id, name, idnumber');
         foreach ($lst as $id => $c) {
             $id = (int)$id;
-            if (0 === strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {
-                $_cohort_name = auth_entsync_stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
+            if (0 === \strncmp($c->idnumber, self::COHORT_PRFX, $_prfx_len)) {
+                $_cohort_name = stringhelper::simplify_cohort(substr($c->idnumber, $_prfx_len));
                 self::$_cohortsbyname[$_cohort_name] = $id;
                 self::$_cohortsbyid[$id] = $c->name;
             }
@@ -67,19 +67,19 @@ class auth_entsync_cohorthelper {
      * @return int cohortid
      */
     protected static function getorcreate_cohort($cohortname) {
-        $_cohort_simp_name = auth_entsync_stringhelper::simplify_cohort($cohortname);
+        $_cohort_simp_name = stringhelper::simplify_cohort($cohortname);
         if (!isset(self::$_cohortsbyid)) {
             self::fillcohortsarrays();
         }
-        if (array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
+        if (\array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
             return (int)self::$_cohortsbyname[$_cohort_simp_name];
         }
         $newcohort = new stdClass();
         $newcohort->name = $cohortname;
         $newcohort->idnumber = self::COHORT_PRFX . $_cohort_simp_name;
         $newcohort->component = 'auth_entsync';
-        $newcohort->contextid = context_system::instance()->id;
-        $cohortid = cohort_add_cohort($newcohort);
+        $newcohort->contextid = \context_system::instance()->id;
+        $cohortid = \cohort_add_cohort($newcohort);
         self::$_cohortsbyid[$cohortid] = $_cohort_simp_name;
         self::$_cohortsbyname[$_cohort_simp_name] = $cohortid;
         return $cohortid;
@@ -106,7 +106,7 @@ class auth_entsync_cohorthelper {
             JOIN {cohort_members} b ON b.cohortid = a.id
            WHERE a.component = 'auth_entsync'
              AND b.userid = :userid";
-        return array_unique($DB->get_fieldset_sql($sql, ['userid' => $userid]));
+        return \array_unique($DB->get_fieldset_sql($sql, ['userid' => $userid]));
     }
 
     public static function set_cohort($userid, $cohortname) {
@@ -117,11 +117,11 @@ class auth_entsync_cohorthelper {
             if ($id == $cohortid) {
                 $already = true;
             } else {
-                cohort_remove_member($id, $userid);
+                \cohort_remove_member($id, $userid);
             }
         }
         if (!$already) {
-            cohort_add_member($cohortid, $userid);
+            \cohort_add_member($cohortid, $userid);
         }
         return $cohortid;
     }
@@ -134,7 +134,7 @@ class auth_entsync_cohorthelper {
     public static function removecohorts($userid) {
         $lst = self::get_usercohorts($userid);
         foreach ($lst as $cohortid) {
-            cohort_remove_member($cohortid, $userid);
+            \cohort_remove_member($cohortid, $userid);
         }
     }
 }

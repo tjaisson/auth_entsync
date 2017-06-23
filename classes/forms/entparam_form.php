@@ -15,8 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Gestion des utilisateurs de l'établissement
- *
  * Définition du formulaire de configuration
  *
  * @package    tool_entsync
@@ -24,16 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace auth_entsync\config;
+namespace auth_entsync\forms;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir.'/accesslib.php');
 
 /**
- * Upload a file CVS file with user information.
+ * Définition du formulaire de configuration
  *
- * @copyright  2007 Petr Skoda  {@link http://skodak.org}
+ * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entparam_form extends \moodleform {
@@ -107,5 +105,3 @@ class entparam_form extends \moodleform {
         }
     }
 }
-
-

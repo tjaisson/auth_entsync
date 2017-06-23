@@ -30,7 +30,7 @@ require_once($CFG->libdir . '/moodlelib.php');
 require_once('ent_defs.php');
 require_once(__DIR__ . '/lib/rolehelper.php');
 
-use \auth_entsync\config\entparam_form;
+use \auth_entsync\forms\entparam_form;
 
 require_login();
 admin_externalpage_setup('authentsyncparam');
