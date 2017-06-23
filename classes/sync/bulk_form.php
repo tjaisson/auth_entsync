@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\sync;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
@@ -34,7 +35,7 @@ require_once($CFG->libdir.'/formslib.php');
  * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class auth_entsync_bulk_form extends moodleform {
+class bulk_form extends \moodleform {
     protected function definition () {
         $displayproceed = (isset($this->_customdata['displayproceed'])) ? $this->_customdata['displayproceed'] : false;
         $advanced = (isset($this->_customdata['advanced'])) ? $this->_customdata['advanced'] : false;
@@ -49,7 +50,7 @@ class auth_entsync_bulk_form extends moodleform {
             $infohtml = $this->_customdata['displayhtml'];
             $displayupload = $this->_customdata['multi'];
             $storeid = $this->_customdata['storeid'];
-            $mform->addElement('header', 'proceedgrp', get_string('proceed', 'auth_entsync'));
+            $mform->addElement('header', 'proceedgrp', \get_string('proceed', 'auth_entsync'));
             $mform->addElement('html', $infohtml);
             $mform->addElement('hidden', 'storeid', $storeid);
             $mform->setType('storeid', PARAM_INT);
@@ -58,23 +59,23 @@ class auth_entsync_bulk_form extends moodleform {
                 $mform->setDefault('recupcas', false);
             }
 
-            $mform->addElement('submit', 'proceed', get_string('dosync', 'auth_entsync'));
+            $mform->addElement('submit', 'proceed', \get_string('dosync', 'auth_entsync'));
             if ($displayupload) {
-                $mform->addElement('header', 'settingsheader', get_string('uploadadd', 'auth_entsync'));
-                $mform->addElement('html', get_string('uploadaddinfo', 'auth_entsync'));
+                $mform->addElement('header', 'settingsheader', \get_string('uploadadd', 'auth_entsync'));
+                $mform->addElement('html', \get_string('uploadaddinfo', 'auth_entsync'));
             }
         } else {
-            $mform->addElement('header', 'settingsheader', get_string('upload'));
+            $mform->addElement('header', 'settingsheader', \get_string('upload'));
             $displayupload = true;
         }
 
         if ($displayupload) {
-            $mform->addElement('filepicker', 'userfile', get_string('file'));
+            $mform->addElement('filepicker', 'userfile', \get_string('file'));
 
             $options = array();
-            $txt = get_string('filetypemissingwarn', 'auth_entsync');
+            $txt = \get_string('filetypemissingwarn', 'auth_entsync');
             $options[$txt] = [0 => '...'];
-            foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+            foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
                 if ($ent->is_enabled()) {
                     $suboption = array();
                     foreach ($ent->get_filetypes() as $i => $desc) {
@@ -84,14 +85,14 @@ class auth_entsync_bulk_form extends moodleform {
                 }
             }
 
-            $mform->addElement('selectgroups', 'entfiletype', get_string('filetypeselect', 'auth_entsync'), $options);
+            $mform->addElement('selectgroups', 'entfiletype', \get_string('filetypeselect', 'auth_entsync'), $options);
             $mform->addRule('entfiletype', $txt, 'nonzero', null, 'client');
             $mform->setType('entfiletype', PARAM_TEXT);
             if ($displayproceed) {
                 $mform->freeze(['entfiletype']);
-                $mform->addElement('submit', 'deposer', get_string('upload'));
+                $mform->addElement('submit', 'deposer', \get_string('upload'));
             } else {
-                $mform->addElement('submit', 'deposer', get_string('next'));
+                $mform->addElement('submit', 'deposer', \get_string('next'));
                 $mform->addHelpButton('entfiletype', 'filetypeselect', 'auth_entsync');
             }
         } else {

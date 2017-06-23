@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\config;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
@@ -35,48 +36,48 @@ require_once($CFG->libdir.'/accesslib.php');
  * @copyright  2007 Petr Skoda  {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class admin_entparam_form extends moodleform {
+class entparam_form extends \moodleform {
     protected function definition() {
         $mform = $this->_form;
 
         // Ent list.
-        $mform->addElement('header', 'entlistheader', get_string('entlist', 'auth_entsync'));
+        $mform->addElement('header', 'entlistheader', \get_string('entlist', 'auth_entsync'));
         $mform->setExpanded('entlistheader');
         $mform->addHelpButton('entlistheader', 'entlist', 'auth_entsync');
         $mform->addElement('html', $this->buildentlist());
 
         // Rôles par profil.
-        $mform->addElement('header', 'rolesheader', get_string('entsyncparam', 'auth_entsync'));
+        $mform->addElement('header', 'rolesheader', \get_string('entsyncparam', 'auth_entsync'));
         $mform->setExpanded('rolesheader');
-        $sysroles[0] = get_string('none');
-        $roles = auth_entsync_rolehelper::getsysrolemenu();
+        $sysroles[0] = \get_string('none');
+        $roles = \auth_entsync_rolehelper::getsysrolemenu();
         foreach ($roles as $roleid => $rolename) {
             $sysroles[$roleid] = $rolename;
         }
-        $mform->addElement('select', 'role_ens', get_string('roleensselect', 'auth_entsync'), $sysroles);
+        $mform->addElement('select', 'role_ens', \get_string('roleensselect', 'auth_entsync'), $sysroles);
         $mform->setType('role_ens', PARAM_INT);
         $mform->addHelpButton('role_ens', 'roleensselect', 'auth_entsync');
         $this->add_entsettings($mform);
-        $this->add_action_buttons(false, get_string("savechanges"));
+        $this->add_action_buttons(false, \get_string("savechanges"));
     }
 
     private function buildentlist() {
         global $OUTPUT;
-        $t = new html_table();
-        $txt = get_strings(['entname', 'sso', 'connecturl'], 'auth_entsync');
-        $txt2 = get_strings(['enable', 'disable', 'yes', 'no']);
+        $t = new \html_table();
+        $txt = \get_strings(['entname', 'sso', 'connecturl'], 'auth_entsync');
+        $txt2 = \get_strings(['enable', 'disable', 'yes', 'no']);
         $t->head = [$txt->entname, $txt2->enable, $txt->sso, $txt->connecturl];
 
-        foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+        foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
             $url = "entenable.php?sesskey=" . sesskey();
             $class = '';
             // Hide/show link.
             if ($ent->is_enabled()) {
                 $hideshow = "<a href=\"$url&amp;action=disable&amp;ent={$entcode}\">"
-                . $OUTPUT->pix_icon('t/hide', get_string('disable')) . "</a>";
+                . $OUTPUT->pix_icon('t/hide', \get_string('disable')) . "</a>";
             } else {
                 $hideshow = "<a href=\"$url&amp;action=enable&amp;ent={$entcode}\">"
-                . $OUTPUT->pix_icon('t/show', get_string('enable')) . "</a>";
+                . $OUTPUT->pix_icon('t/show', \get_string('enable')) . "</a>";
                 $class = 'dimmed_text';
             }
             if ($ent->is_sso()) {
@@ -86,20 +87,20 @@ class admin_entparam_form extends moodleform {
             }
 
             $helpname = $ent->nomlong . $OUTPUT->help_icon("ent{$ent->get_entclass()}", 'auth_entsync');
-            $row = new html_table_row([$helpname, $hideshow, $yn, $ent->get_connector_url()]);
+            $row = new \html_table_row([$helpname, $hideshow, $yn, $ent->get_connector_url()]);
             if ($class) {
                 $row->attributes['class'] = $class;
             }
             $t->data[] = $row;
         }
-        return html_writer::table($t);
+        return \html_writer::table($t);
     }
 
     private function add_entsettings($mform) {
-        foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+        foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
             if ($ent->is_enabled() && $ent->has_settings()) {
                 $hdr = "header-{$entcode}";
-                $mform->addElement('header', $hdr, get_string('entspecparam', 'auth_entsync', $ent->nomlong));
+                $mform->addElement('header', $hdr, \get_string('entspecparam', 'auth_entsync', $ent->nomlong));
                 $mform->setExpanded($hdr);
                 $ent->add_formdef($mform);
             }

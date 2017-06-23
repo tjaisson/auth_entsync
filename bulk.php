@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('ent_defs.php');
 require_once(__DIR__ . '/lib/table.php');
 require_once(__DIR__ . '/lib/tmpstore.php');
-require_once('bulk_forms.php');
+use \auth_entsync\sync\bulk_form;
 
 core_php_time_limit::raise(60 * 60); // 1 hour should be enough.
 raise_memory_limit(MEMORY_HUGE);
@@ -127,7 +127,7 @@ if (optional_param('advanced', false, PARAM_BOOL)) {
 }
 
 // Formulaire et chargement des fichiers.
-$mform = new auth_entsync_bulk_form(null, $formparams);
+$mform = new bulk_form(null, $formparams);
 
 echo $OUTPUT->header();
 
@@ -208,10 +208,10 @@ if ($storeid) {
             \core\output\notification::NOTIFY_INFO);
         $formparams['storeid'] = $storeid;
         $formparams['multi'] = $ent->accept_multifile($filetype);
-        $mform = new auth_entsync_bulk_form(null, $formparams);
+        $mform = new bulk_form(null, $formparams);
         // On donne la possibilité d'envoyer un autre fichier mais le type de fichier ne doit pas changer.
     } else {
-        $mform = new auth_entsync_bulk_form(null, $formparams);
+        $mform = new bulk_form(null, $formparams);
     }
 }
 

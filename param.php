@@ -29,7 +29,8 @@ require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once('ent_defs.php');
 require_once(__DIR__ . '/lib/rolehelper.php');
-require_once('param_form.php');
+
+use \auth_entsync\config\entparam_form;
 
 require_login();
 admin_externalpage_setup('authentsyncparam');
@@ -49,7 +50,7 @@ if (!is_enabled_auth('entsync')) {
     die;
 }
 
-$mform = new admin_entparam_form();
+$mform = new entparam_form();
 $config = get_config('auth_entsync');
 
 if (!isset($config->role_ens)) {
