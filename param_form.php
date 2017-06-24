@@ -68,7 +68,7 @@ class admin_entparam_form extends moodleform {
         $t->head = [$txt->entname, $txt2->enable, $txt->sso, $txt->connecturl];
 
         foreach (auth_entsync_ent_base::get_ents() as $entcode => $ent) {
-            $url = "entenable.php?sesskey=" . sesskey();
+            $url = "param.php?sesskey=" . sesskey();
             $class = '';
             // Hide/show link.
             if ($ent->is_enabled()) {
