@@ -48,7 +48,7 @@ class entparam_form extends \moodleform {
         $mform->addElement('header', 'rolesheader', \get_string('entsyncparam', 'auth_entsync'));
         $mform->setExpanded('rolesheader');
         $sysroles[0] = \get_string('none');
-        $roles = \auth_entsync_rolehelper::getsysrolemenu();
+        $roles = \auth_entsync\helpers\rolehelper::getsysrolemenu();
         foreach ($roles as $roleid => $rolename) {
             $sysroles[$roleid] = $rolename;
         }

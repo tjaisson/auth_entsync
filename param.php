@@ -28,9 +28,9 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once('ent_defs.php');
-require_once(__DIR__ . '/lib/rolehelper.php');
 
 use \auth_entsync\forms\entparam_form;
+use \auth_entsync\helpers\rolehelper;
 
 require_login();
 admin_externalpage_setup('authentsyncparam');
@@ -89,10 +89,10 @@ if ($formdata = $mform->is_cancelled()) {
     if ($formdata->role_ens != $config->role_ens) {
         if ($formdata->role_ens == 0) {
             unset_config('role_ens', 'auth_entsync');
-            auth_entsync_rolehelper::removerolesallusers(2);
+            rolehelper::removerolesallusers(2);
         } else {
             set_config('role_ens', $formdata->role_ens, 'auth_entsync');
-            auth_entsync_rolehelper::updateroleallusers(2, $formdata->role_ens);
+            rolehelper::updateroleallusers(2, $formdata->role_ens);
         }
     }
     auth_entsync_ent_base::save_formdata($config, $formdata);

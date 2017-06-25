@@ -22,16 +22,17 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+namespace auth_entsync\helpers;
 defined('MOODLE_INTERNAL') || die();
 
-class auth_entsync_usertbl {
+class usertblhelper {
     private static function build_select() {
         global $DB;
         $select = 'a.id as id, a.username as username,
 IF((SUBSTRING(a.password,1 , 8) = \'entsync\\\\\'), SUBSTRING(a.password,9), NULL) as password,
 a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles';
         $manual = array();
-        foreach (auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
+        foreach (\auth_entsync_ent_base::get_ents() as $entcode =>$ent) {
             if($ent->is_enabled()) {
                 $select .= ", BIT_OR(b.ent = {$entcode}) as ent{$entcode}";
                 if($ent->get_mode() === 'local') {
@@ -78,7 +79,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
     }
 
     protected static function cleanu($u) {
-        $ents = explode(',', $u->ents);
+        $ents = \explode(',', $u->ents);
         $u->ents = array();
         foreach($ents as $ent) {
             $ent = explode(';', $ent);

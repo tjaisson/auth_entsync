@@ -22,18 +22,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\helpers;
 defined('MOODLE_INTERNAL') || die();
-require_once('table.php');
 
+use \auth_entsync\helpers\usertblhelper;
 
-
-class auth_entsync_rolehelper {
+class rolehelper {
     static function removeroles($userid) {
         global $DB;
         $userroles = $DB->get_records_menu('role_assignments',
             ['component' => 'auth_entsync', 'userid' => $userid]);
         foreach($userroles as $roleid) {
-            role_unassign($roleid, $userid, context_system::instance()->id, 'auth_entsync');
+            \role_unassign($roleid, $userid, \context_system::instance()->id, 'auth_entsync');
         }
     }
     
@@ -46,17 +46,16 @@ class auth_entsync_rolehelper {
             if($roleid == $newroleid) {
                 $_already = true;
             } else {
-                role_unassign($roleid, $userid, context_system::instance()->id, 'auth_entsync');
+                \role_unassign($roleid, $userid, \context_system::instance()->id, 'auth_entsync');
             }
         }
         if(($newroleid > 0) && (!$_already)) {
-            role_assign($newroleid, $userid, context_system::instance()->id, 'auth_entsync');
+            \role_assign($newroleid, $userid, \context_system::instance()->id, 'auth_entsync');
         }
     }
     
     static function updateroleallusers($profile, $newroleid) {
-//        $iurs = self::get_users_byprofile($profile);
-        $iurs = auth_entsync_usertbl::get_users($profile);
+        $iurs = usertblhelper::get_users($profile);
         foreach($iurs as $userid) {
             self::updaterole($userid, $newroleid);
         }
@@ -66,8 +65,7 @@ class auth_entsync_rolehelper {
      * @param int $profile le profil à traiter
      */
     static function removerolesallusers($profile) {
-//        $iurs = self::get_users_byprofile($profile);
-        $iurs = auth_entsync_usertbl::get_users($profile);
+        $iurs = usertblhelper::get_users($profile);
         
         foreach($iurs as $userid) {
             self::removeroles($userid);
@@ -78,7 +76,7 @@ class auth_entsync_rolehelper {
         static $ret;
         if(isset($ret)) return $ret;
         global $DB;
-        $lst = get_assignable_roles(context_system::instance(), ROLENAME_ORIGINALANDSHORT);
+        $lst = \get_assignable_roles(\context_system::instance(), ROLENAME_ORIGINALANDSHORT);
         $ret = array();
         foreach($lst as $roleid => $rolename) {
             $archetype = $DB->get_field('role', 'archetype', ['id' => $roleid]);

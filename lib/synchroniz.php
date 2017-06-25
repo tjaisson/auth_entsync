@@ -27,6 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once('rolehelper.php');
 use \auth_entsync\helpers\stringhelper;
 use \auth_entsync\helpers\cohorthelper;
+use \auth_entsync\helpers\rolehelper;
 
 /**
  * Classe qui expose les méthodes utilisées pour la synchronisation des utilisateurs
@@ -243,7 +244,7 @@ abstract class auth_entsync_sync {
             $_entu->id = $DB->insert_record('auth_entsync_user', $_entu, true);
         }
 
-        auth_entsync_rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
+        rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
 
         if (in_array($iu->profile, $this->_profileswithcohort)) {
             cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
@@ -270,7 +271,7 @@ abstract class auth_entsync_sync {
             if (0 === $DB->count_records('auth_entsync_user', ['userid' => $entu->userid, 'archived' => 0])) {
                 // Il est archivé dans tous les ent
                 // on retire son éventuel rôle système (si c'est un prof).
-                auth_entsync_rolehelper::removeroles($entu->userid);
+                rolehelper::removeroles($entu->userid);
                 
                 // On le sort de sa cohorte éventuelle (si c'est un élève).
                 cohorthelper::removecohorts($entu->userid);
