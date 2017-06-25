@@ -22,12 +22,13 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+namespace auth_entsync\connectors;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
-class auth_entsync_casconnect {
+class casconnect {
 
     /**
      * @var string|null Null if ok, error msg otherwise
@@ -64,25 +65,25 @@ class auth_entsync_casconnect {
 
     public function set_param($casparams) {
         $this->_casparams = $casparams;
-        if (!array_key_exists('retries', $this->_casparams)) {
+        if (!\array_key_exists('retries', $this->_casparams)) {
             $this->_casparams['retries'] = 0;
         }
-        if (!array_key_exists('casversion', $this->_casparams)) {
+        if (!\array_key_exists('casversion', $this->_casparams)) {
             $this->_casparams['casversion'] = '2.0';
         }
-        if (!array_key_exists('port', $this->_casparams)) {
+        if (!\array_key_exists('port', $this->_casparams)) {
             $this->_casparams['port'] = 443;
         }
-        if (!array_key_exists('supportGW', $this->_casparams)) {
+        if (!\array_key_exists('supportGW', $this->_casparams)) {
             $this->_casparams['supportGW'] = false;
         }
-        if (!array_key_exists('allowUntrust', $this->_casparams)) {
+        if (!\array_key_exists('allowUntrust', $this->_casparams)) {
             $this->_casparams['allowUntrust'] = false;
         }
-        if (!array_key_exists('homeuri', $this->_casparams)) {
+        if (!\array_key_exists('homeuri', $this->_casparams)) {
             $this->_casparams['homeuri'] = '/';
         }
-        if (!array_key_exists('homehost', $this->_casparams)) {
+        if (!\array_key_exists('homehost', $this->_casparams)) {
             $this->_casparams['homehost'] = $this->_casparams['hostname'];
         }
     }
@@ -108,7 +109,7 @@ class auth_entsync_casconnect {
      */
     public function read_ticket() {
         $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
-        if (preg_match('/^[SP]T-/', $ticket) ) {
+        if (\preg_match('/^[SP]T-/', $ticket) ) {
             unset($_GET['ticket']);
             $this->_ticket = $ticket;
             return true;
@@ -144,7 +145,7 @@ class auth_entsync_casconnect {
         }
 
         $valurl  = $this->buildvalidateurl()->out(false);
-        $cu = new curl();
+        $cu = new \curl();
         if ($this->allow_Untrust()) {
             $cu->setopt(['SSL_VERIFYHOST' => false]);
             $cu->setopt(['SSL_VERIFYPEER' => false]);
@@ -155,7 +156,7 @@ class auth_entsync_casconnect {
         do {
             if ($rep = $cu->get($valurl)) {
                 // Create new DOMDocument object.
-                $dom = new DOMDocument();
+                $dom = new \DOMDocument();
                 // ... fix possible whitspace problems.
                 $dom->preserveWhiteSpace = false;
                 // CAS servers should only return data in utf-8.
@@ -182,13 +183,13 @@ class auth_entsync_casconnect {
                         $this->_error = 'Réponse du serveur CAS incorrecte';
                         return false;
                     } else {
-                        $attr = new stdClass();
-                        $attr->user = trim(
+                        $attr = new \stdClass();
+                        $attr->user = \trim(
                             $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
                             );
-                        if (array_key_exists('decodecallback', $this->_casparams)
-                                && is_callable($this->_casparams['decodecallback'], false)) {
-                            call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
+                        if (\array_key_exists('decodecallback', $this->_casparams)
+                                && \is_callable($this->_casparams['decodecallback'], false)) {
+                            \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
                         $attr->retries = $retries;
                         return $attr;
@@ -209,7 +210,7 @@ class auth_entsync_casconnect {
         if ($gw) {
             $param['gateway'] = 'true';
         }
-        return new moodle_url($this->_getServerBaseURL().'login', $param);
+        return new \moodle_url($this->_getServerBaseURL().'login', $param);
     }
 
     /**
@@ -232,7 +233,7 @@ class auth_entsync_casconnect {
                 break;
         }
         $param = ['service' => $this->_clienturl->out(false), 'ticket' => $this->_ticket];
-        return new moodle_url($ret, $param);
+        return new \moodle_url($ret, $param);
     }
 
     protected function _getServerBaseURL() {
@@ -252,6 +253,6 @@ class auth_entsync_casconnect {
     }
 
     protected static function _redirect($url) {
-        redirect($url);
+        \redirect($url);
     }
 }

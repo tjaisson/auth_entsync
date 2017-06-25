@@ -366,8 +366,7 @@ abstract class auth_entsync_entcas extends auth_entsync_entsso {
     public abstract function get_casparams();
 
     public function get_casconnector() {
-        require_once(__DIR__ . '/../lib/casconnect.php');
-        $con = new auth_entsync_casconnect();
+        $con = new \auth_entsync\connectors\casconnect();
         $con->set_param($this->get_casparams());
         return $con;
     }
