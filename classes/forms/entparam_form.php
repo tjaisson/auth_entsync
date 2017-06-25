@@ -65,17 +65,21 @@ class entparam_form extends \moodleform {
         $txt = \get_strings(['entname', 'sso', 'connecturl'], 'auth_entsync');
         $txt2 = \get_strings(['enable', 'disable', 'yes', 'no']);
         $t->head = [$txt->entname, $txt2->enable, $txt->sso, $txt->connecturl];
-
+        
+        $actionurl = new \moodle_url('/auth/entsync/param.php', ['sesskey' => sesskey()]);
+        $disableico = $OUTPUT->pix_icon('t/hide', $txt2->disable);
+        $enableico = $OUTPUT->pix_icon('t/show', $txt2->enable);
+        
         foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
-            $url = "param.php?sesskey=" . sesskey();
+            $actionurlent = new \moodle_url($actionurl, ['ent' => $entcode]);
             $class = '';
             // Hide/show link.
             if ($ent->is_enabled()) {
-                $hideshow = "<a href=\"$url&amp;action=disable&amp;ent={$entcode}\">"
-                . $OUTPUT->pix_icon('t/hide', \get_string('disable')) . "</a>";
+                $actionurlent->param('action', 'disable');
+                $hideshow = \html_writer::link($actionurlent, $disableico);
             } else {
-                $hideshow = "<a href=\"$url&amp;action=enable&amp;ent={$entcode}\">"
-                . $OUTPUT->pix_icon('t/show', \get_string('enable')) . "</a>";
+                $actionurlent->param('action', 'enable');
+                $hideshow = \html_writer::link($actionurlent, $enableico);
                 $class = 'dimmed_text';
             }
             if ($ent->is_sso()) {
