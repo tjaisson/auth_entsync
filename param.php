@@ -50,6 +50,27 @@ if (!is_enabled_auth('entsync')) {
     die;
 }
 
+$action = optional_param('action', 'display', PARAM_ACTION);
+
+if (($action == 'disable') || ($action == 'enable')) {
+    $entcode = optional_param('ent', 0, PARAM_INT);
+    if (confirm_sesskey()) {
+        switch ($action) {
+            case 'disable':
+                // Remove from enabled list.
+                auth_entsync_ent_base::disable_ent($entcode);
+                break;
+                
+            case 'enable':
+                // Add to enabled list.
+                auth_entsync_ent_base::enable_ent($entcode);
+                break;
+        }
+    }
+    redirect($returnurl);
+    die();
+}
+
 $mform = new entparam_form();
 $config = get_config('auth_entsync');
 

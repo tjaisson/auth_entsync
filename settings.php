@@ -42,7 +42,7 @@ if ($hassiteconfig) {
                 new lang_string('entsyncuser', $pln),
                 "$CFG->wwwroot/auth/entsync/users.php", 'moodle/user:viewdetails'));
     }
-    if (\auth_entsync\persistent\instance::is_gw()) {
+    if (($gw = get_config($pln, 'gw')) && ($gw === get_config($pln, 'inst'))) {
         $ADMIN->add('root', new admin_externalpage('authentsyncinst',
             new lang_string('entsyncinst', $pln),
             "$CFG->wwwroot/auth/entsync/instances.php", 'moodle/site:config'));
