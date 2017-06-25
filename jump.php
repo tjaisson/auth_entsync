@@ -37,7 +37,7 @@ $inst = optional_param('inst', null, PARAM_TEXT);
 if (!$inst) {
     die();
 }
-$instance = \auth_entsync\persistent\instance::get_record(['dir' => $inst]);
+$instance = \auth_entsync\persistents\instance::get_record(['dir' => $inst]);
 if (!$instance) {
     die();
 }

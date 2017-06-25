@@ -25,7 +25,7 @@
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
-use \auth_entsync\persistent\instance;
+use \auth_entsync\persistents\instance;
 use \auth_entsync\forms\instance_form;
 
 if (!instance::is_gw()) {
