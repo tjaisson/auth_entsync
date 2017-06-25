@@ -26,9 +26,10 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->libdir.'/formslib.php');
-require_once(__DIR__ . '/lib/table.php');
 require_once('ent_defs.php');
 use \auth_entsync\helpers\cohorthelper;
+use \auth_entsync\helpers\usertblhelper;
+use \auth_entsync\helpers\stringhelper;
 
 require_login();
 admin_externalpage_setup('authentsyncuser');
@@ -84,7 +85,7 @@ if ($profile === 1) {
 // Y a t il des actions à faire ?
 if ($resetpw and confirm_sesskey()) {
     require_capability('moodle/user:update', $sitecontext);
-    $u = auth_entsync_usertbl::get_user_ent($resetpw);
+    $u = usertblhelper::get_user_ent($resetpw);
     if ($u->local === '0') {
         redirect($returnurl);
     }
@@ -104,7 +105,7 @@ if ($resetpw and confirm_sesskey()) {
         require_once(__DIR__ . '/lib/locallib.php');
         $_mdlu = new stdClass();
         $_mdlu->id = $resetpw;
-        $pw = auth_entsync_stringhelper::rnd_string();
+        $pw = stringhelper::rnd_string();
         $_mdlu->password = "entsync\\{$pw}";
         user_update_user($_mdlu, false, true);
         redirect($returnurl);
@@ -128,11 +129,11 @@ if ($resetpw and confirm_sesskey()) {
 
     if (isset($profile)) {
         if (($profile === 1) && ($cohort > 0)) {
-            $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
+            $lst = usertblhelper::get_users_ent_elev($cohort);
             $cohortname = cohorthelper::get_cohorts()[$cohort];
             $ttl = "Elèves de {$cohortname} :";
         } else if ($profile === 2) {
-            $lst = auth_entsync_usertbl::get_users_ent_ens();
+            $lst = usertblhelper::get_users_ent_ens();
             $ttl = "Enseignants :";
         }
 

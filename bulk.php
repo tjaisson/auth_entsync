@@ -30,9 +30,9 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('ent_defs.php');
-require_once(__DIR__ . '/lib/table.php');
 require_once(__DIR__ . '/lib/tmpstore.php');
 use \auth_entsync\forms\bulk_form;
+use \auth_entsync\helpers\usertblhelper;
 
 core_php_time_limit::raise(60 * 60); // 1 hour should be enough.
 raise_memory_limit(MEMORY_HUGE);
@@ -200,7 +200,7 @@ if ($storeid) {
         // Déjà au moins un utilisateur en attente de synchro,
         // on donne la possibilité de procéder à la synchronisation.
         $formparams['displayproceed'] = true;
-        $already = auth_entsync_usertbl::count_users($ent->get_profilesintype($filetype), $ent->get_code());
+        $already = usertblhelper::count_users($ent->get_profilesintype($filetype), $ent->get_code());
         $formparams['displayhtml'] = $OUTPUT->notification(get_string('infoproceed', 'auth_entsync',
             ['nbusers' => $readytosyncusers, 'profiltype' => $ent->get_filetypes()[$filetype],
                 'alreadyusers' => $already
@@ -219,9 +219,9 @@ echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'ents
 
 $mform->display();
 
-$i = auth_entsync_usertbl::count_users(1);
-$ii = auth_entsync_usertbl::count_users(2);
-$iii = auth_entsync_usertbl::count_users([1, 2]);
+$i = usertblhelper::count_users(1);
+$ii = usertblhelper::count_users(2);
+$iii = usertblhelper::count_users([1, 2]);
 echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
 
 echo $OUTPUT->footer();
