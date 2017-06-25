@@ -80,8 +80,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
 
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>3)) return null;
-        require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_CSV();
+        $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom',
                         'uid'=>'Login', 'cohortname' => 'Classe(s)', 'prf' =>'Type'];
         $fileparser->encoding = 'utf-8';

@@ -78,8 +78,7 @@ class  auth_entsync_ent_monlyceenet extends auth_entsync_entcas {
 
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>2)) return null; 
-        require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_CSV();
+        $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom', 'uid'=>'Identifiant'];
         if($filetype == 1) $fileparser->match['cohortname'] = 'Classe';
         $fileparser->encoding = 'ISO-8859-1';
@@ -140,8 +139,7 @@ class  auth_entsync_ent_pcn extends auth_entsync_entcas {
 
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>2)) return null; 
-        require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_CSV();
+        $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom', 'uid'=>'Identifiant', 'prf' =>'Profil'];
         if($filetype == 1) $fileparser->match['cohortname'] = 'Classe';
         $fileparser->encoding = 'ISO-8859-1';

@@ -84,8 +84,7 @@ class  auth_entsync_ent_envole extends auth_entsync_entcas {
 
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>2)) return null; 
-        require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_CSV();
+        $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'NOM', 'firstname'=>'PRENOM', 'uid'=>'LOGIN'];
         if($filetype == 1) $fileparser->match['cohortname'] = 'CLASSE';
         $fileparser->encoding = 'utf-8';

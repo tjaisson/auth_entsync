@@ -87,8 +87,7 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
 
     public function get_fileparser($filetype) {
         if(($filetype < 1) || ($filetype > 3)) return null;
-        require_once(__DIR__ . '/../lib/parsers.php');
-        $fileparser = new auth_entsync_parser_CSV();
+        $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom',
                             'uid'=>'Login', 'cohortname' => 'Classes', 'prf' =>'Profil'];
         $fileparser->encoding = 'ISO-8859-1';
