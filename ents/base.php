@@ -264,8 +264,7 @@ abstract class auth_entsync_ent_base {
      * @return tool_entsync_sync_cas|tool_entsync_sync_manual
      */
     public function get_synchronizer($filetype) {
-        require_once(__DIR__ . '/../lib/synchroniz.php');
-        $syncclass = 'auth_entsync_sync_' . $this->get_mode();
+        $syncclass = '\\auth_entsync\\synchronizers\\' . $this->get_mode() . '_sync';
         $synchroniser = new $syncclass();
         $synchroniser->entcode = $this->_code;
         $synchroniser->set_profilestosync($this->get_profilesintype($filetype));

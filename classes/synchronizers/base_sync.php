@@ -22,10 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace auth_entsync\synchronizers;
 defined('MOODLE_INTERNAL') || die();
 
-require_once('rolehelper.php');
-use \auth_entsync\helpers\stringhelper;
 use \auth_entsync\helpers\cohorthelper;
 use \auth_entsync\helpers\rolehelper;
 
@@ -39,7 +38,7 @@ use \auth_entsync\helpers\rolehelper;
  * @copyright 2016 Thomas Jaisson
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class auth_entsync_sync {
+abstract class base_sync {
     /**
      * Durée d'archivage des utilisateurs en secondes
      */
@@ -139,7 +138,7 @@ abstract class auth_entsync_sync {
     protected function update($entu, $mdlu, $iu) {
         global $DB;
         // Crée $_mdlu : record pour la mise à jour.
-        $_mdlu = new stdClass();
+        $_mdlu = new \stdClass();
         $_mdlu->isdirty = false;
 
         if ($mdlu && $mdlu->deleted) {
@@ -173,7 +172,7 @@ abstract class auth_entsync_sync {
             }
             if ($_mdlu->isdirty) {
                 unset($_mdlu->isdirty);
-                user_update_user($_mdlu, false, true);
+                \user_update_user($_mdlu, false, true);
                 ++$this->_report->updated;
             }
         } else {
@@ -188,12 +187,12 @@ abstract class auth_entsync_sync {
             $_mdlu->emailstop = 1;
             $_mdlu->lang = 'fr';
             unset($_mdlu->isdirty);
-            $_mdlu->id = user_create_user($_mdlu, false, true);
+            $_mdlu->id = \user_create_user($_mdlu, false, true);
             ++$this->_report->created;
         }
 
         // Crée $_entu : record pour la mise à jour.
-        $_entu = new stdClass();
+        $_entu = new \stdClass();
         $_entu->isdirty = false;
 
         // Création ou mise à jour de l'utilisateur géré.
@@ -246,7 +245,7 @@ abstract class auth_entsync_sync {
 
         rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
 
-        if (in_array($iu->profile, $this->_profileswithcohort)) {
+        if (\in_array($iu->profile, $this->_profileswithcohort)) {
             cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
         }
 
@@ -335,7 +334,7 @@ abstract class auth_entsync_sync {
             $this->_progressreporter->progress($progresscnt);
             ++$progresscnt;
 
-            if (in_array($iu->profile, $this->_profilestosync) && $this->validate_user($iu)) {
+            if (\in_array($iu->profile, $this->_profilestosync) && $this->validate_user($iu)) {
                 // Chercher l'utilisateur.
                 if ($ret = $this->lookforuser($iu)) {
                     list($entu, $mdlu) = $ret;
@@ -348,7 +347,7 @@ abstract class auth_entsync_sync {
 
         $this->_limitarchiv = $this->_currenttime - $this::ARCHIVDURATION;
 
-        $this->_progressreporter->start_progress('', count($this->_existingentu), 3);
+        $this->_progressreporter->start_progress('', \count($this->_existingentu), 3);
         $progresscnt = 0;
         foreach ($this->_existingentu as $entu) {
             $this->_progressreporter->progress($progresscnt);
@@ -369,8 +368,8 @@ abstract class auth_entsync_sync {
         $this->_existingentu = array();
         $this->_existingentuother = array();
         while ($entus) {
-            $entu = array_pop($entus);
-            if (in_array($entu->profile, $this->_profilestosync)) {
+            $entu = \array_pop($entus);
+            if (\in_array($entu->profile, $this->_profilestosync)) {
                 $entu->checked = false;
                 $this->_existingentu[$entu->uid] = $entu;
             } else {
@@ -397,10 +396,10 @@ abstract class auth_entsync_sync {
      */
     protected function lookforuser($iu) {
         global $DB, $CFG;
-        if (array_key_exists($iu->uid, $this->_existingentu)) {
+        if (\array_key_exists($iu->uid, $this->_existingentu)) {
             $entu = $this->_existingentu[$iu->uid];
         } else {
-            if (array_key_exists($iu->uid, $this->_existingentuother)) {
+            if (\array_key_exists($iu->uid, $this->_existingentuother)) {
                 // Même ent mais autre profil
                 // ne devrait pas se produire.
                 ++$this->_report->profilmismatched;
@@ -471,7 +470,7 @@ abstract class auth_entsync_sync {
             if ($iu->profile == $rec->profile)
                 $userids[] = $rec->userid;
         }
-        $userids = array_unique($userids);
+        $userids = \array_unique($userids);
         if (count($userids) === 1) {
             ++$this->_report->bynames;
             return $DB->get_record('user', ['id' => $userids[0]],
@@ -492,101 +491,4 @@ abstract class auth_entsync_sync {
     protected abstract function validate_user($iu);
     protected abstract function applycreds($_mdlu, $iu);
     protected abstract function updatecreds($mdlu, $_mdlu, $iu);
-}
-
-/**
- * Synchronizer spécifique pour le mode d'authentification 'cas'
- *
- * @package   auth_entsync
- * @copyright 2016 Thomas Jaisson
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class auth_entsync_sync_cas extends auth_entsync_sync {
-    protected $recupcas = false;
-
-    public function set_recupcas($val) {
-        $this->recupcas = $val;
-    }
-
-    protected function lookforuserbynames($iu) {
-        global $DB, $CFG;
-        if ($this->recupcas) {
-            if ($mdlu = $DB->get_record('user', ['auth' => 'cas', 'username' => $iu->uid, 'mnethostid' => $CFG->mnet_localhost_id],
-                'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname')) {
-                return $mdlu;
-            }
-        }
-        return parent::lookforuserbynames($iu);
-    }
-
-    protected function validate_user($iu) {
-        if (empty($iu->uid)) {
-            return false;
-        }
-        return true;
-    }
-
-    protected function applycreds($_mdlu, $iu) {
-        global $DB, $CFG;
-        $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}";
-        // TODO : gérer le cas où le username est déjà utilisé
-        // ne devrait pas se produire mais déjà vu suite à bugg.
-        $clean = core_user::clean_field($_mdlu->username, 'username');
-        if ($_mdlu->username !== $clean) {
-            if (0 === $DB->count_records('user', ['username' => $clean])) {
-                $_mdlu->username = $clean;
-            } else {
-                $i = 1;
-                while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
-                    ++$i;
-                }
-                $_mdlu->username = $clean . $i;
-            }
-        }
-
-        $_mdlu->mnethostid = $CFG->mnet_localhost_id;
-        $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
-    }
-
-    protected function updatecreds($mdlu, $_mdlu, $iu) {
-    }
-}
-
-/**
- * Synchronizer spécifique pour le mode d'authentification 'local'
- *
- * @package   auth_entsync
- * @copyright 2016 Thomas Jaisson
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class auth_entsync_sync_local extends auth_entsync_sync {
-    protected function validate_user($iu) {
-        return (!empty($iu->firstname)) && (!empty($iu->lastname));
-    }
-
-    protected function applycreds($_mdlu, $iu) {
-        global $CFG, $DB;
-        $_mdlu->isdirty = true;
-        $_fn = core_text::substr(stringhelper::simplify_name($iu->firstname), 0, 1);
-        $_ln = stringhelper::simplify_name($iu->lastname);
-        $clean = core_user::clean_field($_fn . $_ln, 'username');
-        if (0 === $DB->count_records('user', ['username' => $clean])) {
-            $_mdlu->username = $clean;
-        } else {
-            $i = 1;
-            while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
-                ++$i;
-            }
-            $_mdlu->username = $clean . $i;
-        }
-        $_mdlu->mnethostid = $CFG->mnet_localhost_id;
-        $pw = stringhelper::rnd_string();
-        $_mdlu->password = "entsync\\{$pw}";
-    }
-
-    protected function updatecreds($mdlu, $_mdlu, $iu) {
-        if ($mdlu->password == AUTH_PASSWORD_NOT_CACHED) {
-            $this->applycreds($_mdlu, $iu);
-        }
-    }
 }
