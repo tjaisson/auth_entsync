@@ -22,7 +22,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require(__DIR__ . '/../../config.php');
+require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
@@ -36,14 +36,14 @@ $ticket = optional_param('ticket', null, PARAM_RAW);
 
 if (!$ticket) {
    // Pas de ticket.
-    $jumpurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump.php', ['inst' => instance::inst()]);
+    $jumpurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump/jump.php', ['inst' => instance::inst()]);
     redirect($jumpurl);
     die();
 }
 
 // Le ticket est présent.
 $cu = new curl();
-$valurl = new moodle_url(instance::gwroot() . '/auth/entsync/validate.php',
+$valurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump/validate.php',
     ['inst' => instance::inst(), 'ticket' => $ticket]);
 if (!($rep = $cu->get($valurl->out(false)))) {
     die();

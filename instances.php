@@ -131,7 +131,7 @@ if ($action == 'del') {
         $id = $instance->get('id');
         $editlnk = new moodle_url($editurl, ['id' => $id]);
         $dellnk = new moodle_url($delurl, ['id' => $id]);
-        $jumplnk = new moodle_url($instance->wwwroot() . '/auth/entsync/alogin.php');
+        $jumplnk = new moodle_url($instance->wwwroot() . '/auth/entsync/jump/login.php');
         $row = [];
         $row[] = html_writer::link($jumplnk, $instance->get('dir'), $jumpattr);
         $row[] = html_writer::link($editlnk, $instance->get('name'), $editattr);

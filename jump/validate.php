@@ -22,30 +22,51 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
-require(__DIR__ . '/../../config.php');
+// Pas besoin de la session.
+define('NO_MOODLE_COOKIE', true);
 
-if (!isloggedin()) {
-    die();
-}
-
-if (!is_siteadmin()) {
-    die();
-}
+require(__DIR__ . '/../../../config.php');
 
 $inst = optional_param('inst', null, PARAM_TEXT);
 
 if (!$inst) {
     die();
 }
-$instance = \auth_entsync\persistents\instance::get_record(['dir' => $inst]);
-if (!$instance) {
+
+$ticket = optional_param('ticket', null, PARAM_RAW);
+
+if (!$ticket) {
     die();
 }
 
-$tocken = 'PC-' . bin2hex(random_bytes_emulate(20));
-$time = time();
-$value = $inst . ',' . $time . ',' . $tocken;
-set_config('pc', $value, 'auth_entsync');
+$value = get_config('auth_entsync', 'pc');
+list($storedinst, $time, $storedticket) = explode(',', $value);
 
-$redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/alogin.php', ['ticket' => $tocken]);
-redirect($redirecturl);
+$time = $time + 30;
+
+if (time() > $time) {
+    set_config('pc', null, 'auth_entsync');
+    echo 'no validate';
+    die();
+}
+
+if ($storedinst !== $inst) {
+    echo 'no validate';
+    die();
+}
+
+if ($storedticket !== $ticket) {
+    echo 'no validate';
+    die();
+}
+
+$instance = \auth_entsync\persistents\instance::get_record(['dir' => $inst]);
+
+if (!$instance) {
+    echo 'no validate';
+    die();
+}
+
+set_config('pc', null, 'auth_entsync');
+echo 'validate';
+die();
