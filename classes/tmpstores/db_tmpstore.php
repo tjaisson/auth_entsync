@@ -22,78 +22,10 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
+namespace auth_entsync\tmpstores;
 defined('MOODLE_INTERNAL') || die();
 
-abstract class auth_entsync_tmpstore {
-    protected $_progressreporter = null;
-    public function set_progress_reporter($progressreporter) {
-        $this->_progressreporter = $progressreporter;
-    }
-    
-    public function __construct($storecode = null) {}
-    public static function get_store($storecode = null) {
-        return new auth_entsync_fstmpstore($storecode);
-    }
-    public abstract function save();
-    public abstract function add_ius($ius);
-    public abstract function get_ius();
-    public abstract function clear();
-    public abstract function count();
-}
-
-class auth_entsync_fstmpstore extends auth_entsync_tmpstore {
-    protected $_storecode;
-    protected $_tmparray;
-
-    public function __construct($storecode = null) {
-        $this->_storecode = $storecode;
-        if ($storecode) {
-            $dir = make_temp_directory('entsync');
-            $file = $dir . '/' . $storecode;
-            $this->_tmparray = (array)json_decode(file_get_contents($file));
-        } else  {
-            $this->_tmparray = array();
-        }
-    }
-    public function save() {
-        $dir = make_temp_directory('entsync');
-        if ($this->_storecode) {
-            $file = $dir . '/' . $this->_storecode;
-        } else  {
-            $i = 100;
-            while(file_exists($dir . '/' . $i)) {
-                ++$i;
-            }
-            $this->_storecode = $i;
-            $file = $dir . '/' . $this->_storecode;
-        }
-        file_put_contents($file, json_encode($this->_tmparray));
-        return $this->_storecode;
-    }
-    public function add_ius($ius) {
-        if (empty($ius)) return;
-        $i = 1;
-        while ($ius) {
-            $iu = array_pop($ius);
-            $this->_tmparray[$iu->uid] = $iu;
-        }
-    }
-    public function get_ius() {
-        return $this->_tmparray;
-    }
-    public function clear() {
-        if ($this->_storecode) {
-            $dir = make_temp_directory('entsync');
-            $file = $dir . '/' . $this->_storecode;
-            unlink($file);
-        }
-    }
-    public function count() {
-        return count($this->_tmparray);
-    }
-}
-
-class auth_entsync_dbtmpstore extends auth_entsync_tmpstore {
+class db_tmpstore extends \auth_entsync\tmpstores\base_tmpstore {
     protected $_storecode;
     public function __construct($storecode = null) {
         global $DB;
@@ -114,7 +46,7 @@ class auth_entsync_dbtmpstore extends auth_entsync_tmpstore {
         $this->_progressreporter->start_progress('Préparation',count($ius),1);
         $i = 1;
         while($ius) {
-            $iu = array_pop($ius);
+            $iu = \array_pop($ius);
             $this->_progressreporter->progress($i++);
             if(!$DB->record_exists('auth_entsync_tmpul', ['uid' => $iu->uid])) {
                 $DB->insert_record('auth_entsync_tmpul', $iu);

@@ -30,9 +30,9 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 require_once('ent_defs.php');
-require_once(__DIR__ . '/lib/tmpstore.php');
 use \auth_entsync\forms\bulk_form;
 use \auth_entsync\helpers\usertblhelper;
+use \auth_entsync\tmpstores\base_tmpstore;
 
 core_php_time_limit::raise(60 * 60); // 1 hour should be enough.
 raise_memory_limit(MEMORY_HUGE);
@@ -72,7 +72,7 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
 
     // Retrouver les données temporaires.
     $storeid = required_param('storeid', PARAM_INT);
-    $tmpstore = auth_entsync_tmpstore::get_store($storeid);
+    $tmpstore = base_tmpstore::get_store($storeid);
 
     $readytosyncusers = $tmpstore->count();
     if ($readytosyncusers <= 0) {
@@ -160,7 +160,7 @@ if ($formdata = $mform->get_data()) {
             // Le chargement s'est bien passé.
             $report = $fileparser->get_report();
 
-            $tmpstore = auth_entsync_tmpstore::get_store($storeid);
+            $tmpstore = base_tmpstore::get_store($storeid);
             $tmpstore->set_progress_reporter($progress);
             $tmpstore->add_ius($ius);
             $storeid = $tmpstore->save();
@@ -194,7 +194,7 @@ if ($formdata = $mform->get_data()) {
 }
 
 if ($storeid) {
-    $tmpstore = auth_entsync_tmpstore::get_store($storeid);
+    $tmpstore = base_tmpstore::get_store($storeid);
     $readytosyncusers = $tmpstore->count();
     if ($readytosyncusers > 0) {
         // Déjà au moins un utilisateur en attente de synchro,
