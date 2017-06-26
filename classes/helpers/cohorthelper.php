@@ -74,7 +74,7 @@ class cohorthelper {
         if (\array_key_exists($_cohort_simp_name, self::$_cohortsbyname)) {
             return (int)self::$_cohortsbyname[$_cohort_simp_name];
         }
-        $newcohort = new stdClass();
+        $newcohort = new \stdClass();
         $newcohort->name = $cohortname;
         $newcohort->idnumber = self::COHORT_PRFX . $_cohort_simp_name;
         $newcohort->component = 'auth_entsync';

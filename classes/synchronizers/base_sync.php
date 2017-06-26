@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 use \auth_entsync\helpers\cohorthelper;
 use \auth_entsync\helpers\rolehelper;
+use \auth_entsync\helpers\usertblhelper;
+
 
 /**
  * Classe qui expose les méthodes utilisées pour la synchronisation des utilisateurs
@@ -364,7 +366,7 @@ abstract class base_sync {
     }
 
     protected function buildexistinglst() {
-        $entus = auth_entsync_usertbl::get_entus(-1, $this->entcode);
+        $entus = usertblhelper::get_entus(-1, $this->entcode);
         $this->_existingentu = array();
         $this->_existingentuother = array();
         while ($entus) {

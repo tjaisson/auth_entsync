@@ -26,7 +26,6 @@
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
-require_once(__DIR__ . '/lib/table.php');
 require_once('ent_defs.php');
 
 require_login();
