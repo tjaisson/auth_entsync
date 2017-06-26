@@ -3,9 +3,10 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once $CFG->libdir.'/formslib.php';
-require_once(__DIR__ . '/lib/table.php');
-require_once(__DIR__ . '/lib/cohorthelper.php');
 require_once('ent_defs.php');
+
+use \auth_entsync\helpers\usertblhelper;
+use \auth_entsync\helpers\cohorthelper;
 
 require_login();
 $sitecontext = context_system::instance();
@@ -14,10 +15,10 @@ require_capability('moodle/user:viewdetails', $sitecontext);
 $profile = required_param('profile', PARAM_INT);
 if($profile === 1) {
     $cohort =  required_param('cohort', PARAM_INT);
-    $lst = auth_entsync_usertbl::get_users_ent_elev($cohort);
-    $ttl = auth_entsync_cohorthelper::get_cohorts()[$cohort];
+    $lst = usertblhelper::get_users_ent_elev($cohort);
+    $ttl = cohorthelper::get_cohorts()[$cohort];
 } else if($profile === 2) {
-    $lst = auth_entsync_usertbl::get_users_ent_ens();
+    $lst = usertblhelper::get_users_ent_ens();
     $ttl = "Enseignant";
 }
 ?>
