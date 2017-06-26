@@ -43,12 +43,12 @@ class bee_parser extends \auth_entsync\parsers\xml_parser {
     public function on_open($parser, $name, $attribs) {
         switch ($name) {
             case 'ELEVE' :
-                $this->_record = new stdClass();
+                $this->_record = new \stdClass();
                 $this->_record->uid = $attribs['ELEVE_ID'];
                 $this->match = $this->match1;
                 return;
             case 'STRUCTURES_ELEVE' :
-                $this->_record = new stdClass();
+                $this->_record = new \stdClass();
                 $this->_record->uid = $attribs['ELEVE_ID'];
                 $this->match = $this->match2;
                 return;
