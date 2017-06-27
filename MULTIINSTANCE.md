@@ -1,6 +1,6 @@
 #Config multi instance#
 
-**Notes lié à wamp**
+**Notes liées à wamp**
 wampserver definit par defaut un virtualhost sur son www. Je ne sais pas pourquoi.
 Du coup les rewrite définis au niveau serveur ne fonctionnent pas.
 
