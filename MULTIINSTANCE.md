@@ -1,27 +1,27 @@
-#Config multi instance#
+#Config multi instance
 
-**Notes liées à wamp**
+##Notes liées à wamp
 wampserver definit par defaut un virtualhost sur son www. Je ne sais pas pourquoi.
 Du coup les rewrite définis au niveau serveur ne fonctionnent pas.
 
 Pour qu'une clause RewriteRule substitue vers le système de fichier, il faut que le début
 de la substitution existe dans le système de fichier et commence par C:\\foo\\bar/suite 
 
-**httpd.conf**
+##httpd.conf
 RewriteEngine On
 RewriteRule "^/m(\d)(\d)\.inst\d\d(.*)$"  "c:\\Users\\Tom/moodledev/www/moodle-$1.$2$3" [L]
 
 
-**Moodle config file**
+##Moodle config file
 
-<?php  // Moodle configuration file
+    <?php  // Moodle configuration file
 
-unset($CFG);
-global $CFG;
-$CFG = new stdClass();
+    unset($CFG);
+    global $CFG;
+    $CFG = new stdClass();
 
-$pamroot = 'http://localhost';
-$pamdataroot = 'C:\\Users\\Tom\\moodledev\\data\\';
+    $pamroot = 'http://localhost';
+    $pamdataroot = 'C:\\Users\\Tom\\moodledev\\data\\';
 list(,$repertoire) = explode('/',$_SERVER['REQUEST_URI']);
 
 $CFG->dbtype    = 'mysqli';
