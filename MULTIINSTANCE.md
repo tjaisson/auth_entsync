@@ -64,3 +64,42 @@ require_once(__DIR__ . '/lib/setup.php');
 // There is no php closing tag in this file,
 // it is intentional because it prevents trailing whitespace problems!
 ```
+
+## runcli.php
+```php
+<?php
+
+//les paramètres sont dans $_SERVER['argv'] 
+$parametres = $_SERVER['argv'];
+
+//S'il n'y a pas assez de paramètres => message d'aide
+if(count($parametres) < 3)
+{
+	echo "usage :
+runcli.php instance \"script php\" \"options du script\"";
+	die();
+}
+
+//Le script à lancer est le paramètre n° 2
+$script_file = $parametres[2];
+
+//L'instance est le paramètre n°1
+//Cela permet de donner la valeur de $repertoire qui sera utilisée dans config.php 
+$repertoire = $parametres[1];
+
+//Il faut redéfinir $_SERVER['argv'] comme si le script avait été lancé directement pour qu'il puisse
+//retrouver les éventuels paramètres 
+$params = array();
+$params[0] = $script_file; 
+for($i = 3; $i < count($parametres); ++$i) {
+	$params[$i-2] = $parametres[$i];
+}
+$_SERVER['argv'] = $params;
+
+//ces variables ne seront plus utilisées => unset pour éviter qu'elles n'interfèrent avec moodle.
+unset($params);
+unset($parametres);
+
+//enfin, on appelle le script demandé.
+require(dirname(__FILE__).'/'.$script_file);
+```
