@@ -12,21 +12,6 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('popup');
 $PAGE->set_title('Redirection');
 
-//*************************
-
-$ent = auth_entsync_ent_base::get_ent('ngcrif');
-$userrne = ['0750666d', '0750666x', '0750677d' ];
-$instances = \auth_entsync\persistents\instance::get_records([], 'name');
-$userinsts = [];
-foreach ($instances as $instance) {
-    if ($instance->has_rne($userrne)) {
-        $userinsts[] = $instance;
-    }
-}
-printselectpage($userinsts, $ent);
-
-//*************************/
-
 $entclass = optional_param('ent', '', PARAM_RAW);
 
 if (empty($entclass)) {
@@ -75,7 +60,7 @@ function printerrorpage(
         $type = \core\output\notification::NOTIFY_ERROR,
         $url = null) {
     global $OUTPUT, $CFG;
-    $url = is_null($var) ? $CFG->wwwroot : $url;
+    $url = is_null($url) ? $CFG->wwwroot : $url;
     echo $OUTPUT->header();
     echo $OUTPUT->notification($msg, $type);
     echo $OUTPUT->continue_button($url);
