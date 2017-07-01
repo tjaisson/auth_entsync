@@ -133,9 +133,9 @@ abstract class base_sync {
      * $mdlu si non false doit comporter les champs :
      * 'id, auth, confirmed, deleted, suspended, mnethostid, username, password, firstname, lastname'
      *
-     * @param stdClass|false $entu L'utilisateur géré s'il a été trouvé
-     * @param stdClass|false $mdlu L'utilisateur moodle associé s'il a été trouvé
-     * @param stdClass $iu L'utilisateur importé
+     * @param \stdClass|false $entu L'utilisateur géré s'il a été trouvé
+     * @param \stdClass|false $mdlu L'utilisateur moodle associé s'il a été trouvé
+     * @param \stdClass $iu L'utilisateur importé
      */
     protected function update($entu, $mdlu, $iu) {
         global $DB;
@@ -392,7 +392,7 @@ abstract class base_sync {
      *  [false, set]   ->utilisateur trouvé par nom / prénom
      *  [false, false] ->nouvel utilisateurs
      *
-     * @param stdClass $iu l'utilisateur à rechercher
+     * @param \stdClass $iu l'utilisateur à rechercher
      * @return false|array l'utilisateur trouvé sous la forme [$entu, $mdlu]. Peuvent être null, false
      * si l'utilisateur devrait être ignoré
      */
@@ -487,7 +487,7 @@ abstract class base_sync {
     /**
      * Valide si l'utilisateur est importable
      *
-     * @param stdClass $iu
+     * @param \stdClass $iu
      * @return boolean
      */
     protected abstract function validate_user($iu);
