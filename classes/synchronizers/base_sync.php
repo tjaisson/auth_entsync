@@ -263,7 +263,7 @@ abstract class base_sync {
         global $DB;
         if (!$entu->archived) {
             // Il n'était pas déjà archivé.
-            $_entu = new stdClass();
+            $_entu = new \stdClass();
             $_entu->id = $entu->id;
             $_entu->archived = 1;
             $_entu->archivedsince = $this->_currenttime;
