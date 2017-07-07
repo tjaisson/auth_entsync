@@ -261,7 +261,7 @@ abstract class auth_entsync_ent_base {
      * les utilisateurs du type de fichier donné de cet ent
      *
      * @param int $filetype le type de fichier
-     * @return tool_entsync_sync_cas|tool_entsync_sync_manual
+     * @return \auth_entsync\synchronizers\base_sync
      */
     public function get_synchronizer($filetype) {
         $syncclass = '\\auth_entsync\\synchronizers\\' . $this->get_mode() . '_sync';

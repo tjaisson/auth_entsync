@@ -52,7 +52,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     public function decodecallback($attr, $elem) {
         //ENTPersonStructRattachRNE
         $attr->rnes = [];
-        $rnenodelist = $elem->getElementsByTagName("ENTPersonStructRattachRNE");
+        $rnenodelist = $elem->item(0)->getElementsByTagName("ENTPersonStructRattachRNE");
         foreach($rnenodelist as $rnenode) {
             $attr->rnes[] = $rnenode->nodeValue;
         }
