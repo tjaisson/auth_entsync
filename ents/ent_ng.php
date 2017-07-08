@@ -141,4 +141,8 @@ class  auth_entsync_ent_ngcrif extends auth_entsync_entng {
         $cp['hostname'] = 'prodng.ent.iledefrance.fr';
         return $cp;
     }
+
+    public function accept_multifile($filetype) {
+        return true;
+    }
 }
