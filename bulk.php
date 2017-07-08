@@ -215,6 +215,8 @@ if ($storeid) {
         $mform = new bulk_form(null, $formparams);
         $dispinfo = true;
     }
+} else  {
+    $dispinfo = true;
 }
 
 echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
