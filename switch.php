@@ -71,7 +71,7 @@ function printerrorpage(
 function printselectpage($userinsts, $ent) {
     global $OUTPUT;
     echo $OUTPUT->header();
-    echo html_writer::start_div('block', ['style' => 'max-width: 100%; width: 50em; margin: 0 auto 0; padding: 2em;']);
+    echo html_writer::start_div('block', ['style' => 'max-width: 80%; width: 50em; margin: 0 auto 0; padding: 2em;']);
     echo $OUTPUT->heading('Plateforme Académique Moodle');
     echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
     $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
