@@ -138,7 +138,7 @@ class  auth_entsync_ent_ngcrif extends auth_entsync_entng {
     
     public function get_casparams() {
         $cp = parent::get_casparams();
-        $cp['hostname'] = 'prodng.ent.iledefrance.fr';
+        $cp['hostname'] = 'ent.iledefrance.fr';
         return $cp;
     }
 }
