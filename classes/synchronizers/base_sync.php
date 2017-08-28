@@ -78,8 +78,14 @@ abstract class base_sync {
 
     protected $_profileswithcohort = [];
 
+    /**
+     * @var array liste des utilisateurs de l'ent synchronisé dans un profil synchronisé
+     */
     protected $_existingentu;
 
+    /**
+     * @var array liste des utilisateurs de l'ent synchronisé ayant un profil non synchronisé
+     */
     protected $_existingentuother;
 
     /**
@@ -347,6 +353,7 @@ abstract class base_sync {
         unset($iurs);
         $this->_progressreporter->end_progress();
 
+        // Traitement des utilisateurs déjà existants et qui n'ont pas été trouvés dans le fichier d'import
         $this->_limitarchiv = $this->_currenttime - $this::ARCHIVDURATION;
 
         $this->_progressreporter->start_progress('', \count($this->_existingentu), 3);
@@ -361,6 +368,13 @@ abstract class base_sync {
         unset($this->_existingentu);
         unset($this->_existingentuother);
         $this->_progressreporter->end_progress();
+        
+        
+        // TODO : traitement des utilisateurs des ENT qui ont été désactivés
+        
+        
+        
+        
         $this->_progressreporter->end_progress();
         return $this->_report;
     }
