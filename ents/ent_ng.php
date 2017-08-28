@@ -121,7 +121,7 @@ class  auth_entsync_ent_ng extends auth_entsync_entng {
     
     public function get_casparams() {
         $cp = parent::get_casparams();
-        $cp['hostname'] = 'ent-ng.paris.fr';
+        $cp['hostname'] = 'ent.parisclassenumerique.fr';
         return $cp;
     }
 }
