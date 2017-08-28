@@ -210,19 +210,24 @@ if ($storeid) {
         $formparams['multi'] = $ent->accept_multifile($filetype);
         $mform = new bulk_form(null, $formparams);
         // On donne la possibilité d'envoyer un autre fichier mais le type de fichier ne doit pas changer.
+        $dispinfo = false;
     } else {
         $mform = new bulk_form(null, $formparams);
+        $dispinfo = true;
     }
+} else  {
+    $dispinfo = true;
 }
 
 echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
 
 $mform->display();
 
-$i = usertblhelper::count_users(1);
-$ii = usertblhelper::count_users(2);
-$iii = usertblhelper::count_users([1, 2]);
-echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
-
+if ($dispinfo) {
+    $i = usertblhelper::count_users(1);
+    $ii = usertblhelper::count_users(2);
+    $iii = usertblhelper::count_users([1, 2]);
+    echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
+}
 echo $OUTPUT->footer();
 die;
