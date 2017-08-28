@@ -63,6 +63,7 @@ class bulk_form extends \moodleform {
             if ($displayupload) {
                 $mform->addElement('header', 'settingsheader', \get_string('uploadadd', 'auth_entsync'));
                 $mform->addElement('html', \get_string('uploadaddinfo', 'auth_entsync'));
+                $mform->setExpanded('settingsheader', false, true);
             }
         } else {
             $mform->addElement('header', 'settingsheader', \get_string('upload'));

@@ -51,7 +51,7 @@ class casconnect {
     protected $_casparams;
 
     /**
-     * @var moodle_url
+     * @var \moodle_url
      */
     protected $_clienturl;
 
@@ -214,7 +214,7 @@ class casconnect {
     }
 
     /**
-     * @return moodle_url
+     * @return \moodle_url
      */
     protected function buildvalidateurl() {
         $ret = $this->_getServerBaseURL();
@@ -246,7 +246,7 @@ class casconnect {
     }
 
     /**
-     * @param moodle_url $url
+     * @param \moodle_url $url
      */
     public function set_clienturl($url) {
         $this->_clienturl = $url;

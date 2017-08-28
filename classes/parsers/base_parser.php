@@ -69,7 +69,7 @@ abstract class base_parser {
     /**
      * Get report
      *
-     * @return stdClass avec les champs parsedlines, addedusers, uidcollision
+     * @return \stdClass avec les champs parsedlines, addedusers, uidcollision
      */
     public function get_report() {
         return $this->_report;

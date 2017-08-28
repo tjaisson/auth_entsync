@@ -45,7 +45,7 @@ if ($val = $cas->validateorredirect()) {
     $instcount = count($userinsts);
     if ($instcount <= 0) {
         // L'utilisateur n'a pas d'instance.
-        printerrorpage();
+        printerrorpage('Erreur : La plateforme Moodle de votre établissement n\'existe pas.');
     } else if ($instcount == 1) {
         // L'utilisateur n'a qu'une instance, alors on redirige directement.
         redirect(build_connector_url($userinsts[0], $ent));
@@ -60,7 +60,7 @@ function printerrorpage(
         $type = \core\output\notification::NOTIFY_ERROR,
         $url = null) {
     global $OUTPUT, $CFG;
-    $url = is_null($url) ? $CFG->wwwroot : $url;
+    $url = is_null($url) ? \auth_entsync\persistents\instance::pamroot() : $url;
     echo $OUTPUT->header();
     echo $OUTPUT->notification($msg, $type);
     echo $OUTPUT->continue_button($url);
@@ -71,7 +71,7 @@ function printerrorpage(
 function printselectpage($userinsts, $ent) {
     global $OUTPUT;
     echo $OUTPUT->header();
-    echo html_writer::start_div('block', ['style' => 'max-width: 100%; width: 50em; margin: 0 auto 0; padding: 2em;']);
+    echo html_writer::start_div('block', ['style' => 'max-width: 80%; width: 50em; margin: 0 auto 0; padding: 2em;']);
     echo $OUTPUT->heading('Plateforme Académique Moodle');
     echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
     $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
