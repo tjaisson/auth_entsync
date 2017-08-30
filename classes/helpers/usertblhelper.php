@@ -240,7 +240,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         
         if(\auth_entsync_ent_base::count_enabled() > 0) {
             list($sql2, $param2) = $DB->get_in_or_equal(\auth_entsync_ent_base::get_enabledentcodes(), SQL_PARAMS_NAMED, 'ents', false);
-            $sql2 .= ' AND ent ' . $sql2;
+            $sql2 = ' AND ent ' . $sql2;
         } else {
             $param2 = array();
             $sql2 = '';
