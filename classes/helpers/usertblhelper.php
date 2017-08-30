@@ -246,7 +246,7 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
             $sql2 = '';
         }
         
-        return ["sync = 1{$sql}{$sql2}", array_merge($param, $param2)];
+        return ["sync = 1 AND archived = 0{$sql}{$sql2}", array_merge($param, $param2)];
     }
     
     

@@ -327,7 +327,7 @@ abstract class base_sync {
             'updated' => 0
         ];
 
-        $this->_progressreporter->start_progress('', 10);
+        $this->_progressreporter->start_progress('', 13);
         $this->_progressreporter->start_progress('', 1, 1);
         $this->_currenttime = time();
         $this->_profileswithcohort = array_intersect($this->_profileswithcohort, $this->_profilestosync);
@@ -372,7 +372,20 @@ abstract class base_sync {
         
         // TODO : traitement des utilisateurs des ENT qui ont été désactivés
         
+        $this->_progressreporter->start_progress('', 1, 1);
+        $orphansu = usertblhelper::get_entus_no_ent($this->_profilestosync);
+        $this->_progressreporter->end_progress();
         
+        $this->_progressreporter->start_progress('', \count($orphansu), 2);
+        $progresscnt = 0;
+        while ($orphansu) {
+            $this->_progressreporter->progress($progresscnt);
+            ++$progresscnt;
+            $entu = \array_pop($entus);
+            $_entu = $this->archive($entu);
+        }
+        
+        $this->_progressreporter->end_progress();
         
         
         $this->_progressreporter->end_progress();
