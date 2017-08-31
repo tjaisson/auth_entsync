@@ -213,6 +213,43 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
     
         return [$sql, $param];
     }
+
+
+    /**
+     * Retourne le tableau de tous les utilisateur entu non archived dont l'ent n'existe pas ou est inactif,
+     * éventuellement filtrés par profile
+     *
+     * @param int|array(int) $profile un profil ou un tableau de profils
+     * @return array(entu)
+     */
+    static function get_entus_no_ent($profile = -1) {
+        global $DB;
+        list($_select, $params) = self::build_sql_entu_no_ent($profile);
+        return $DB->get_records_select('auth_entsync_user', $_select, $params);
+    }
+    
+    private static function build_sql_entu_no_ent($profile) {
+        global $DB;
+        if($profile === -1) {
+            $param = array();
+            $sql = '';
+        } else {
+            list($sql, $param) = $DB->get_in_or_equal($profile, SQL_PARAMS_NAMED, 'prf');
+            $sql = ' AND profile ' . $sql;
+        }
+        
+        if(\auth_entsync_ent_base::count_enabled() > 0) {
+            list($sql2, $param2) = $DB->get_in_or_equal(\auth_entsync_ent_base::get_enabledentcodes(), SQL_PARAMS_NAMED, 'ents', false);
+            $sql2 = ' AND ent ' . $sql2;
+        } else {
+            $param2 = array();
+            $sql2 = '';
+        }
+        
+        return ["sync = 1 AND archived = 0{$sql}{$sql2}", array_merge($param, $param2)];
+    }
+    
+    
     
     
 }

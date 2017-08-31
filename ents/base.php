@@ -132,7 +132,11 @@ abstract class auth_entsync_ent_base {
     public static function get_ents() {
         return self::$_entinsts;
     }
-
+    
+    public static function get_enabledentcodes() {
+        return self::$_enabledents;
+    }
+    
     public static function count_enabled() {
         return count(self::$_enabledents);
     }
