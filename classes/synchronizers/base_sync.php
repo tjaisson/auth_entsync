@@ -368,26 +368,26 @@ abstract class base_sync {
         unset($this->_existingentu);
         unset($this->_existingentuother);
         $this->_progressreporter->end_progress();
-        
-        
+
+
         // TODO : traitement des utilisateurs des ENT qui ont été désactivés
-        
+
         $this->_progressreporter->start_progress('', 1, 1);
         $orphansu = usertblhelper::get_entus_no_ent($this->_profilestosync);
         $this->_progressreporter->end_progress();
-        
+
         $this->_progressreporter->start_progress('', \count($orphansu), 2);
         $progresscnt = 0;
         while ($orphansu) {
             $this->_progressreporter->progress($progresscnt);
             ++$progresscnt;
-            $entu = \array_pop($entus);
+            $entu = \array_pop($orphansu);
             $_entu = $this->archive($entu);
         }
-        
+
         $this->_progressreporter->end_progress();
-        
-        
+
+
         $this->_progressreporter->end_progress();
         return $this->_report;
     }
