@@ -133,15 +133,15 @@ class casconnect {
         return $this->_error;
     }
 
-    public function validateorredirect($raw = false) {
+    public function validateorredirect() {
         if ($this->read_ticket()) {
-            return $this->validate_ticket($raw);
+            return $this->validate_ticket();
         } else {
             $this->redirtocas();
         }
     }
 
-    public function validate_ticket($raw = false) {
+    public function validate_ticket() {
         $this->_error = '';
         if (!isset($this->_ticket)) {
             $this->_error = 'Erreur.';
@@ -159,48 +159,45 @@ class casconnect {
 
         do {
             if ($rep = $cu->get($valurl)) {
-                if ($raw) {
-                    return $rep;
-                } else {
-                    // Create new DOMDocument object.
-                    $dom = new \DOMDocument();
-                    // ... fix possible whitspace problems.
-                    $dom->preserveWhiteSpace = false;
-                    // CAS servers should only return data in utf-8.
-                    $dom->encoding = "utf-8";
-                    // Read the response of the CAS server into a DOMDocument object.
-                    if ( !($dom->loadXML($rep))) {
-                        // Read failed.
+                // Create new DOMDocument object.
+                $dom = new \DOMDocument();
+                // ... fix possible whitspace problems.
+                $dom->preserveWhiteSpace = false;
+                // CAS servers should only return data in utf-8.
+                $dom->encoding = "utf-8";
+                // Read the response of the CAS server into a DOMDocument object.
+                if ( !($dom->loadXML($rep))) {
+                    // Read failed.
+                    $this->_error = 'Réponse du serveur CAS incorrecte';
+                    return false;
+                } else if (!($tree_response = $dom->documentElement)) {     // Read the root node of the XML tree.
+                    // Read failed.
+                    $this->_error = 'Réponse du serveur CAS incorrecte';
+                    return false;
+                } else if ($tree_response->localName != 'serviceResponse') {
+                    // Insure that tag name is 'serviceResponse'
+                    // bad root node.
+                    $this->_error = 'Réponse du serveur CAS incorrecte';
+                    return false;
+                } else if ($tree_response->getElementsByTagName("authenticationSuccess")->length != 0) {
+                    // Authentication succeded, extract the user name.
+                    $success_elements = $tree_response->getElementsByTagName("authenticationSuccess");
+                    if ($success_elements->item(0)->getElementsByTagName("user")->length == 0) {
+                        // No user specified => error.
                         $this->_error = 'Réponse du serveur CAS incorrecte';
                         return false;
-                    } else if (!($tree_response = $dom->documentElement)) {     // Read the root node of the XML tree.
-                        // Read failed.
-                        $this->_error = 'Réponse du serveur CAS incorrecte';
-                        return false;
-                    } else if ($tree_response->localName != 'serviceResponse') {
-                        // Insure that tag name is 'serviceResponse'
-                        // bad root node.
-                        $this->_error = 'Réponse du serveur CAS incorrecte';
-                        return false;
-                    } else if ($tree_response->getElementsByTagName("authenticationSuccess")->length != 0) {
-                        // Authentication succeded, extract the user name.
-                        $success_elements = $tree_response->getElementsByTagName("authenticationSuccess");
-                        if ($success_elements->item(0)->getElementsByTagName("user")->length == 0) {
-                            // No user specified => error.
-                            $this->_error = 'Réponse du serveur CAS incorrecte';
-                            return false;
-                        } else {
-                            $attr = new \stdClass();
-                            $attr->user = \trim(
-                                $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
-                                );
-                            if (\array_key_exists('decodecallback', $this->_casparams)
-                                    && \is_callable($this->_casparams['decodecallback'], false)) {
-                                \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
-                            }
-                            $attr->retries = $retries;
-                            return $attr;
+                    } else {
+                        $attr = new \stdClass();
+                        $attr->raw = $rep;
+                        $attr->user = \trim(
+                            $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
+                            );
+                        if (\array_key_exists('decodecallback', $this->_casparams)
+                                && \is_callable($this->_casparams['decodecallback'], false)) {
+                            \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
+                        $attr->retries = $retries;
+                        return $attr;
                     }
                 }
             } else {
