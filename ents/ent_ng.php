@@ -124,6 +124,10 @@ class  auth_entsync_ent_ng extends auth_entsync_entng {
         $cp['hostname'] = 'ent.parisclassenumerique.fr';
         return $cp;
     }
+
+    public function get_connector_url() {
+        return 'Connecteur prédéfini dans l\'ENT';
+    }
 }
 
 class  auth_entsync_ent_ngcrif extends auth_entsync_entng {
@@ -144,5 +148,9 @@ class  auth_entsync_ent_ngcrif extends auth_entsync_entng {
 
     public function accept_multifile($filetype) {
         return true;
+    }
+    
+    public function get_connector_url() {
+        return 'Connecteur prédéfini dans l\'ENT';
     }
 }
