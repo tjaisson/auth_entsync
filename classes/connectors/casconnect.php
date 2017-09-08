@@ -63,6 +63,10 @@ class casconnect {
     public function __construct() {
     }
 
+    public function get_ticket() {
+        return $this->_ticket;
+    }
+
     public function set_param($casparams) {
         $this->_casparams = $casparams;
         if (!\array_key_exists('retries', $this->_casparams)) {
@@ -184,6 +188,7 @@ class casconnect {
                         return false;
                     } else {
                         $attr = new \stdClass();
+                        $attr->raw = $rep;
                         $attr->user = \trim(
                             $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
                             );
