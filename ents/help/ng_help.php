@@ -14,4 +14,4 @@ global $CFG;
 <li>Cliquer sur "Droits d'accès",</li>
 <li>Cocher les groupes d'utilisateurs qui auront accès à Moodle.</li>
 </ol>
-<p><b>Important&nbsp;:</b> Vous devez également exporter les utilisateurs depuis l'ENT est les importer dans Moodle. La procédure est expliquée dans "Importation des utilisateurs".</p>
+<p><b>Important&nbsp;:</b> Vous devez également exporter les utilisateurs depuis l'ENT et les importer dans Moodle. La procédure est expliquée dans "Importation des utilisateurs".</p>
