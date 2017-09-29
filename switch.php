@@ -32,7 +32,7 @@ $cas->set_clienturl($clienturl);
 if ($val = $cas->validateorredirect()) {
     if (count($val->rnes) <= 0) {
         // L'utilisateur n'a pas d'instance.
-        printerrorpage();
+        printinfopage();
     }
     // On constitue la liste des instances de cet utilisateur.
     $instances = \auth_entsync\persistents\instance::get_records([], 'name');
@@ -44,8 +44,8 @@ if ($val = $cas->validateorredirect()) {
     }
     $instcount = count($userinsts);
     if ($instcount <= 0) {
-        // L'utilisateur n'a pas d'instance.
-        printerrorpage('Erreur : La plateforme Moodle de votre établissement n\'existe pas.');
+        // L'utilisateur n'a pas d'instance, on le redirige vers la page aboutpam
+        redirect(new moodle_url('/auth/entsync/aboutpam.php'));
     } else if ($instcount == 1) {
         // L'utilisateur n'a qu'une instance, alors on redirige directement.
         redirect(build_connector_url($userinsts[0], $ent));
@@ -53,6 +53,10 @@ if ($val = $cas->validateorredirect()) {
         // L'utilisateur a plusieurs instances, alors on lui donne le choix.
         printselectpage($userinsts, $ent);
     }
+}
+
+function build_connector_url($instance, $ent) {
+    return new moodle_url($instance->wwwroot() . '/auth/entsync/connect.php', ['ent' => $ent->get_entclass()]);
 }
 
 function printerrorpage(
@@ -85,6 +89,5 @@ function printselectpage($userinsts, $ent) {
     die();
 }
 
-function build_connector_url($instance, $ent) {
-    return new moodle_url($instance->wwwroot() . '/auth/entsync/connect.php', ['ent' => $ent->get_entclass()]);
+function printinfopage() {
 }
