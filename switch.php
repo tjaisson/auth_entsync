@@ -9,10 +9,13 @@ require_once('ent_defs.php');
 $page_url = new moodle_url('/auth/entsync/switch.php');
 $PAGE->set_url($page_url);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_pagelayout('popup');
-$PAGE->set_title('Redirection');
+$PAGE->set_pagelayout('embedded');
 
 $entclass = optional_param('ent', '', PARAM_RAW);
+
+if($entclass == 'testabout') {
+    printinfopage();
+}
 
 if (empty($entclass)) {
 	printerrorpage();
@@ -32,7 +35,7 @@ $cas->set_clienturl($clienturl);
 if ($val = $cas->validateorredirect()) {
     if (count($val->rnes) <= 0) {
         // L'utilisateur n'a pas d'instance.
-        printerrorpage();
+        printinfopage();
     }
     // On constitue la liste des instances de cet utilisateur.
     $instances = \auth_entsync\persistents\instance::get_records([], 'name');
@@ -44,8 +47,8 @@ if ($val = $cas->validateorredirect()) {
     }
     $instcount = count($userinsts);
     if ($instcount <= 0) {
-        // L'utilisateur n'a pas d'instance.
-        printerrorpage('Erreur : La plateforme Moodle de votre établissement n\'existe pas.');
+        // L'utilisateur n'a pas d'instance, on lui présente aboutpam.
+        printinfopage();
     } else if ($instcount == 1) {
         // L'utilisateur n'a qu'une instance, alors on redirige directement.
         redirect(build_connector_url($userinsts[0], $ent));
@@ -55,11 +58,16 @@ if ($val = $cas->validateorredirect()) {
     }
 }
 
+function build_connector_url($instance, $ent) {
+    return new moodle_url($instance->wwwroot() . '/auth/entsync/connect.php', ['ent' => $ent->get_entclass()]);
+}
+
 function printerrorpage(
         $msg = 'Accès non autorisé&nbsp;!',
         $type = \core\output\notification::NOTIFY_ERROR,
         $url = null) {
-    global $OUTPUT, $CFG;
+    global $OUTPUT, $CFG, $PAGE;
+    $PAGE->set_title('Erreur');
     $url = is_null($url) ? \auth_entsync\persistents\instance::pamroot() : $url;
     echo $OUTPUT->header();
     echo $OUTPUT->notification($msg, $type);
@@ -69,7 +77,8 @@ function printerrorpage(
 }
 
 function printselectpage($userinsts, $ent) {
-    global $OUTPUT;
+    global $OUTPUT, $PAGE;
+    $PAGE->set_title('Redirection');
     echo $OUTPUT->header();
     echo html_writer::start_div('block', ['style' => 'max-width: 80%; width: 50em; margin: 0 auto 0; padding: 2em;']);
     echo $OUTPUT->heading('Plateforme Académique Moodle');
@@ -85,6 +94,13 @@ function printselectpage($userinsts, $ent) {
     die();
 }
 
-function build_connector_url($instance, $ent) {
-    return new moodle_url($instance->wwwroot() . '/auth/entsync/connect.php', ['ent' => $ent->get_entclass()]);
+function printinfopage() {
+    global $OUTPUT, $PAGE;
+    $PAGE->set_title('PAM');
+    echo $OUTPUT->header();
+
+    include(__DIR__ . '/aboutpam.php');
+    
+    echo $OUTPUT->footer();
+    die();
 }
