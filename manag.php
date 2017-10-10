@@ -72,25 +72,25 @@ function affiche_cohort() {
     global $OUTPUT, $DB;
     $clist = $DB->get_records('cohort', ['component' => 'auth_entsync']);
     $ct = new html_table();
-    $ct->head = ['Sélection', 'Nom', 'Identifiant cohorte'];
+    $ct->head = ['', 'Nom', 'Identifiant cohorte', 'Effectif de la cohorte'];
     foreach($clist as $c) {
         $cb = "<input type=\"checkbox\" name=\"selectc[]\" value=\"{$c->id}\"></input>";
-        $row = [$cb, $c->name, $c->idnumber];
+        $count = $DB->count_records('cohort_members', ['cohortid' => $c->id]);
+        $row = [$cb, $c->name, $c->idnumber, $count];
+        
         $ct->data[] = new html_table_row($row);
     }
     echo $OUTPUT->heading('Gestion des cohortes');
     ?>
 <form method="post">
-<h1>Cohortes gérées</h1>
 <p>
 Les cohortes suivantes sont gérées par le plugin 'entsync'.
-Vous pouvez ici les détacher du plugin pour pouvoir les gérer dans l'interface moodle.
-Les cohortes détachées ne seront plus synchronisées.
+Vous pouvez ici supprimer les cohortes inutiles.
 </p>
 <?php
     echo html_writer::table($ct);
     ?>
-<input name="release" type="submit" value="Détacher" />
+<input name="suppr" type="submit" value="Supprimer" />
 </form>
 <?php
 }
@@ -98,16 +98,21 @@ Les cohortes détachées ne seront plus synchronisées.
 function traite_cohort() {
     global $DB;
     $msg = "";
-    if (isset($_POST['release'])) {
+    if (isset($_POST['suppr'])) {
         if(isset($_POST['selectc'])) {
             $select = $_POST['selectc'];
             if (count($select) > 0){
-                $msg = '<h2>Cohortes détachées</h2><p>';
+                $msg = '<p>Cohortes supprimées&nbsp;:</p><p>';
+                $premier = true;
                 foreach($select as $cid) {
                     $c = $DB->get_record('cohort', ['id' => $cid]);
-                    $c->component = '';
-                    cohort_update_cohort($c);
-                    $msg .= $c->name . ' ';
+                    cohort_delete_cohort($c);
+                    if($premier) {
+                        $msg .= $c->name;
+                        $premier = false;
+                    } else {
+                        $msg .= ', ' . $c->name;
+                    }
                 }
                 $msg .= '</p>';
             }
