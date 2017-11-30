@@ -29,7 +29,6 @@ require_once($CFG->libdir.'/formslib.php');
 require_once('ent_defs.php');
 use \auth_entsync\helpers\cohorthelper;
 use \auth_entsync\helpers\usertblhelper;
-use \auth_entsync\helpers\stringhelper;
 
 require_login();
 admin_externalpage_setup('authentsyncuser');
@@ -102,10 +101,9 @@ if ($resetpw and confirm_sesskey()) {
         echo $OUTPUT->footer();
         die;
     } else if (!empty($_POST)) {
-        require_once(__DIR__ . '/lib/locallib.php');
         $_mdlu = new stdClass();
         $_mdlu->id = $resetpw;
-        $pw = stringhelper::rnd_string();
+        $pw = \auth_entsync\helpers\stringhelper::rnd_string();
         $_mdlu->password = "entsync\\{$pw}";
         user_update_user($_mdlu, false, true);
         redirect($returnurl);
