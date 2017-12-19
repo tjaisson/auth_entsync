@@ -254,7 +254,7 @@ abstract class auth_entsync_ent_base {
             self::$_profilelist = [
                 1 => 'Elèves',
                 2 => 'Enseignants',
-                3 => 'Personnels'
+                4 => 'Personnels'
             ];
         }
         return self::$_profilelist;
