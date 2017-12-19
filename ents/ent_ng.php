@@ -100,7 +100,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                 $profile = 1;
                 break;
             default:
-                $profile = -1;
+                $profile = 0;
         }
         if(!in_array($profile, $profiles)) return false;
         $record->profile = $profile;
