@@ -65,7 +65,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         return [
                         1 => 'Élèves (fichier CSV)',
                         2 => 'Enseignants (fichier CSV)',
-                        3 => 'Utilisateurs (élèves & enseignants) (fichier CSV)',
+                        3 => 'Élèves + Enseignants (fichier CSV)',
         ];
     }
     
@@ -79,7 +79,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     }
 
     public function get_fileparser($filetype) {
-        if( ($filetype < 1) || ($filetype>3)) return null;
+        if( ($filetype < 1) || ($filetype > 3) ) return null;
         $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom',
                         'uid'=>'Login', 'cohortname' => 'Classe(s)', 'prf' =>'Type'];
@@ -94,6 +94,10 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         switch($record->prf) {
             case 'Enseignant' :
                 $profile = 2;
+                unset($record->cohortname);
+                break;
+            case 'Personnel' :
+                $profile = 4;
                 unset($record->cohortname);
                 break;
             case 'Élève' :
