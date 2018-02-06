@@ -51,6 +51,11 @@ class user_select_form extends moodleform {
         $grp[] = $mform->createElement('submit', 'dispprof', '> '. get_string('show'));
         $grp[] = $mform->createElement('html', '');
         $mform->addGroup($grp, 'ens', 'Enseignants', array(' '), false);
+        
+        //$grp = array();
+        //$grp[] = $mform->createElement('submit', 'disppers', '> '. get_string('show'));
+        //$grp[] = $mform->createElement('html', '');
+        //$mform->addGroup($grp, 'pers', 'Personnels', array(' '), false);
     }
 
     public function collapse(){
@@ -74,6 +79,9 @@ if ($profile === 1) {
         $returnurl->params(['profile' => $profile, 'cohort' => $cohort]);
     }
 } else if ($profile === 2) {
+    unset($cohort);
+    $returnurl->params(['profile' => $profile]);
+} else if ($profile === 4) {
     unset($cohort);
     $returnurl->params(['profile' => $profile]);
 } else {
@@ -120,6 +128,9 @@ if ($resetpw and confirm_sesskey()) {
         } else if (isset($formdata->dispprof)) {
             $profile = 2;
             $returnurl->params(['profile' => $profile]);
+        } else if (isset($formdata->disppers)) {
+            $profile = 4;
+            $returnurl->params(['profile' => $profile]);
         }
     }
 
@@ -133,8 +144,11 @@ if ($resetpw and confirm_sesskey()) {
         } else if ($profile === 2) {
             $lst = usertblhelper::get_users_ent_ens();
             $ttl = "Enseignants :";
+        } else if ($profile === 4) {
+            $lst = usertblhelper::get_users_ent_pers();
+            $ttl = "personnels :";
         }
-
+        
         $t = new html_table();
         // Icons.
         $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));

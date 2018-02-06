@@ -59,6 +59,9 @@ class fs_tmpstore extends \auth_entsync\tmpstores\base_tmpstore {
         $i = 1;
         while ($ius) {
             $iu = \array_pop($ius);
+            if (array_key_exists($iu->uid, $this->_tmparray)) {
+                $iu->profile = $this->_tmparray[$iu->uid]->profile | $iu->profile;
+            }
             $this->_tmparray[$iu->uid] = $iu;
         }
     }

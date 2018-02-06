@@ -78,6 +78,21 @@ a.lastname as lastname, a.firstname as firstname, BIT_OR(b.profile) as profiles'
         return $DB->get_records_sql($sql, $param);
     }
 
+    static function get_users_ent_pers() {
+        global $DB;
+        list($select, $param) = self::build_select();
+        
+        $sql = "SELECT {$select}
+        FROM {user} a
+        JOIN {auth_entsync_user} b on b.userid = a.id
+        WHERE a.auth = 'entsync' AND a.deleted = 0 AND a.suspended = 0 AND b.archived = 0
+        GROUP BY a.id
+        HAVING profiles = 4
+        ORDER BY a.lastname, a.firstname";
+        
+        return $DB->get_records_sql($sql, $param);
+    }
+
     protected static function cleanu($u) {
         $ents = \explode(',', $u->ents);
         $u->ents = array();

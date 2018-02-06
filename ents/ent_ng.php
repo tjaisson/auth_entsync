@@ -48,13 +48,19 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                         'decodecallback' => [$this, 'decodecallback']
         ];
     }
-    
+
     public function decodecallback($attr, $elem) {
-        //ENTPersonStructRattachRNE
         $attr->rnes = [];
-        $rnenodelist = $elem->item(0)->getElementsByTagName("ENTPersonStructRattachRNE");
-        foreach($rnenodelist as $rnenode) {
-            $attr->rnes[] = $rnenode->nodeValue;
+        if(($list = $elem->item(0)->getElementsByTagName("structureNodes"))->length > 0) {
+            $structs = json_decode($list->item(0)->nodeValue);
+            foreach ($structs as $struct) {
+                $attr->rnes[] = $struct->UAI;
+            }
+        } else {
+            $stucts = $elem->item(0)->getElementsByTagName("ENTPersonStructRattachRNE");
+            foreach($structs as $struct) {
+                $attr->rnes[] = $struct->nodeValue;
+            }
         }
     }
     public function get_profileswithcohorts() {
@@ -65,7 +71,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         return [
                         1 => 'Élèves (fichier CSV)',
                         2 => 'Enseignants (fichier CSV)',
-                        3 => 'Utilisateurs (élèves & enseignants) (fichier CSV)',
+                        3 => 'Élèves + Enseignants (fichier CSV)',
         ];
     }
     
@@ -79,7 +85,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     }
 
     public function get_fileparser($filetype) {
-        if( ($filetype < 1) || ($filetype>3)) return null;
+        if( ($filetype < 1) || ($filetype > 3) ) return null;
         $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom',
                         'uid'=>'Login', 'cohortname' => 'Classe(s)', 'prf' =>'Type'];
@@ -96,11 +102,15 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                 $profile = 2;
                 unset($record->cohortname);
                 break;
+            case 'Personnel' :
+                $profile = 4;
+                unset($record->cohortname);
+                break;
             case 'Élève' :
                 $profile = 1;
                 break;
             default:
-                $profile = -1;
+                $profile = 0;
         }
         if(!in_array($profile, $profiles)) return false;
         $record->profile = $profile;
