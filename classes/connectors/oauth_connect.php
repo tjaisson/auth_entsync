@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Gestion de la connexion CAS
+ * Gestion de la connexion OAUTH
  *
  * @package auth_entsync
  * @copyright 2016 Thomas Jaisson
@@ -28,41 +28,32 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
-class casconnect extends \auth_entsync\connectors\base_connect {
+class oauth_connect extends \auth_entsync\connectors\base_connect {
 
     /**
-     *   [
-     *   'hostname' => 'www.parisclassenumerique.fr',
-     *   'baseuri' => '/connexion/',
-     *   'port' => 443,  //optionnel
-     *   'casversion' => '2.0', //optionnel
-     *   'retries' => 0 //optionnel
-     *   'decodecallback' => null //optionnel callable
-     *   ];
-     *
-     *
-     * @var array $_params
+     * Constructor.
      */
-
-    protected $_ticket;
-
-    public function get_ticket() {
-        return $this->_ticket;
+    public function __construct() {
     }
 
-    /**
-     * @deprecated
-     * @param unknown $casparams
-     */
-    public function set_param($casparams) {
-        $this->set_params($casparams);
+    public function set_param($params) {
+        $this->_params = $params;
+        if (!\array_key_exists('allowUntrust', $this->_params)) {
+            $this->_params['allowUntrust'] = false;
+        }
+        if (!\array_key_exists('homeuri', $this->_params)) {
+            $this->_params['homeuri'] = '/';
+        }
+        if (!\array_key_exists('homehost', $this->_params)) {
+            $this->_params['homehost'] = $this->_params['hostname'];
+        }
     }
 
-    public function get_cas_version(){
-        return $this->get_param('casversion', '2.0');
+    public function allow_Untrust() {
+        return $this->_params['allowUntrust'];
     }
 
-    public function redirtocas($gw = false) {
+    public function  redirtocas($gw = false) {
         self::_redirect($this->buildloginurl($gw));
     }
 
@@ -82,20 +73,12 @@ class casconnect extends \auth_entsync\connectors\base_connect {
         }
     }
 
-    public function GetUserOrRedirect() {
+    public function validateorredirect() {
         if ($this->read_ticket()) {
             return $this->validate_ticket();
         } else {
             $this->redirtocas();
         }
-    }
-
-    /**
-     * @deprecated
-     * @return boolean|\stdClass
-     */
-    public function validateorredirect() {
-        return $this->GetUserOrRedirect();
     }
 
     public function validate_ticket() {
@@ -112,7 +95,6 @@ class casconnect extends \auth_entsync\connectors\base_connect {
             $cu->setopt(['SSL_VERIFYPEER' => false]);
         }
         $maxretries = $this->_params['retries'];
-        $maxretries = $this->get_param('retries', 0);
         $retries = 0;
 
         do {
@@ -180,8 +162,8 @@ class casconnect extends \auth_entsync\connectors\base_connect {
      * @return \moodle_url
      */
     protected function buildvalidateurl() {
-        $ret = $this->BuildServerBaseURL();
-        switch ($this->get_cas_version()) {
+        $ret = $this->BuilServerBaseURL();
+        switch ($this->_params['casversion']) {
             case '1.0':
                 $ret .= 'validate';
                 break;
