@@ -44,8 +44,12 @@ class oauth_connect extends \auth_entsync\connectors\base_connect {
 
     public function build_login_url() {
         $param = [
-            'service' => $this->_clienturl->out(false),
-            'state' => $this->get_encoded_state()
+            'redirect_uri' => $this->_clienturl->out(false),
+            'state' => $this->get_encoded_state(),
+            'scope' => 'userinfo',
+            'response_type' => 'code',
+            'approval_prompt' => 'auto',
+            'client_id' => $this->get_param('client_id'),
         ];
         return new \moodle_url($this->BuildServerBaseURL().'login', $param);
     }
