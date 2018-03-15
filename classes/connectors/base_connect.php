@@ -29,7 +29,64 @@ global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
 abstract class base_connect {
+    
+    protected static $query_state_params = null;
 
+    protected static $raw_query_state = null;
+
+    public static function get_raw_query_state() {
+        if (self::$raw_query_state == null) {
+            if (isset($_GET['state'])) {
+                self::$raw_query_state = $_GET['state'];
+            } else {
+                self::$raw_query_state = '';
+            }
+        }
+        return self::$raw_query_state;
+    }
+
+    public static function get_query_state_param($name, $def = null) {
+        if (self::$query_state_params == null) {
+            $raw_state = self::get_raw_query_state();
+            if ($raw_state === '') {
+                self::$query_state_params = [];
+            } else {
+                self::$query_state_params = \json_decode(\base64_decode($raw_state), true);
+            }
+        }
+        if (\array_key_exists($name, self::$query_state_params)) {
+            return self::$query_state_params[$name];
+        } else {
+            return $def;
+        }
+    }
+    
+    public static function get_ent_class() {
+        return self::get_query_state_param('ent');
+    }
+
+    protected $_state_params = [];
+    
+    public function get_state_param($name, $def = null) {
+        if (\array_key_exists($name, $this->_state_params)) {
+            return $this->_state_params[$name];
+        } else {
+            return self::get_query_state_param($name, $def);
+        }
+    }
+    
+    public function set_state_param($name, $value) {
+        $this->_state_params[$name] = $value;
+    }
+    
+    public function set_ent_class($ent_class) {
+        $this->set_state_param('ent', $ent_class);
+    }
+    
+    protected function get_encoded_state() {
+        return \base64_encode(\json_encode($this->_state_params));
+    }
+    
     /**
      * @var string|null Null if ok, error msg otherwise
      */
@@ -65,14 +122,32 @@ abstract class base_connect {
     }
 
     /**
-     * Check if auth token or ticket is present,
-     * if so retrieve userinfo from server and return it
-     * else redirect to authentication server.
+     * Retrieve userinfo from server and return it.
      *
-     * @return user
+     * {
+     *  id: id,
+     *  
+     * }
+     *
+     * @return \stdClass user
      */
-    public abstract function GetUserOrRedirect();
+    public abstract function get_user();
 
+    public abstract function read_code();
+
+    /**
+     * @return \moodle_url
+     */
+    public abstract function build_login_url();
+
+    public function redir_to_login($gw = false) {
+        if ($gw) {
+            $this->_params['gw'] = true;
+            $this->set_state_param('gw', 'true');
+        }
+        self::_redirect($this->build_login_url());
+    }
+    
     protected function BuilServerBaseURL() {
         $ret = 'https://' . $this->get_param('hostname');
         $port = $this->get_param('port', 443);
@@ -106,7 +181,11 @@ abstract class base_connect {
     public function support_gw() {
         return $this->get_param('supportGW', false);
     }
-    
+
+    public function has_userinfo() {
+        return $this->get_param('hasUserinfo', false);
+    }
+
     public function get_param($name, $def = null) {
         if (\array_key_exists($name, $this->_params)) {
             return $this->_params[$name];
@@ -115,7 +194,7 @@ abstract class base_connect {
         }
     }
 
-    protected function allow_Untrust() {
+    protected function allow_untrust() {
         return $this->get_param('allowUntrust', false);
     }
 }

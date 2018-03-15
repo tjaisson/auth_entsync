@@ -30,154 +30,38 @@ require_once($CFG->libdir.'/filelib.php');
 
 class oauth_connect extends \auth_entsync\connectors\base_connect {
 
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-    }
-
-    public function set_param($params) {
-        $this->_params = $params;
-        if (!\array_key_exists('allowUntrust', $this->_params)) {
-            $this->_params['allowUntrust'] = false;
-        }
-        if (!\array_key_exists('homeuri', $this->_params)) {
-            $this->_params['homeuri'] = '/';
-        }
-        if (!\array_key_exists('homehost', $this->_params)) {
-            $this->_params['homehost'] = $this->_params['hostname'];
-        }
-    }
-
-    public function allow_Untrust() {
-        return $this->_params['allowUntrust'];
-    }
-
-    public function  redirtocas($gw = false) {
-        self::_redirect($this->buildloginurl($gw));
-    }
-
-    /**
-     * @return boolean
-     */
-    public function read_ticket() {
-        $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
-        if (\preg_match('/^[SP]T-/', $ticket) ) {
-            unset($_GET['ticket']);
-            $this->_ticket = $ticket;
-            return true;
-        } else {
-            // Pas de ticket.
-            unset($this->_ticket);
-            return false;
-        }
-    }
-
-    public function validateorredirect() {
-        if ($this->read_ticket()) {
-            return $this->validate_ticket();
-        } else {
-            $this->redirtocas();
-        }
-    }
-
-    public function validate_ticket() {
-        $this->_error = '';
-        if (!isset($this->_ticket)) {
-            $this->_error = 'Erreur.';
-            return false;
-        }
-
-        $valurl  = $this->buildvalidateurl()->out(false);
-        $cu = new \curl();
-        if ($this->allow_Untrust()) {
-            $cu->setopt(['SSL_VERIFYHOST' => false]);
-            $cu->setopt(['SSL_VERIFYPEER' => false]);
-        }
-        $maxretries = $this->_params['retries'];
-        $retries = 0;
-
-        do {
-            if ($rep = $cu->get($valurl)) {
-                // Create new DOMDocument object.
-                $dom = new \DOMDocument();
-                // ... fix possible whitspace problems.
-                $dom->preserveWhiteSpace = false;
-                // CAS servers should only return data in utf-8.
-                $dom->encoding = "utf-8";
-                // Read the response of the CAS server into a DOMDocument object.
-                if ( !($dom->loadXML($rep))) {
-                    // Read failed.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if (!($tree_response = $dom->documentElement)) {     // Read the root node of the XML tree.
-                    // Read failed.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if ($tree_response->localName != 'serviceResponse') {
-                    // Insure that tag name is 'serviceResponse'
-                    // bad root node.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if ($tree_response->getElementsByTagName("authenticationSuccess")->length != 0) {
-                    // Authentication succeded, extract the user name.
-                    $success_elements = $tree_response->getElementsByTagName("authenticationSuccess");
-                    if ($success_elements->item(0)->getElementsByTagName("user")->length == 0) {
-                        // No user specified => error.
-                        $this->_error = 'Réponse du serveur CAS incorrecte';
-                        return false;
-                    } else {
-                        $attr = new \stdClass();
-                        $attr->raw = $rep;
-                        $attr->user = \trim(
-                            $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
-                            );
-                        if (\array_key_exists('decodecallback', $this->_params)
-                                && \is_callable($this->_params['decodecallback'], false)) {
-                            \call_user_func($this->_params['decodecallback'], $attr, $success_elements);
-                        }
-                        $attr->retries = $retries;
-                        return $attr;
-                    }
-                }
-            } else {
-                $this->_error = 'Impossible de contacter le serveur CAS';
-                return false;
-            }
-        } while ($retries++ < $maxretries);
-
-        $this->_error = 'Ticket non validé';
-        return false;
-    }
-
-    public function buildloginurl($gw = false) {
-        $param = ['service' => $this->_clienturl->out(false)];
-        if ($gw) {
-            $param['gateway'] = 'true';
-        }
-        return new \moodle_url($this->BuildServerBaseURL().'login', $param);
-    }
+    protected $_code = null;
 
     /**
      * @return \moodle_url
      */
     protected function buildvalidateurl() {
-        $ret = $this->BuilServerBaseURL();
-        switch ($this->_params['casversion']) {
-            case '1.0':
-                $ret .= 'validate';
-                break;
-            case '2.0':
-                $ret .= 'serviceValidate';
-                break;
-            case '3.0':
-                $ret .= 'p3/serviceValidate';
-                break;
-            default:
-                $ret .= 'serviceValidate';
-                break;
+    }
+
+    public function get_user() {
+        
+    }
+
+    public function build_login_url() {
+        $param = [
+            'service' => $this->_clienturl->out(false),
+            'state' => $this->get_encoded_state()
+        ];
+        return new \moodle_url($this->BuildServerBaseURL().'login', $param);
+    }
+
+    public function read_code() {
+        if ($this->_code === null) {
+            if (isset($_GET['code'])) {
+                $this->_code = $_GET['code'];
+            } else {
+                $this->_code = '';
+            }
         }
-        $param = ['service' => $this->_clienturl->out(false), 'ticket' => $this->_ticket];
-        return new \moodle_url($ret, $param);
+        if ($this->_code === '') {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

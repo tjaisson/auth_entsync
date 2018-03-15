@@ -46,30 +46,30 @@ class casconnect extends \auth_entsync\connectors\base_connect {
 
     protected $_ticket;
 
-    public function get_ticket() {
-        return $this->_ticket;
-    }
-
     /**
      * @deprecated
-     * @param unknown $casparams
+     * @param array $params
      */
-    public function set_param($casparams) {
-        $this->set_params($casparams);
+    public function set_param($params) {
+        $this->set_params($params);
     }
 
     public function get_cas_version(){
         return $this->get_param('casversion', '2.0');
     }
 
+    /**
+     * @deprecated
+     * @param boolean $gw
+     */
     public function redirtocas($gw = false) {
-        self::_redirect($this->buildloginurl($gw));
+        $this->redir_to_login($gw);
     }
 
     /**
      * @return boolean
      */
-    public function read_ticket() {
+    public function read_code() {
         $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
         if (\preg_match('/^[SP]T-/', $ticket) ) {
             unset($_GET['ticket']);
@@ -82,23 +82,19 @@ class casconnect extends \auth_entsync\connectors\base_connect {
         }
     }
 
-    public function GetUserOrRedirect() {
-        if ($this->read_ticket()) {
-            return $this->validate_ticket();
-        } else {
-            $this->redirtocas();
-        }
-    }
-
     /**
      * @deprecated
      * @return boolean|\stdClass
      */
     public function validateorredirect() {
-        return $this->GetUserOrRedirect();
+        if ($this->read_code()) {
+            return $this->get_user();
+        } else {
+            $this->redir_to_login();
+        }
     }
 
-    public function validate_ticket() {
+    public function get_user() {
         $this->_error = '';
         if (!isset($this->_ticket)) {
             $this->_error = 'Erreur.';
@@ -107,7 +103,7 @@ class casconnect extends \auth_entsync\connectors\base_connect {
 
         $valurl  = $this->buildvalidateurl()->out(false);
         $cu = new \curl();
-        if ($this->allow_Untrust()) {
+        if ($this->allow_untrust()) {
             $cu->setopt(['SSL_VERIFYHOST' => false]);
             $cu->setopt(['SSL_VERIFYPEER' => false]);
         }
@@ -168,8 +164,10 @@ class casconnect extends \auth_entsync\connectors\base_connect {
         return false;
     }
 
-    public function buildloginurl($gw = false) {
-        $param = ['service' => $this->_clienturl->out(false)];
+    public function build_login_url() {
+        $gw = $this->get_param('gw', false);
+        $service = new \moodle_url($this->_clienturl, ['state' => $this->get_encoded_state()]);
+        $param = ['service' => $service->out(false)];
         if ($gw) {
             $param['gateway'] = 'true';
         }
@@ -195,7 +193,8 @@ class casconnect extends \auth_entsync\connectors\base_connect {
                 $ret .= 'serviceValidate';
                 break;
         }
-        $param = ['service' => $this->_clienturl->out(false), 'ticket' => $this->_ticket];
+        $service = new \moodle_url($this->_clienturl, ['state' => self::get_raw_query_state()]);
+        $param = ['service' => $service->out(false), 'ticket' => $this->_ticket];
         return new \moodle_url($ret, $param);
     }
 }
