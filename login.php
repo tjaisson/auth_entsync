@@ -39,7 +39,8 @@ redirect_if_major_upgrade_required();
 $PAGE->https_required();
 
 $context = context_system::instance();
-$PAGE->set_url("$CFG->httpswwwroot/auth/entsync/login.php");
+$my_url = new moodle_url("{$CFG->httpswwwroot}/auth/entsync/login.php");
+$PAGE->set_url($my_url);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('login');
 
@@ -47,7 +48,10 @@ $PAGE->set_pagelayout('login');
 $entclass = optional_param('ent', '', PARAM_RAW);
 
 if (empty($entclass)) {
-    printerrorpage('Erreur');
+    $entclass = \auth_entsync\connectors\base_connect::get_ent_class();
+    if (empty($entclass)) {
+        printerrorpage('Erreur');
+    }
 }
 
 if (!$ent = auth_entsync_ent_base::get_ent($entclass)) {
@@ -72,11 +76,10 @@ if ($ent->get_mode() !== 'cas') {
     printerrorpage('Erreur');
 }
 
-if (!$cas = $ent->get_casconnector()) {
+if (!$cas = $ent->get_connector()) {
     printerrorpage("Le connecteur {$ent->nomlong} n'est pas configuré.");
 }
-$clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/login.php", ['ent' => $entclass]);
-$cas->set_clienturl($clienturl);
+$cas->set_clienturl($my_url);
 
 if ($val = $cas->validateorredirect()) {
     if (!$entu = $DB->get_record('auth_entsync_user',

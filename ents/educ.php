@@ -141,9 +141,9 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         
     }
 
-    public function get_casconnector() {
+    public function get_connector() {
         $conf = $this->get_settings();
         if($conf['caspath'] == '') return false;
-        return parent::get_casconnector();
+        return parent::get_connector();
     }
 }

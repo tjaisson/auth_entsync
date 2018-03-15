@@ -60,7 +60,7 @@ if ($ent->get_mode() !== 'cas') {
     redirect($redirect);
 }
 
-$cas = $ent->get_casconnector();
+$cas = $ent->get_connector();
 $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/logout.php", ['ent' => $entclass]);
 $cas->set_clienturl($clienturl);
 

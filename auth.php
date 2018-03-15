@@ -192,10 +192,11 @@ class auth_plugin_entsync extends auth_plugin_base {
         if (($user->auth == 'entsync') && isset($user->entsync)) {
             $ent = auth_entsync_ent_base::get_ent($user->entsync);
             if ($ent->get_mode() == 'cas') {
-                $cas = $ent->get_casconnector();
+                $cas = $ent->get_connector();
                 if ($cas->support_gw()) {
-                    $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php", ['ent' => $ent->get_entclass()]);
+                    $clienturl = new moodle_url("{$CFG->wwwroot}/auth/entsync/logout.php");
                     $cas->set_clienturl($clienturl);
+                    $cas->set_ent_class($ent->get_entclass());
                     $cas->redirtocas(true);
                 } else {
                     $cas->redirtohome();

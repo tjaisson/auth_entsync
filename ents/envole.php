@@ -116,10 +116,10 @@ class  auth_entsync_ent_envole extends auth_entsync_entcas {
     	$mform->addHelpButton($elemname, 'envolecashost', 'auth_entsync');
     }
     
-    public function get_casconnector() {
+    public function get_connector() {
     	$conf = $this->get_settings();
     	if($conf['cashost'] == '') return false;
-    	return parent::get_casconnector();
+    	return parent::get_connector();
     }
     
 }

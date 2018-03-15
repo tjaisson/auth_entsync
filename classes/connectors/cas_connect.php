@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
-class casconnect extends \auth_entsync\connectors\base_connect {
+class cas_connect extends \auth_entsync\connectors\base_connect {
 
     /**
      *   [
@@ -45,14 +45,6 @@ class casconnect extends \auth_entsync\connectors\base_connect {
      */
 
     protected $_ticket;
-
-    /**
-     * @deprecated
-     * @param array $params
-     */
-    public function set_param($params) {
-        $this->set_params($params);
-    }
 
     public function get_cas_version(){
         return $this->get_param('casversion', '2.0');

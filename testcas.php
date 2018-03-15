@@ -22,7 +22,7 @@ $reponse = '';
 if ((!empty($entclass)) &&
     ($ent = auth_entsync_ent_base::get_ent($entclass)) &&
     ($ent->is_sso()) &&
-    ($cas = $ent->get_casconnector()) ) {
+    ($cas = $ent->get_connector()) ) {
         $cas->set_clienturl(new moodle_url($page_url, ['ent' => $ent->get_entclass()]));
         
         $reponse .= "<h2>ENT :</h2>";
@@ -54,7 +54,7 @@ echo $OUTPUT->heading('Connexions CAS disponibles&nbsp;:');
 $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
 foreach (auth_entsync_ent_base::get_ents() as $ent) {
     if ($ent->is_sso() && $ent->get_mode() == 'cas') {
-        if ($cas = $ent->get_casconnector()) {
+        if ($cas = $ent->get_connector()) {
             $lnk = $arrowico . '&nbsp;' . $ent->nomlong;
             $cas->set_clienturl(new moodle_url($page_url, ['ent' => $ent->get_entclass()]));
             $lnk = html_writer::link($cas->buildloginurl(), $lnk);

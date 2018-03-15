@@ -24,7 +24,7 @@ if (empty($entclass)) {
 if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
         (!$ent->is_sso()) ||
         (!$ent->can_switch()) ||
-        (!($cas = $ent->get_casconnector())) ) {
+        (!($cas = $ent->get_connector())) ) {
     // L'ENT spécifié pose problème.
     printerrorpage();
 }

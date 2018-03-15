@@ -354,6 +354,8 @@ abstract class auth_entsync_entsso extends auth_entsync_ent_base {
     public function can_switch() {
         return false;
     }
+
+    public abstract function get_connector();
 }
 
 abstract class auth_entsync_entcas extends auth_entsync_entsso {
@@ -368,9 +370,30 @@ abstract class auth_entsync_entcas extends auth_entsync_entsso {
 
     public abstract function get_casparams();
 
-    public function get_casconnector() {
-        $con = new \auth_entsync\connectors\casconnect();
-        $con->set_param($this->get_casparams());
+    public function get_connector() {
+        $con = new \auth_entsync\connectors\cas_connect();
+        $con->set_params($this->get_casparams());
+        $con->set_ent_class($this->_entclass);
+        return $con;
+    }
+}
+
+abstract class auth_entsync_entoaut extends auth_entsync_entsso {
+    public function get_mode() {
+        return 'oauth';
+    }
+    
+    public function get_connector_url() {
+        global $CFG;
+        return "{$CFG->wwwroot}/auth/entsync/connect.php?ent={$this->_entclass}";
+    }
+    
+    public abstract function get_oauthparams();
+    
+    public function get_connector() {
+        $con = new \auth_entsync\connectors\oauth_connect();
+        $con->set_params($this->get_oauthparams());
+        $con->set_ent_class($this->_entclass);
         return $con;
     }
 }
