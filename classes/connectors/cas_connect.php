@@ -104,56 +104,60 @@ class cas_connect extends \auth_entsync\connectors\base_connect {
         $retries = 0;
 
         do {
-            if ($rep = $cu->get($valurl)) {
-                // Create new DOMDocument object.
-                $dom = new \DOMDocument();
-                // ... fix possible whitspace problems.
-                $dom->preserveWhiteSpace = false;
-                // CAS servers should only return data in utf-8.
-                $dom->encoding = "utf-8";
-                // Read the response of the CAS server into a DOMDocument object.
-                if ( !($dom->loadXML($rep))) {
-                    // Read failed.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if (!($tree_response = $dom->documentElement)) {     // Read the root node of the XML tree.
-                    // Read failed.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if ($tree_response->localName != 'serviceResponse') {
-                    // Insure that tag name is 'serviceResponse'
-                    // bad root node.
-                    $this->_error = 'Réponse du serveur CAS incorrecte';
-                    return false;
-                } else if ($tree_response->getElementsByTagName("authenticationSuccess")->length != 0) {
-                    // Authentication succeded, extract the user name.
-                    $success_elements = $tree_response->getElementsByTagName("authenticationSuccess");
-                    if ($success_elements->item(0)->getElementsByTagName("user")->length == 0) {
-                        // No user specified => error.
-                        $this->_error = 'Réponse du serveur CAS incorrecte';
-                        return false;
-                    } else {
-                        $attr = new \stdClass();
-                        $attr->raw = $rep;
-                        $attr->user = \trim(
-                            $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
-                            );
-                        if (\array_key_exists('decodecallback', $this->_params)
-                                && \is_callable($this->_params['decodecallback'], false)) {
-                            \call_user_func($this->_params['decodecallback'], $attr, $success_elements);
-                        }
-                        $attr->retries = $retries;
-                        return $attr;
-                    }
-                }
-            } else {
+            if (!($rep = $cu->get($valurl))) {
                 $this->_error = 'Impossible de contacter le serveur CAS';
                 return false;
             }
+            $dom = new \DOMDocument();
+            $dom->preserveWhiteSpace = false;
+            $dom->encoding = "utf-8";
+            if (!($dom->loadXML($rep))) {
+                // Read failed.
+                $this->_error = 'Réponse du serveur CAS incorrecte';
+                return false;
+            }
+            $tree_response = $dom->documentElement;
+            if ( (!$tree_response) || ($tree_response->localName != 'serviceResponse') ) {
+                // Read failed.
+                $this->_error = 'Réponse du serveur CAS incorrecte';
+                return false;
+            }
+            $success_elements = $tree_response->getElementsByTagName("authenticationSuccess");
+            if ($success_elements->length == 0) {
+                // Authentication error, allow retry.
+                continue;
+            }
+            $success_element = $success_elements->item(0);
+            // Authentication succeded, extract the user name.
+            $user = new \stdClass();
+            if ( $this->has_decodecallback() ) {
+                if(!$this->invoke_decodecallback($success_element, $user)) {
+                    $this->_error = 'Réponse du serveur CAS incorrecte';
+                    return false;
+                }
+            } else {
+                $user_elements = $success_element->getElementsByTagName("user");
+                if ($user_elements->length == 0) {
+                    // No user specified => error.
+                    $this->_error = 'Réponse du serveur CAS incorrecte';
+                    return false;
+                }
+                $user->id = \trim($user_elements->item(0)->nodeValue);
+            }
+            return $user;
         } while ($retries++ < $maxretries);
-
+        // Could not validate ticket.
         $this->_error = 'Ticket non validé';
         return false;
+    }
+
+    private function has_decodecallback() {
+        return (\array_key_exists('decodecallback', $this->_params)) &&
+        (\is_callable($this->_params['decodecallback'], false));
+    }
+
+    private function invoke_decodecallback($element, $user) {
+        return \call_user_func($this->_params['decodecallback'], $element, $user);
     }
 
     public function build_login_url() {

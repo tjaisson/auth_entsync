@@ -83,12 +83,12 @@ $cas->set_clienturl($my_url);
 
 if ($val = $cas->validateorredirect()) {
     if (!$entu = $DB->get_record('auth_entsync_user',
-        ['uid' => $val->user, 'ent' => $ent->get_code()])) {
+        ['uid' => $val->id, 'ent' => $ent->get_code()])) {
             // Utilisateur cas non connu, display erreur et redirect button
             // informer l'Utilisateur de son uid ent.
             $a = new stdClass();
             $a->ent = $ent->nomcourt;
-            $a->user = $val->user;
+            $a->user = $val->id;
             $msg = get_string('notauthorized', 'auth_entsync', $a);
             printerrorpage($msg);
     }

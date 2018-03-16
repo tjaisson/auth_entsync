@@ -60,8 +60,14 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
         return $cp;
     }
     
-    public function decodecallback($attr, $elem) {
-        $attr->user = core_text::strtolower($attr->user);
+    public function decodecallback($elem, $user) {
+        $user_elements = $elem->getElementsByTagName("user");
+        if ($user_elements->length == 0) {
+            // No user specified => error.
+            return false;
+        }
+        $user->id = core_text::strtolower(\trim($user_elements->item(0)->nodeValue));
+        return true;
     }
 
     public function get_profileswithcohorts() {

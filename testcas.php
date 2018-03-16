@@ -17,14 +17,21 @@ $page_url = new moodle_url('/auth/entsync/testcas.php');
 
 $entclass = optional_param('ent', '', PARAM_RAW);
 
-$reponse = '';
 
 if ((!empty($entclass)) &&
     ($ent = auth_entsync_ent_base::get_ent($entclass)) &&
     ($ent->is_sso()) &&
     ($cas = $ent->get_connector()) ) {
-        $cas->set_clienturl(new moodle_url($page_url, ['ent' => $ent->get_entclass()]));
-        
+        $cas->set_clienturl(new moodle_url($page_url));
+        $cas->redir_to_login();
+}
+$reponse = '';
+$entclass = \auth_entsync\connectors\base_connect::get_ent_class();
+if ((!empty($entclass)) &&
+    ($ent = auth_entsync_ent_base::get_ent($entclass)) &&
+    ($ent->is_sso()) &&
+    ($cas = $ent->get_connector()) ) {
+        $cas->set_clienturl(new moodle_url($page_url));
         $reponse .= "<h2>ENT :</h2>";
         $reponse .= "<pre>" . $ent->nomlong . "</pre>";
         
@@ -39,7 +46,7 @@ if ((!empty($entclass)) &&
             $reponse .= "<h2>Erreur :</h2>";
             $reponse .= "<pre>" .$cas->get_error() . "</pre>";
         }
-}
+    }
 
 $page_url = new moodle_url('/auth/entsync/testcas.php');
 $PAGE->set_url($page_url);

@@ -49,17 +49,17 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         ];
     }
 
-    public function decodecallback($attr, $elem) {
-        $attr->rnes = [];
-        if(($list = $elem->item(0)->getElementsByTagName("structureNodes"))->length > 0) {
+    public function decodecallback($elem, $user) {
+        $user->rnes = [];
+        if(($list = $elem->getElementsByTagName("structureNodes"))->length > 0) {
             $structs = json_decode($list->item(0)->nodeValue);
             foreach ($structs as $struct) {
-                $attr->rnes[] = $struct->UAI;
+                $user->rnes[] = $struct->UAI;
             }
         } else {
-            $stucts = $elem->item(0)->getElementsByTagName("ENTPersonStructRattachRNE");
+            $stucts = $elem->getElementsByTagName("ENTPersonStructRattachRNE");
             foreach($structs as $struct) {
-                $attr->rnes[] = $struct->nodeValue;
+                $user->rnes[] = $struct->nodeValue;
             }
         }
     }
