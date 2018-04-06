@@ -17,8 +17,6 @@
 /**
  * files parsers (csv xml)
  *
- * TODO : implémenter les parsers xml pour siècle
- *
  * @package    auth_entsync
  * @copyright 2016 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,6 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Classe pour parser les XML BEE.
  *
+ * @todo Check TYPE_STRUCTURE and CODE_STRUCTURE === 'inactif'
+ * @todo check document tree (eg parse ELEVE tag only if ELEVES tag was encountered)
+ * @todo dont rely on ELEVES tag to always come before STRUCTURES tag. So has to fill $_buffer2 with associations
  *
  * @package   auth_entsync
  * @copyright 2016 Thomas Jaisson
@@ -37,9 +38,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class bee_parser extends \auth_entsync\parsers\xml_parser {
     private $match1 = ['lastname' => 'NOM_DE_FAMILLE', 'firstname' => 'PRENOM'];
-    private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
+    private $match2 = ['cohortname' => 'CODE_STRUCTURE', 'type' => 'TYPE_STRUCTURE'];
     private $match;
-
+    private $_record2;
+    private $_buffer2;
+    
     public function on_open($parser, $name, $attribs) {
         switch ($name) {
             case 'ELEVE' :
@@ -48,10 +51,16 @@ class bee_parser extends \auth_entsync\parsers\xml_parser {
                 $this->match = $this->match1;
                 return;
             case 'STRUCTURES_ELEVE' :
-                $this->_record = new \stdClass();
-                $this->_record->uid = $attribs['ELEVE_ID'];
-                $this->match = $this->match2;
+                unset($this->_record);
+                $this->_record2 = new \stdClass();
+                $this->_record2->uid = $attribs['ELEVE_ID'];
                 return;
+            case 'STRUCTURE' :
+                if(isset($this->_record2)) {
+                    $this->_record = new \stdClass();
+                    $this->match = $this->match2;
+                return;
+                }
         }
 
         if (isset($this->_record)) {
@@ -71,9 +80,18 @@ class bee_parser extends \auth_entsync\parsers\xml_parser {
                 $this->_progressreporter->progress();
                 return;
             case 'STRUCTURES_ELEVE' :
-                if (\array_key_exists($this->_record->uid, $this->_buffer)) {
-                    $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
+                if (\array_key_exists($this->_record2->uid, $this->_buffer)) {
+                    $this->_buffer[$this->_record2->uid]->cohortname = $this->_record->cohortname;
                     $this->_progressreporter->progress();
+                }
+                unset($this->_record2);
+                return;
+            case 'STRUCTURE' :
+                if (isset($this->_record2) && isset($this->_record) &&
+                        isset($this->_record->type) && isset($this->_record->cohortname)) {
+                    if ($this->_record->type === "D") {
+                        $this->_record2->cohortname = $this->_record->cohortname;
+                    }
                 }
                 unset($this->_record);
                 return;
