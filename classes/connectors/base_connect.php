@@ -30,8 +30,14 @@ require_once($CFG->libdir.'/filelib.php');
 
 abstract class base_connect {
     
+    /**
+     * @var array params from "state" query parameter
+     */
     protected static $query_state_params = null;
 
+    /**
+     * @var string "state" query parameter base_64 encoded
+     */
     protected static $raw_query_state = null;
 
     public static function get_raw_query_state() {
@@ -65,6 +71,9 @@ abstract class base_connect {
         return self::get_query_state_param('ent');
     }
 
+    /**
+     * @var array params that will be send in "state" query parameter as base_64 encoded string
+     */
     protected $_state_params = [];
     
     public function get_state_param($name, $def = null) {
@@ -100,7 +109,7 @@ abstract class base_connect {
      *   ];
      *
      *
-     * @var array
+     * @var array connector parameters
      */
     protected $_params;
 
