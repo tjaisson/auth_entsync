@@ -38,10 +38,6 @@ class oauth_connect extends \auth_entsync\connectors\base_connect {
     protected function buildvalidateurl() {
     }
 
-    public function get_user() {
-        
-    }
-
     public function build_login_url() {
         $param = [
             'redirect_uri' => $this->_clienturl->out(false),
@@ -67,5 +63,38 @@ class oauth_connect extends \auth_entsync\connectors\base_connect {
         } else {
             return true;
         }
+    }
+
+    public function get_token($code) {
+        $cu = new \curl();
+        if ($this->allow_untrust()) {
+            $cu->setopt(['SSL_VERIFYHOST' => false]);
+            $cu->setopt(['SSL_VERIFYPEER' => false]);
+        }
+        $MyUrl = $this->_clienturl->out(false);
+        $PostParams = [
+            "grant_type" => "authorization_code",
+            "code" => $code,
+            "redirect_uri" => $this->_clienturl->out(false),
+        ];
+        
+        // Set Auth
+        $creds = \base64_encode($this->get_param('client_id') . ':' . $this->get_param('client_id'));
+        $cu->setHeader(['Authorization' => "Basic {$creds}"]);
+        $rep = $cu->post($this->buildvalidateurl(), $PostParams);
+        
+    }
+
+    public function read_token() {
+        $this->_error = '';
+        if (empty($this->_code)) {
+            $this->_error = 'Erreur.';
+            return false;
+        }
+        
+    }
+
+    public function get_user() {
+        
     }
 }

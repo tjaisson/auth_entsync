@@ -29,16 +29,34 @@ global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
 abstract class base_connect {
-    
-    /**
-     * @var array params from "state" query parameter
-     */
-    protected static $query_state_params = null;
 
     /**
-     * @var string "state" query parameter base_64 encoded
+     * @return bool true if there is a code back from IdP.
+     */
+    public abstract function read_code();
+
+    /**
+     * Retrieve userinfo from Idp and return it.
+     * Should only be called when @see read_code() returns true.
+     *
+     * {
+     *  id: id,
+     *
+     * }
+     *
+     * @return \stdClass|false user or false if error
+     */
+    public abstract function get_user();
+
+    /**
+     * @var string json & base_64 encoded array of "state" query parameter
      */
     protected static $raw_query_state = null;
+
+    /**
+     * @var array decoded version of @see $raw_query_state
+     */
+    protected static $query_state_params = null;
 
     public static function get_raw_query_state() {
         if (self::$raw_query_state == null) {
@@ -71,8 +89,12 @@ abstract class base_connect {
         return self::get_query_state_param('ent');
     }
 
+    public function set_ent_class($ent_class) {
+        $this->set_state_param('ent', $ent_class);
+    }
+
     /**
-     * @var array params that will be send in "state" query parameter as base_64 encoded string
+     * @var array params that will be send in "state" query parameter as json & base_64 encoded string
      */
     protected $_state_params = [];
     
@@ -88,10 +110,6 @@ abstract class base_connect {
         $this->_state_params[$name] = $value;
     }
     
-    public function set_ent_class($ent_class) {
-        $this->set_state_param('ent', $ent_class);
-    }
-    
     protected function get_encoded_state() {
         return \base64_encode(\json_encode($this->_state_params));
     }
@@ -101,6 +119,18 @@ abstract class base_connect {
      */
     protected $_error;
 
+    /**
+     * @var \moodle_url
+     */
+    protected $_clienturl;
+
+    /**
+     * @param \moodle_url $url
+     */
+    public function set_clienturl($url) {
+        $this->_clienturl = $url;
+    }
+    
     /**
      *   [
      *   'hostname' => 'www.parisclassenumerique.fr',
@@ -113,15 +143,16 @@ abstract class base_connect {
      */
     protected $_params;
 
-    /**
-     * @var \moodle_url
-     */
-    protected $_clienturl;
-    
-    protected $_params;
-
     public function set_params($params) {
         $this->_params = $params;
+    }
+
+    public function get_param($name, $def = null) {
+        if (\array_key_exists($name, $this->_params)) {
+            return $this->_params[$name];
+        } else {
+            return $def;
+        }
     }
 
     public function redirtohome() {
@@ -129,20 +160,6 @@ abstract class base_connect {
         $homehost = $this->get_param('homehost', $this->get_param('hostname'));
         self::_redirect("https://{$homehost}{$homeuri}");
     }
-
-    /**
-     * Retrieve userinfo from server and return it.
-     *
-     * {
-     *  id: id,
-     *  
-     * }
-     *
-     * @return \stdClass user
-     */
-    public abstract function get_user();
-
-    public abstract function read_code();
 
     /**
      * @return \moodle_url
@@ -168,13 +185,6 @@ abstract class base_connect {
     }
 
     /**
-     * @param \moodle_url $url
-     */
-    public function set_clienturl($url) {
-        $this->_clienturl = $url;
-    }
-
-    /**
      * Get last error
      *
      * @return string error text of null if none
@@ -193,14 +203,6 @@ abstract class base_connect {
 
     public function has_userinfo() {
         return $this->get_param('hasUserinfo', false);
-    }
-
-    public function get_param($name, $def = null) {
-        if (\array_key_exists($name, $this->_params)) {
-            return $this->_params[$name];
-        } else {
-            return $def;
-        }
     }
 
     protected function allow_untrust() {
