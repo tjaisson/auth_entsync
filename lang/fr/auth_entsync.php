@@ -84,7 +84,7 @@ $string['uploadaddinfo'] = 'IMPORTANT : si plusieurs structures sont rattachées
 alors il faut les importer en même temps.<br />
 Par exemple, il faut charger le fichier des élèves du collège <b>et</b> celui des élèves du lycée
 <b>avant</b> de procéder à l\'importation.';
-$string['afterparseinfo'] = 'Le fichier {$a->file} a été lut avec succès : {$a->nbusers} utilisateurs trouvés.<br />
+$string['afterparseinfo'] = 'Le fichier {$a->file} a été lu avec succès : {$a->nbusers} utilisateurs trouvés.<br />
 Vous devez maintenant procéder à l\'importation de ces utilisateurs.';
 $string['aftersyncinfo'] = 'Importation réussie.<br />
 {$a->updated} utilisateurs mis à jours<br />

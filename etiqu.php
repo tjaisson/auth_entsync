@@ -20,9 +20,6 @@ if($profile === 1) {
 } else if($profile === 2) {
     $lst = usertblhelper::get_users_ent_ens();
     $ttl = "Enseignant";
-} else if($profile === 4) {
-    $lst = usertblhelper::get_users_ent_pers();
-    $ttl = "personnel";
 }
 ?>
 

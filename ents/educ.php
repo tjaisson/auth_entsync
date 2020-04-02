@@ -107,7 +107,7 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
                 $profile = 1;
                 break;
             default:
-                $profile = 0;
+                $profile = -1;
         }
         if(!in_array($profile, $profiles)) return false;
         $record->uid = core_text::strtolower($record->uid);
