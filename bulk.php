@@ -68,7 +68,7 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
     }
-    
+
     // Retrouver les données temporaires.
     $storeid = required_param('storeid', PARAM_INT);
     $tmpstore = base_tmpstore::get_store($storeid);
@@ -141,7 +141,7 @@ if ($formdata = $mform->get_data()) {
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
     }
-    
+
     $storeid = optional_param('storeid', null, PARAM_INT);
 
     if ($filename = $mform->get_new_filename('userfile')) {
