@@ -49,7 +49,7 @@ if (auth_entsync_ent_base::count_enabled() <= 0) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
     echo $OUTPUT->notification(get_string('notconfigwarn', 'auth_entsync',
-        "$CFG->wwwroot/auth/entsync/param.php"));
+        "{$CFG->wwwroot}/auth/entsync/param.php"));
     echo $OUTPUT->footer();
     die;
 }
