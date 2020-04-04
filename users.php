@@ -99,7 +99,7 @@ if ($resetpw and confirm_sesskey()) {
         echo $OUTPUT->confirm("Etes vous sur de vouloir réinitialiser le mot de passe de {$u->firstname} {$u->lastname} ?",
             $resetbutton, $returnurl);
         echo $OUTPUT->footer();
-        die;
+        die();
     } else if (!empty($_POST)) {
         $_mdlu = new stdClass();
         $_mdlu->id = $resetpw;

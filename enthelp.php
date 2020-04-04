@@ -59,4 +59,3 @@ foreach(auth_entsync_ent_base::get_ents() as $ent) {
 }
 
 echo $OUTPUT->footer();
-die;

@@ -51,7 +51,7 @@ if (auth_entsync_ent_base::count_enabled() <= 0) {
     echo $OUTPUT->notification(get_string('notconfigwarn', 'auth_entsync',
         "{$CFG->wwwroot}/auth/entsync/param.php"));
     echo $OUTPUT->footer();
-    die;
+    die();
 }
 
 if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
@@ -116,7 +116,7 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     echo $msg;
     echo $OUTPUT->continue_button($returnurl);
     echo $OUTPUT->footer();
-    die;
+    die();
 }
 
 
@@ -230,4 +230,3 @@ if ($dispinfo) {
     echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
 }
 echo $OUTPUT->footer();
-die;

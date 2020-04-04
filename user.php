@@ -41,4 +41,3 @@ $cohort =  optional_param('cohort', -1, PARAM_INT);
 echo $OUTPUT->header();
 echo $OUTPUT->heading_with_help(get_string('entsyncuser', 'auth_entsync'), 'entsyncuser', 'auth_entsync');
 echo $OUTPUT->footer();
-die;

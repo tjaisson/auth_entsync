@@ -58,7 +58,7 @@ if ($action == 'del') {
         echo $OUTPUT->confirm("Etes vous sur de vouloir supprimer l'instance {$rne}, {$name} ?",
         	$confirmbutt, $returnurl);
         echo $OUTPUT->footer();
-        die;
+        die();
     } else if (confirm_sesskey() && !empty($_POST)) {
         // ... oui, alors on supprime l'instance.
         try {

@@ -1,5 +1,5 @@
 <?php
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
 echo html_writer::start_div('block', ['style' => 'max-width: 80%; width: 80em; margin: 0 auto 0; padding: 2em;']);
 echo html_writer::start_div('row-fluid');

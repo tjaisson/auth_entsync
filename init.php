@@ -505,4 +505,3 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading('Initialisation de cette instance Moodle');
 $form->display();
 echo $OUTPUT->footer();
-die;

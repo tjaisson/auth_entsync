@@ -1,4 +1,4 @@
-<?php defined('MOODLE_INTERNAL') || die; ?>
+<?php defined('MOODLE_INTERNAL') || die(); ?>
 <p>Pour MonLycée.net, les fichiers utilisateurs sont obtenus dans la <b>console d'administration</b>&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/ng-v2.jpg' /></p>
 <ol>

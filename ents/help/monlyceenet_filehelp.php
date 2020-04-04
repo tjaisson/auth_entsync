@@ -1,4 +1,4 @@
-<?php defined('MOODLE_INTERNAL') || die; ?>
+<?php defined('MOODLE_INTERNAL') || die(); ?>
 <p>Pour l'ENT monlycée.net, les fichiers utilisateurs sont obtenus dans la <b>console d'administration</b>&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/monlyceenet.jpg' /></p>
 <ol>
