@@ -76,11 +76,11 @@ class bulk_form extends \moodleform {
             $options = array();
             $txt = \get_string('filetypemissingwarn', 'auth_entsync');
             $options[$txt] = [0 => '...'];
-            foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+            foreach (\auth_entsync_ent_base::get_ents() as $ent) {
                 if ($ent->is_enabled()) {
                     $suboption = array();
-                    foreach ($ent->get_filetypes() as $i => $desc) {
-                        $suboption[$ent->get_code().'.'.$i] = "{$ent->nomcourt} - {$desc}";
+                    foreach ($ent->get_filetypes() as $ft => $desc) {
+                        $suboption[self::encodeeft($ent, $ft)] = "{$ent->nomcourt} - {$desc}";
                     }
                     $options[$ent->nomcourt] = $suboption;
                 }
@@ -100,5 +100,16 @@ class bulk_form extends \moodleform {
             $mform->addElement('hidden', 'entfiletype', 0);
             $mform->setType('entfiletype', PARAM_TEXT);
         }
+    }
+
+    public static function decodeeft($eft) {
+        list($entcode, $ft) = explode('.', $eft, 2);
+        $ent = \auth_entsync_ent_base::get_ent((int)$entcode);
+        $ft = (int)$ft;
+        return [$ent, $ft];
+    }
+
+    public static function encodeeft($ent, $ft) {
+        return $ent->get_code().'.'.$ft;
     }
 }
