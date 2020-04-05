@@ -29,8 +29,7 @@ if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
     printerrorpage();
 }
 
-$clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/switch.php", ['ent' => $ent->get_entclass()]);
-$cas->set_clienturl($clienturl);
+$cas->set_clienturl(new moodle_url($page_url, ['ent' => $ent->get_entclass()]));
 
 if ($val = $cas->validateorredirect()) {
     if (count($val->rnes) <= 0) {
@@ -98,9 +97,7 @@ function printinfopage() {
     global $OUTPUT, $PAGE;
     $PAGE->set_title('PAM');
     echo $OUTPUT->header();
-
     include(__DIR__ . '/aboutpam.php');
-    
     echo $OUTPUT->footer();
     die();
 }
