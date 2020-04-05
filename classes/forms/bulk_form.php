@@ -38,8 +38,12 @@ require_once($CFG->libdir.'/formslib.php');
 class bulk_form extends \moodleform {
     protected function definition () {
         $displayproceed = (isset($this->_customdata['displayproceed'])) ? $this->_customdata['displayproceed'] : false;
+        $entfiletype = (isset($this->_customdata['entfiletype'])) ? $this->_customdata['entfiletype'] : "X";
         $advanced = (isset($this->_customdata['advanced'])) ? $this->_customdata['advanced'] : false;
         $mform = $this->_form;
+
+        $mform->addElement('hidden', 'frozeneft', $entfiletype);
+        $mform->setType('frozeneft', PARAM_TEXT);
 
         if ($advanced) {
             $mform->addElement('hidden', 'advanced', true);

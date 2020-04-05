@@ -62,7 +62,7 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     }
 
     // Retrouver l'ent et le type de fichier.
-    list($ent, $filetype) = bulk_form::decodeeft(required_param('entfiletype', PARAM_TEXT));
+    list($ent, $filetype) = bulk_form::decodeeft(required_param('frozeneft', PARAM_TEXT));
     if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
@@ -131,11 +131,18 @@ $mform = new bulk_form(null, $formparams);
 echo $OUTPUT->header();
 
 //TODO peut être checker is_canceled
-
+$entfiletype = "X";
 if ($formdata = $mform->get_data()) {
     // Il y a un fichier à charger
     // retrouver l'ent et le type de fichier.
-    list($ent, $filetype) = bulk_form::decodeeft($formdata->entfiletype);
+    // Il est peut-être dans frozeneft.
+    if ($formdata->frozeneft !== "X") {
+        $entfiletype = $formdata->frozeneft;
+        unset($_POST['frozeneft']);
+    } else {
+        $entfiletype = $formdata->entfiletype;
+    }
+    list($ent, $filetype) = bulk_form::decodeeft($entfiletype);
     if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
@@ -190,6 +197,8 @@ if ($formdata = $mform->get_data()) {
 } else {
     $storeid = null;
 }
+
+$formparams['entfiletype'] = $entfiletype;
 
 if ($storeid) {
     $tmpstore = base_tmpstore::get_store($storeid);
