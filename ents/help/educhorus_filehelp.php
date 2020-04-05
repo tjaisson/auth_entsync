@@ -1,4 +1,4 @@
-<?php defined('MOODLE_INTERNAL') || die; ?>
+<?php defined('MOODLE_INTERNAL') || die(); ?>
 <p>Pour Educ'Horus, le fichier utilisateurs à importer dans Moodle est obtenu en se connectant en administrateur&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/educ.jpg' /></p>
 <ol>

@@ -47,7 +47,7 @@ if (!is_enabled_auth('entsync')) {
     echo $OUTPUT->notification(get_string('pluginnotenabledwarn', 'auth_entsync',
         "$CFG->wwwroot/$CFG->admin/settings.php?section=manageauths"), core\output\notification::NOTIFY_INFO);
     echo $OUTPUT->footer();
-    die;
+    die();
 }
 
 $action = optional_param('action', 'display', PARAM_ACTION);
@@ -104,4 +104,3 @@ echo $OUTPUT->heading_with_help(get_string('entsyncparam', 'auth_entsync'), 'ent
 // Liste des ents enable/disable.
 $mform->display();
 echo $OUTPUT->footer();
-die;

@@ -79,15 +79,28 @@ $clienturl = new moodle_url("$CFG->httpswwwroot/auth/entsync/login.php", ['ent' 
 $cas->set_clienturl($clienturl);
 
 if ($val = $cas->validateorredirect()) {
-    if (!$entu = $DB->get_record('auth_entsync_user',
-        ['uid' => $val->user, 'ent' => $ent->get_code()])) {
-            // Utilisateur cas non connu, display erreur et redirect button
-            // informer l'Utilisateur de son uid ent.
-            $a = new stdClass();
-            $a->ent = $ent->nomcourt;
-            $a->user = $val->user;
-            $msg = get_string('notauthorized', 'auth_entsync', $a);
-            printerrorpage($msg);
+    if ($val->uid) {
+        if (!$entu = $DB->get_record('auth_entsync_user',
+            ['uid' => $val->uid, 'ent' => $ent->get_code()])) {
+            if ($entu = $DB->get_record('auth_entsync_user',
+                ['uid' => $val->user, 'ent' => $ent->get_code()])) {
+                    $entu->uid = $val->uid;
+                    $entu->checked = 1;
+                    $DB->update_record('auth_entsync_user', $entu);
+                }
+        }
+    } else {
+        $entu = $DB->get_record('auth_entsync_user',
+            ['uid' => $val->user, 'ent' => $ent->get_code()]);
+    }
+    if (!$entu) {
+        // Utilisateur cas non connu, display erreur et redirect button
+        // informer l'Utilisateur de son uid ent.
+        $a = new stdClass();
+        $a->ent = $ent->nomcourt;
+        $a->user = $val->user;
+        $msg = get_string('notauthorized', 'auth_entsync', $a);
+        printerrorpage($msg);
     }
     if ($entu->archived) {
         printerrorpage('Utilisateur désactivé');

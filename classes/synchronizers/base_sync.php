@@ -231,6 +231,9 @@ abstract class base_sync {
             }
             if ($entu->uid != $iu->uid) {
                 $_entu->uid = $iu->uid;
+                if ($entu->uid === $iu->user) {
+                    $_entu->checked = 1;
+                }
                 $_entu->isdirty = true;
             }
             if ($_entu->isdirty) {
@@ -247,6 +250,9 @@ abstract class base_sync {
             $_entu->ent = $this->entcode;
             $_entu->profile = $iu->profile;
             $_entu->uid = $iu->uid;
+            if ($iu->user) {
+                $_entu->checked = 1;
+            }
             unset($_entu->isdirty);
             $_entu->id = $DB->insert_record('auth_entsync_user', $_entu, true);
         }
@@ -428,13 +434,18 @@ abstract class base_sync {
         if (\array_key_exists($iu->uid, $this->_existingentu)) {
             $entu = $this->_existingentu[$iu->uid];
         } else {
-            if (\array_key_exists($iu->uid, $this->_existingentuother)) {
-                // Même ent mais autre profil
-                // ne devrait pas se produire.
-                ++$this->_report->profilmismatched;
-                return false;
+            if (($iu->user) && 
+                (\array_key_exists($iu->user, $this->_existingentu))) {
+                    $entu = $this->_existingentu[$iu->user];
             } else {
-                $entu = null;
+                if (\array_key_exists($iu->uid, $this->_existingentuother)) {
+                    // Même ent mais autre profil
+                    // ne devrait pas se produire.
+                    ++$this->_report->profilmismatched;
+                    return false;
+                } else {
+                    $entu = null;
+                }
             }
         }
         if ($entu) {

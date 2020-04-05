@@ -1,4 +1,4 @@
-<?php defined('MOODLE_INTERNAL') || die; ?>
+<?php defined('MOODLE_INTERNAL') || die(); ?>
 <p>La mise en place du connecteur avec l'ENT monlycée.net nécessite la création d'une ressource côté ENT.
 Cela se fait dans la <b>console d'administration</b>&nbsp;:</p>
 <p><img style = "border: 1px solid;" src='./ents/help/monlyceenet2.jpg' /></p>

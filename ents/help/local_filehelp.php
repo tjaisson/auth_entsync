@@ -1,4 +1,4 @@
-<?php defined('MOODLE_INTERNAL') || die; ?>
+<?php defined('MOODLE_INTERNAL') || die(); ?>
 <p>Pour créer des comptes locaux, il faut importer&nbsp;:</p>
 <ul>
 <li>Pour les élèves&nbsp;: Le fichier BEE,</li>

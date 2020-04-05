@@ -42,8 +42,8 @@ class user_select_form extends moodleform {
         $mform->setExpanded('filter');
         $cllst = cohorthelper::get_cohorts();
         $grp = array();
-        $grp[] = $mform->createElement('select', 'cohort', 'classe', $cllst);
-        $grp[] = $mform->createElement('submit', 'dispelev', '> '. get_string('show'));
+        $grp[] =& $mform->createElement('select', 'cohort', 'classe', $cllst);
+        $grp[] =& $mform->createElement('submit', 'dispelev', '> '. get_string('show'));
         $mform->addGroup($grp, 'elev', 'Elèves de', array(' '), false);
         $mform->setType('cohort', PARAM_INT);
 
@@ -51,11 +51,6 @@ class user_select_form extends moodleform {
         $grp[] = $mform->createElement('submit', 'dispprof', '> '. get_string('show'));
         $grp[] = $mform->createElement('html', '');
         $mform->addGroup($grp, 'ens', 'Enseignants', array(' '), false);
-        
-        //$grp = array();
-        //$grp[] = $mform->createElement('submit', 'disppers', '> '. get_string('show'));
-        //$grp[] = $mform->createElement('html', '');
-        //$mform->addGroup($grp, 'pers', 'Personnels', array(' '), false);
     }
 
     public function collapse(){
@@ -81,9 +76,6 @@ if ($profile === 1) {
 } else if ($profile === 2) {
     unset($cohort);
     $returnurl->params(['profile' => $profile]);
-} else if ($profile === 4) {
-    unset($cohort);
-    $returnurl->params(['profile' => $profile]);
 } else {
     unset($profile);
     unset($cohort);
@@ -107,7 +99,7 @@ if ($resetpw and confirm_sesskey()) {
         echo $OUTPUT->confirm("Etes vous sur de vouloir réinitialiser le mot de passe de {$u->firstname} {$u->lastname} ?",
             $resetbutton, $returnurl);
         echo $OUTPUT->footer();
-        die;
+        die();
     } else if (!empty($_POST)) {
         $_mdlu = new stdClass();
         $_mdlu->id = $resetpw;
@@ -128,9 +120,6 @@ if ($resetpw and confirm_sesskey()) {
         } else if (isset($formdata->dispprof)) {
             $profile = 2;
             $returnurl->params(['profile' => $profile]);
-        } else if (isset($formdata->disppers)) {
-            $profile = 4;
-            $returnurl->params(['profile' => $profile]);
         }
     }
 
@@ -144,11 +133,8 @@ if ($resetpw and confirm_sesskey()) {
         } else if ($profile === 2) {
             $lst = usertblhelper::get_users_ent_ens();
             $ttl = "Enseignants :";
-        } else if ($profile === 4) {
-            $lst = usertblhelper::get_users_ent_pers();
-            $ttl = "personnels :";
         }
-        
+
         $t = new html_table();
         // Icons.
         $resetico = $OUTPUT->pix_icon('t/reset', get_string('reset'));
@@ -209,6 +195,7 @@ if ($resetpw and confirm_sesskey()) {
         }
     }
     echo $OUTPUT->header();
+    echo "<a href=\"$CFG->wwwroot/auth/entsync/manag.php?view=cohort\">Gérer les classes</a> (cohortes)";
 
     $form->display();
     if ($lst) {

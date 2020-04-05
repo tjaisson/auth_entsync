@@ -52,8 +52,8 @@ $data->currentthemename = core_useragent::get_device_type_theme('default');
 if (!$data->currentthemename) {
     $data->currentthemename = theme_config::DEFAULT_THEME;
 }
-if(array_key_exists('acparis', core_component::get_plugin_list('theme'))) {
-    $data->acparistheme = 'acparis';
+if(array_key_exists('aardvark', core_component::get_plugin_list('theme'))) {
+    $data->acparistheme = 'aardvark';
 } else {
     $data->acparistheme = false;
 }
@@ -107,22 +107,22 @@ class init_form extends moodleform {
         $mform->setExpanded('themehdr');
         if($data->acparistheme) {
             if($data->currentthemename === $data->acparistheme) {
-                $msg = $validico . 'Le thème \'acparis\' est déjà sélectionné.';
+                $msg = $validico . 'Le thème \'aardvark\' est déjà sélectionné.';
                 $chk = false;
                 $freeze = true;
             } else {
-                $msg = $warningico . 'Le thème sélectionné n\'est pas \'acparis\'.';
+                $msg = $warningico . 'Le thème sélectionné n\'est pas \'aardvark\'.';
                 $chk = true;
                 $freeze = false;
             }
             $mform->addElement('html', $msg);
             if(!$freeze) {
-                $mform->addElement('checkbox', 'theme', 'Sélectionner le thème \'acparis\'');
+                $mform->addElement('checkbox', 'theme', 'Sélectionner le thème \'aardvark\'');
                 $mform->setType('theme', PARAM_BOOL);
                 $mform->setDefault('theme', $chk);
             }
         } else {
-            $mform->addElement('html', 'Le thème \'acparis\' n\'est pas installé.');
+            $mform->addElement('html', 'Le thème \'aardvark\' n\'est pas installé.');
         }
 
         //Home page
@@ -345,7 +345,7 @@ function entsync_updatesort($data) {
 }
 
 function entsync_settheme() {
-    $theme = theme_config::load('acparis');
+    $theme = theme_config::load('aardvark');
     $themename = core_useragent::get_device_type_cfg_var_name('default');
     set_config($themename, $theme->name);
 }
@@ -353,7 +353,7 @@ function entsync_settheme() {
 function entsync_init_role($roleid, $archetype, $caps = []) {
     global $DB;
     $systemcontext = context_system::instance();
-    set_role_contextlevels($roleid, get_default_contextlevels('coursecreator'));
+    set_role_contextlevels($roleid, get_default_contextlevels($archetype));
     foreach (['assign', 'override', 'switch'] as $type) {
         $sql = "SELECT r.*
         FROM {role} r
@@ -505,4 +505,3 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading('Initialisation de cette instance Moodle');
 $form->display();
 echo $OUTPUT->footer();
-die;

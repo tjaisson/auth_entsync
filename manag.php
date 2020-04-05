@@ -66,7 +66,7 @@ switch ($view) {
 }
 
 echo $OUTPUT->footer();
-die;
+die();
 
 function affiche_cohort() {
     global $OUTPUT, $DB;

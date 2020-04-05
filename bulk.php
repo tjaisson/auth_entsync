@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+define('NO_OUTPUT_BUFFERING', true);
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -49,9 +50,9 @@ if (auth_entsync_ent_base::count_enabled() <= 0) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
     echo $OUTPUT->notification(get_string('notconfigwarn', 'auth_entsync',
-        "$CFG->wwwroot/auth/entsync/param.php"));
+        "{$CFG->wwwroot}/auth/entsync/param.php"));
     echo $OUTPUT->footer();
-    die;
+    die();
 }
 
 if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
@@ -61,10 +62,8 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     }
 
     // Retrouver l'ent et le type de fichier.
-    $filetype = required_param('entfiletype', PARAM_TEXT);
-    list($entcode, $filetype) = explode('.', $filetype, 2);
-    $filetype = (int)$filetype;
-    if ((!$ent = auth_entsync_ent_base::get_ent($entcode)) || (!$ent->is_enabled())) {
+    list($ent, $filetype) = bulk_form::decodeeft(required_param('frozeneft', PARAM_TEXT));
+    if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
@@ -116,7 +115,7 @@ if (optional_param('proceed', false, PARAM_BOOL) && confirm_sesskey()) {
     echo $msg;
     echo $OUTPUT->continue_button($returnurl);
     echo $OUTPUT->footer();
-    die;
+    die();
 }
 
 
@@ -132,13 +131,18 @@ $mform = new bulk_form(null, $formparams);
 echo $OUTPUT->header();
 
 //TODO peut être checker is_canceled
-
+$entfiletype = "X";
 if ($formdata = $mform->get_data()) {
     // Il y a un fichier à charger
     // retrouver l'ent et le type de fichier.
-    list($entcode, $filetype) = explode('.', $formdata->entfiletype, 2);
-    $filetype = (int)$filetype;
-    if ((!$ent = auth_entsync_ent_base::get_ent($entcode)) || (!$ent->is_enabled())) {
+    // Il est peut-être dans frozeneft.
+    if ($formdata->frozeneft !== "X") {
+        $entfiletype = $formdata->frozeneft;
+    } else {
+        $entfiletype = $formdata->entfiletype;
+    }
+    list($ent, $filetype) = bulk_form::decodeeft($entfiletype);
+    if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
@@ -193,6 +197,9 @@ if ($formdata = $mform->get_data()) {
     $storeid = null;
 }
 
+unset($_POST['frozeneft']);
+$formparams['entfiletype'] = $entfiletype;
+
 if ($storeid) {
     $tmpstore = base_tmpstore::get_store($storeid);
     $readytosyncusers = $tmpstore->count();
@@ -230,4 +237,3 @@ if ($dispinfo) {
     echo "<ul><li>{$i} élèves</li><li>{$ii} enseignants</li><li>Total : {$iii}</li></ul>";
 }
 echo $OUTPUT->footer();
-die;

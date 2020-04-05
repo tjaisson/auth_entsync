@@ -26,7 +26,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * -> lilie (bientôt monlycee.net)
@@ -107,7 +107,7 @@ class  auth_entsync_ent_educhorus extends auth_entsync_entcas {
                 $profile = 1;
                 break;
             default:
-                $profile = 0;
+                $profile = -1;
         }
         if(!in_array($profile, $profiles)) return false;
         $record->uid = core_text::strtolower($record->uid);

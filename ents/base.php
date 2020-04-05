@@ -24,7 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Classe de base pour la définition des ENT
@@ -254,7 +254,7 @@ abstract class auth_entsync_ent_base {
             self::$_profilelist = [
                 1 => 'Elèves',
                 2 => 'Enseignants',
-                4 => 'Personnels'
+                3 => 'Personnels'
             ];
         }
         return self::$_profilelist;

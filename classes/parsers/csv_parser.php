@@ -27,6 +27,8 @@
 namespace auth_entsync\parsers;
 defined('MOODLE_INTERNAL') || die();
 
+
+
 /**
  * Classe pour parser les fichiers CSV
  *
