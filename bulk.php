@@ -138,7 +138,6 @@ if ($formdata = $mform->get_data()) {
     // Il est peut-être dans frozeneft.
     if ($formdata->frozeneft !== "X") {
         $entfiletype = $formdata->frozeneft;
-        unset($_POST['frozeneft']);
     } else {
         $entfiletype = $formdata->entfiletype;
     }
@@ -198,6 +197,7 @@ if ($formdata = $mform->get_data()) {
     $storeid = null;
 }
 
+unset($_POST['frozeneft']);
 $formparams['entfiletype'] = $entfiletype;
 
 if ($storeid) {
