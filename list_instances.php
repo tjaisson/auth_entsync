@@ -24,7 +24,7 @@ if ($adminMode) {
 $OUTPUT->header();
 
 $lst = [];
-$instances = \auth_entsync\persistents\instance::get_records([], 'name');
+$instances = \auth_entsync\farm\instance::get_records([], 'name');
 foreach ($instances as $instance) {
     if (($adminMode) || ($instance->get('rne') !== '00')) {
         $lst[] = ['dir' => $instance->get('dir'), 'name' => $instance->get('name')];

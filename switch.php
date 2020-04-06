@@ -37,7 +37,7 @@ if ($val = $cas->validateorredirect()) {
         printinfopage();
     }
     // On constitue la liste des instances de cet utilisateur.
-    $instances = \auth_entsync\persistents\instance::get_records([], 'name');
+    $instances = \auth_entsync\farm\instance::get_records([], 'name');
     $userinsts = [];
     foreach ($instances as $instance) {
         if ($instance->has_rne($val->rnes)) {
@@ -67,7 +67,7 @@ function printerrorpage(
         $url = null) {
     global $OUTPUT, $CFG, $PAGE;
     $PAGE->set_title('Erreur');
-    $url = is_null($url) ? \auth_entsync\persistents\instance::pamroot() : $url;
+    $url = is_null($url) ? \auth_entsync\farm\instance::pamroot() : $url;
     echo $OUTPUT->header();
     echo $OUTPUT->notification($msg, $type);
     echo $OUTPUT->continue_button($url);

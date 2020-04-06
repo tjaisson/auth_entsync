@@ -60,7 +60,7 @@ if ($storedticket !== $ticket) {
     die();
 }
 
-$instance = \auth_entsync\persistents\instance::get_record(['dir' => $inst]);
+$instance = \auth_entsync\farm\instance::get_record(['dir' => $inst]);
 
 if (!$instance) {
     echo 'no validate';
