@@ -30,6 +30,7 @@ class instance extends \core\persistent {
     protected static $pamroot;
     protected static $inst;
     protected static $gw;
+    protected static $_isgw;
     
     public static function pamroot() {
         if (!isset(self::$pamroot)) {
@@ -53,7 +54,10 @@ class instance extends \core\persistent {
     }
     
     public static function is_gw() {
-        return (self::gw() === self::inst());
+        if (!isset(self::$_isgw)) {
+            self::$_isgw = ($gw = self::gw()) ? ($gw === self::inst()) : false;
+        }
+        return self::$_isgw;
     }
     
 /**
