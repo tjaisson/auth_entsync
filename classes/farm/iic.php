@@ -131,19 +131,23 @@ class iic {
         return true;
     }
     public static function createToken($ttl = self::TTL, $unique = false) {
-        if ($unique) return self::newToken($ttl, true);
-        $fk = false;
-        $minExpir = \time() + $ttl;
-        $maxExpir = $minExpir + $ttl;
-        foreach (self::shared_tokens() as $k) {
-            $expir = $k['expir'];
-            if (($expir >= $minExpir) && ($expir <= $maxExpir)){
-                $fk = $k;
-                break;
+        if ($unique) { 
+            $fk = self::newToken($ttl, true);
+        } else {
+            $minExpir = \time() + $ttl;
+            $maxExpir = $minExpir + $ttl;
+            foreach (self::shared_tokens() as $k) {
+                $expir = $k['expir'];
+                if (($expir >= $minExpir) && ($expir <= $maxExpir)){
+                    $fk = $k;
+                    break;
+                }
+            }
+            if (!$fk) {
+                $fk = self::newToken($ttl, false);
             }
         }
-        if ($fk) return $fk;
-        $fk = self::newToken($ttl, false);
+        if (!$fk) return false;
         return ['uid' => $fk['uid'], 'tk' => $fk['val']];
     }
     protected static function newToken($ttl, $unique) {
@@ -169,7 +173,7 @@ class iic {
         return $s;
     }
     public static function seal($s, $ttl = self::TTL, $unique = false) {
-        $k = self::createKey($ttl, $unique);
+        if (!($k = self::createKey($ttl, $unique))) return false;
         if ((false === ($ivb = $k['iv'])) || (false === ($kb = $k['k']))) {
             list($ivb, $kb) = \explode(',', $k['val']);
             $k['iv'] = $ivb = \base64_decode($ivb);
@@ -205,12 +209,12 @@ class iic {
         return self::saveKey($k, $ttl);
     }
     protected static function saveKey($k, $ttl) {
+        if (!($sharedir = self::sharedir())) return false;
         $k['expir'] = $expir = \time() + (2 * $ttl);
         $k['uid'] = $uid = \random_string(self::UIDLEN);
         $val = $k['val'];
         $type = $k['type'];
         $filename = "-{$uid}-{$expir}";
-        $sharedir = self::sharedir();
         $tempfp = "{$sharedir}/~{$filename}";
         \file_put_contents($tempfp, $val);
         \rename($tempfp, "{$sharedir}/{$type}{$filename}");
