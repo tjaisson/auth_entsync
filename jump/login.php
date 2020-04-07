@@ -27,14 +27,16 @@ require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 use \auth_entsync\farm\instance;
+use \auth_entsync\farm\iic;
 
 if (isloggedin() || instance::is_gw()) {
     redirect($CFG->wwwroot);
 }
 
-$ticket = optional_param('ticket', null, PARAM_RAW);
+$tk = optional_param('tk', null, PARAM_RAW_TRIMMED);
+$uid = optional_param('uid', null, PARAM_RAW_TRIMMED);
 
-if (!$ticket) {
+if ((!$tk) || (!$uid)) {
    // Pas de ticket.
     $jumpurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump/jump.php', ['inst' => instance::inst()]);
     redirect($jumpurl);
@@ -42,14 +44,8 @@ if (!$ticket) {
 }
 
 // Le ticket est présent.
-$cu = new curl();
-$valurl = new moodle_url(instance::gwroot() . '/auth/entsync/jump/validate.php',
-    ['inst' => instance::inst(), 'ticket' => $ticket]);
-if (!($rep = $cu->get($valurl->out(false)))) {
+if (!(iic::validateToken($uid, $tk))) {
     die();
-}
-if (!($rep === 'validate')) {
-        die();
 }
 
 $mdlu = $DB->get_record('user', ['username' => 'pam.central.adm', 'auth' => 'entsync']);

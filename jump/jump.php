@@ -41,11 +41,6 @@ $instance = \auth_entsync\farm\instance::get_record(['dir' => $inst]);
 if (!$instance) {
     die();
 }
-
-$tocken = 'PC-' . bin2hex(random_bytes_emulate(20));
-$time = time();
-$value = $inst . ',' . $time . ',' . $tocken;
-set_config('pc', $value, 'auth_entsync');
-
-$redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump/login.php', ['ticket' => $tocken]);
+$k = \auth_entsync\farm\iic::createToken(5, true);
+$redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump/login.php', $k);
 redirect($redirecturl);
