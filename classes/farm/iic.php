@@ -121,7 +121,7 @@ class iic {
             $dir->close();
         }
     }
-    public function validateToken($uid, $tk) {
+    public static function validateToken($uid, $tk) {
         $tokens = self::tokens();
         if (!($k = @$tokens[$uid])) return false;
         if (!($k['val'] === $tk)) return false;
@@ -130,7 +130,7 @@ class iic {
         }
         return true;
     }
-    public function createToken($ttl = self::TTL, $unique = false) {
+    public static function createToken($ttl = self::TTL, $unique = false) {
         if ($unique) return self::newToken($ttl, true);
         $fk = false;
         $minExpir = \time() + $ttl;
@@ -146,14 +146,14 @@ class iic {
         $fk = self::newToken($ttl, false);
         return ['uid' => $fk['uid'], 'tk' => $fk['val']];
     }
-    protected function newToken($ttl, $unique) {
+    protected static function newToken($ttl, $unique) {
         $k = [
             'type' => $unique ? 'UT' : 'T',
             'val' => \random_string(self::TOKENLEN),
         ];
         return self::saveKey($k, $ttl);
     }
-    public function open($uid, $s) {
+    public static function open($uid, $s) {
         $keys = self::keys();
         if (false === ($k = @$keys[$uid])) return false;
         if ((false === ($ivb = $k['iv'])) || (false === ($kb = $k['k']))) {
@@ -168,7 +168,7 @@ class iic {
         }
         return $s;
     }
-    public function seal($s, $ttl = self::TTL, $unique = false) {
+    public static function seal($s, $ttl = self::TTL, $unique = false) {
         $k = self::createKey($ttl, $unique);
         if ((false === ($ivb = $k['iv'])) || (false === ($kb = $k['k']))) {
             list($ivb, $kb) = \explode(',', $k['val']);
@@ -179,7 +179,7 @@ class iic {
         $s = \openssl_encrypt($s, self::METHOD, $kb, \OPENSSL_RAW_DATA, $ivb);
         return ['uid' => $k['uid'], 's' => $s];
     }
-    protected function createKey($ttl = self::TTL, $unique = false) {
+    protected static function createKey($ttl = self::TTL, $unique = false) {
         if ($unique) return self::newKey($ttl, true);
         $fk = false;
         $minExpir = \time() + $ttl;
@@ -194,7 +194,7 @@ class iic {
         if ($fk) return $fk;
         return self::newKey($ttl, false);
     }
-    protected function newKey($ttl, $unique) {
+    protected static function newKey($ttl, $unique) {
         $k = ['type' => $unique ? 'UK' : 'K'];
         $ivSize = \openssl_cipher_iv_length(self::METHOD);
         $ivb = \openssl_random_pseudo_bytes($ivSize);
@@ -204,7 +204,7 @@ class iic {
         $k['val'] = \base64_encode($ivb) . ',' . \base64_encode($kb);
         return self::saveKey($k, $ttl);
     }
-    protected function saveKey($k, $ttl) {
+    protected static function saveKey($k, $ttl) {
         $k['expir'] = $expir = \time() + (2 * $ttl);
         $k['uid'] = $uid = \random_string(self::UIDLEN);
         $val = $k['val'];
