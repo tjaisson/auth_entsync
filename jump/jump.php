@@ -42,5 +42,6 @@ if (!$instance) {
     die();
 }
 $k = \auth_entsync\farm\iic::createToken(5, true);
+if (!$k) die();
 $redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump/login.php', $k);
 redirect($redirecturl);
