@@ -34,21 +34,21 @@ class instance extends \core\persistent {
     
     public static function pamroot() {
         if (!isset(self::$pamroot)) {
-            self::$pamroot = get_config('auth_entsync', 'pamroot');
+            self::$pamroot = \get_config('auth_entsync', 'pamroot');
         }
         return self::$pamroot;
     }
     
     public static function inst() {
         if (!isset(self::$inst)) {
-            self::$inst = get_config('auth_entsync', 'inst');
+            self::$inst = \get_config('auth_entsync', 'inst');
         }
         return self::$inst;
     }
     
     public static function gw() {
         if (!isset(self::$gw)) {
-            self::$gw = get_config('auth_entsync', 'gw');
+            self::$gw = \get_config('auth_entsync', 'gw');
         }
         return self::$gw;
     }
@@ -80,9 +80,9 @@ class instance extends \core\persistent {
     }
     
     public function has_rne($rnes) {
-        $instrnes = array_map('trim', explode(',', $this->raw_get('rne')));
-        $i = array_uintersect($instrnes, $rnes, "strcasecmp");
-        return (count($i) > 0);
+        $instrnes = \array_map('\trim', \explode(',', $this->raw_get('rne')));
+        $i = \array_uintersect($instrnes, $rnes, '\strcasecmp');
+        return (\count($i) > 0);
     }
     
     public function wwwroot() {
