@@ -227,11 +227,13 @@ abstract class iic {
 class token extends iic {
     const TYPE = 'T';
     public static function newToken($ttl, $unique, $scope) {
+        $expir = \time() + $ttl;
+        if (!$unique) $expir += $ttl;
         $k = [
             'unique' => $unique,
             'val' => \random_string(self::TOKENLEN),
             'scope' => $scope,
-            'expir' => \time() + 2 * $ttl,
+            'expir' => $expir,
         ];
         $k = new token($k);
         if (!$k->saveToFile()) return false;
@@ -269,11 +271,13 @@ class crkey extends iic {
     public static function newCrkey($ttl, $unique, $scope) {
         $ivSize = self::ivLength();
         $kb = \openssl_random_pseudo_bytes($ivSize);
+        $expir = \time() + $ttl;
+        if (!$unique) $expir += $ttl;
         $k = [
             'unique' => $unique,
             'val' => \base64_encode($kb),
             'scope' => $scope,
-            'expir' => \time() + 2 * $ttl,
+            'expir' => $expir,
             'kb' => $kb,
         ];
         $k = new crkey($k);
