@@ -277,12 +277,6 @@ class crkey extends iic {
     }
     public function doOpen($s, $scope) {
         $this->ensurekeys();
-        $parts = \explode('.', $s);
-        $nb = \count($parts);
-        if ($nb > 2) return false;
-        if ($nb === 2) $scopelen = (int)$parts[1];
-        else $scopelen = 0;
-        $s = $parts[0];
         if (empty($s)) return false;
         $s = self::base64_url_decode($s);
         $ivSize = self::ivLength();
@@ -290,28 +284,30 @@ class crkey extends iic {
         $s = \substr($s, $ivSize);
         $s = \openssl_decrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
         if (false === $s) return false;
-        if ($scopelen > 0) {
+        $scopelen = ord($s);
+        if ($scopelen === 0) {
+            return \substr($s, 1);
+        } else {
             $nb = \strlen($s) - $scopelen;
-            if (\substr($s, $nb) !== $scope) return false;
-            $s = \substr($s, 0, $nb);
+            if (\substr($s, $nb + 1) !== $scope) return false;
+            return \substr($s, 1, $nb - 1);
         }
-        return $s;
     }
     public function seal($s, $scope = '*') {
+        if (empty($scope))
+            throw new \moodle_exception('scope can\'t be empty', 'auth_entsync');
         $this->ensurekeys();
         $ivSize = self::ivLength();
         $ivb = \openssl_random_pseudo_bytes($ivSize);
         if ('*' === $scope) {
-            $scopelen = 0;
+            $s = chr(0) . $s;
         } else {
             $scopelen = \strlen($scope);
-            $s .= $scope;
+            if ($scopelen > 255)
+                throw new \moodle_exception('scope to long', 'auth_entsync');
+            $s = chr($scopelen) . $s . $scope;
         }
         $s = $ivb . \openssl_encrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
-        $s = $this->uid . self::base64_url_encode($s);
-        if ($scopelen > 0) {
-            $s .= ".{$scopelen}";
-        }
-        return $s;
+        return $this->uid . self::base64_url_encode($s);
     }
 }
