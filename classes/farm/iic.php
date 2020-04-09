@@ -216,13 +216,16 @@ abstract class iic {
         return self::$_ivLength;
     }
     public static function base64_url_encode($input) {
-        return strtr(base64_encode($input), '+/=', '._-');
+        return \rtrim(\strtr(\base64_encode($input), '+/', '-_'), '=');
     }
-    
     public static function base64_url_decode($input) {
-        return base64_decode(strtr($input, '._-', '+/='));
+        $input = \strtr($input, '-_', '+/');
+        $pad = strlen($input) % 4;
+        if ($pad === 2) $input .= '==';
+        else if ($pad === 3)  $input .= '=';
+        else if ($pad === 1)  $input .= '==='; // Should not happen.
+        return \base64_decode($input);
     }
-    
 }
 class token extends iic {
     const TYPE = 'T';
@@ -291,10 +294,10 @@ class crkey extends iic {
     public function doOpen($s, $scope = '') {
         if ($scope !== $this->scope) return false;
         $this->ensurekeys();
-        $parts = \explode('~', $s);
-        if (\count($parts) !==2) return false; 
-        $ivb = self::base64_url_decode($parts[0]);
-        $s = self::base64_url_decode($parts[1]);
+        $s = self::base64_url_decode($s);
+        $ivSize = self::ivLength();
+        $ivb = \substr($s, 0, $ivSize);
+        $s = \substr($s, $ivSize);
         $s = \openssl_decrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
         if ((false !== $s) && ($this->unique))
             $this->removeFile();
@@ -304,7 +307,7 @@ class crkey extends iic {
         $this->ensurekeys();
         $ivSize = self::ivLength();
         $ivb = \openssl_random_pseudo_bytes($ivSize);
-        $s = \openssl_encrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
-        return $this->uid . self::base64_url_encode($ivb) . '~' . self::base64_url_encode($s);
+        $s = $ivb . \openssl_encrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
+        return $this->uid . self::base64_url_encode($s);
     }
 }
