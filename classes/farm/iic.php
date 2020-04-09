@@ -20,7 +20,9 @@
  * Secure communication between instances.
  * Based on rotating shared keys stored in a shared directory.
  *
- * File pattern : [T|K]-[R|U]-[uid]-[expiration]-[scope]
+ * File pattern : [T|K]-[uid]-[expiration]
+ * T : Tocken unique
+ * K : Key reusable
  *
  * @package    auth_entsync
  * @copyright  2020 Thomas Jaisson
@@ -41,7 +43,6 @@ abstract class iic {
     protected $fileName;
     protected $expir;
     protected $unique;
-    protected $scope;
     
 
     const TTL = 60;
@@ -54,8 +55,6 @@ abstract class iic {
     protected static $dirRed = false;
     protected static $_keys = [];
     protected static $_tokens = [];
-    protected static $_shared_keys = [];
-    protected static $_shared_tokens = [];
     protected static function checkConfig($throw = false) {
         if (!isset(self::$_sharedir)) {
             $sharedir = \get_config('auth_entsync', 'sharedir');
@@ -76,13 +75,12 @@ abstract class iic {
         $path = self::$_sharedir;
         $dir = \dir($path);
         while (false !== ($item = $dir->read())) {
-            $parts = \explode('-', $item, 5);
-            if (\count($parts) >= 4) {
-                if (\count($parts) === 4) $parts[4] = '';
-                $parts[3] = (int)$parts[3];
-                if ($parts[3] < $safeTime) {
+            $parts = \explode('-', $item, 3);
+            if (\count($parts) === 3) {
+                $parts[2] = (int)$parts[2];
+                if ($parts[2] < $safeTime) {
                     \unlink("{$path}/{$item}");
-                } else if ($parts[3] > $time) {
+                } else if ($parts[2] > $time) {
                     self::addItem($item, $parts);
                 }
             }
@@ -91,31 +89,19 @@ abstract class iic {
         self::$dirRed = true;
     }
     public static function addItem($item, $parts) {
-        $unique = $parts[1];
-        if ($unique === 'U') {
-            $unique = true;
-        } else if ($unique === 'R') {
-            $unique = false;
-        } else {
-            return false;
-        }
-        $uid = $parts[2];
+        $uid = $parts[1];
         $k = [
             'fileName' => $item,
-            'unique' => $unique,
             'uid' => $uid,
-            'expir' => $parts[3],
-            'scope' => $parts[4],
+            'expir' => $parts[2],
         ];
         $type = $parts[0];
         if ($type === token::TYPE) {
             $k = new token($k);
             self::$_tokens[$uid] = $k;
-            if (!$unique) self::$_shared_tokens[] = $k;
         } else if ($type === crkey::TYPE) {
             $k = new crkey($k);
             self::$_keys[$uid] = $k;
-            if (!$unique) self::$_shared_keys[] = $k;
         } else {
             return false;
         }
@@ -152,55 +138,42 @@ abstract class iic {
         $dirPath = self::$_sharedir;
         $this->uid = \random_string(self::UIDLEN);
         $type = static::TYPE;
-        $unique = $this->unique ? 'U' : 'R';
-        $filename = "-{$unique}-{$this->uid}-{$this->expir}";
-        if (!empty($this->scope)) $filename = "{$filename}-{$this->scope}";
+        $filename = "-{$this->uid}-{$this->expir}";
         $this->fileName = $type . $filename;
         $tempfp = "{$dirPath}/~{$filename}";
         if(false === \file_put_contents($tempfp, $this->val)) return false;
         return \rename($tempfp, "{$dirPath}/{$this->fileName}");
     }
-    public static function validateToken($uidtk, $scope = '') {
+    public static function validateToken($uidtk, $scope = '*') {
         $uid = \substr($uidtk, 0, self::UIDLEN);
         $tk = \substr($uidtk, self::UIDLEN);
         self::ensureDirRed();
         if (!($k = @self::$_tokens[$uid])) return false;
         return $k->validate($tk, $scope);
     }
-    protected static function findExisting($set, $ttl, $scope) {
+    protected static function findExistingKey($ttl) {
         $minExpir = \time() + $ttl;
         $maxExpir = $minExpir + $ttl;
-        foreach ($set as $k) {
-            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir) && ($k->scope === $scope)) 
+        foreach (self::$_keys as $k) {
+            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir)) 
                 return  $k;
         }
         return false;
     }
-    public static function getToken($ttl = null, $unique = null, $scope = '') {
-        if (null === $ttl) $ttl = self::TTL;
-        if (null === $unique) $unique = false;
-        if ($unique) {
-            $k = false;
-        } else {
-            self::ensureDirRed();
-            $k = self::findExisting(self::$_shared_tokens, $ttl, $scope);
-        }
-        if (!$k) $k = token::newToken($ttl, $unique, $scope);
+    public static function createToken($scope = null, $data = null, $ttl = self::TTL) {
+        if (null === $scope) $scope = '*';
+        if (null === $data) $data = 'OK';
+        $k = token::newToken($scope, $data, $ttl);
         return $k->getUidtk();
     }
-    public static function getCrkey($ttl = null, $unique = null, $scope = '') {
+    public static function getCrkey($ttl = self::TTL) {
         if (null === $ttl) $ttl = self::TTL;
-        if (null === $unique) $unique = false;
-        if ($unique) {
-            $k = false;
-        } else {
-            self::ensureDirRed();
-            $k = self::findExisting(self::$_shared_keys, $ttl, $scope);
-        }
-        if (!$k) $k = crkey::newCrkey($ttl, $unique, $scope);
+        self::ensureDirRed();
+        $k = self::findExistingKey($ttl);
+        if (!$k) $k = crkey::newCrkey($ttl);
         return $k;
     }
-    public static function open($uids, $scope = '') {
+    public static function open($uids, $scope = '*') {
         $uid = \substr($uids, 0, self::UIDLEN);
         $s = \substr($uids, self::UIDLEN);
         self::ensureDirRed();
@@ -229,34 +202,51 @@ abstract class iic {
 }
 class token extends iic {
     const TYPE = 'T';
-    public static function newToken($ttl, $unique, $scope) {
+    protected $tk;
+    protected $data;
+    protected $scope;
+    protected function ensureTk () {
+        if (empty($this->tk)) {
+            $this->ensureVal();
+            $parts = \explode(',', $this->val, 3);
+            if (3 !== \count($parts))
+                throw new \moodle_exception('token file corrupted', 'auth_entsync');
+            $this->tk = $parts[0];
+            if (self::TOKENLEN !== strlen($this->tk))
+                throw new \moodle_exception('token file corrupted', 'auth_entsync');
+            if (empty($parts[1])) $this->data = 'OK';
+            else $this->data = \base64_decode($parts[1]);
+            if (empty($parts[2])) $this->scope = '*';
+            else $this->scope = \base64_decode($parts[2]);
+        }
+    }
+    public static function newToken($scope, $data, $ttl) {
         $expir = \time() + $ttl;
-        if (!$unique) $expir += $ttl;
+        $val = $tk = \random_string(self::TOKENLEN) . ',';
+        if ('OK' !== $data) $val += \base64_encode($data);
+        $val += ',';
+        if ($scope !== '*') $val += \base64_encode($scope);
         $k = [
-            'unique' => $unique,
-            'val' => \random_string(self::TOKENLEN),
+            'tk' => $tk,
+            'val' => $val,
+            'data' => $data,
             'scope' => $scope,
             'expir' => $expir,
         ];
         $k = new token($k);
         if (!$k->saveToFile()) return false;
-        if (!$unique) {
-            self::$_shared_tokens[] = $k;
-        }
         self::$_tokens[$k->uid] = $k;
         return $k;
     }
-    public function validate($tk, $scope = '') {
-        if ($scope !== $this->scope) return false;
-        $this->ensureVal();
-        if ($tk === $this->val) {
-            if ($this->unique) $this->removeFile();
-            return true;
-        }
-        return false;
+    public function validate($tk, $scope) {
+        $this->ensureData();
+        if (('*' !== $this->scope) && ($this->scope !== $scope)) return false;
+        if ($tk !== $this->tk) return false;
+        $this->removeFile();
+        return $this->data;
     }
     public function getUidtk () {
-        return $this->uid . $this->val;
+        return $this->uid . $this->tk;
     }
 }
 class crkey extends iic {
@@ -271,43 +261,57 @@ class crkey extends iic {
         if (\strlen($this->kb) !== $len)
             throw new \moodle_exception('key file corrupted', 'auth_entsync');
     }
-    public static function newCrkey($ttl, $unique, $scope) {
+    public static function newCrkey($ttl) {
         $ivSize = self::ivLength();
         $kb = \openssl_random_pseudo_bytes($ivSize);
-        $expir = \time() + $ttl;
-        if (!$unique) $expir += $ttl;
+        $expir = \time() + 2 * $ttl;
         $k = [
-            'unique' => $unique,
             'val' => \base64_encode($kb),
-            'scope' => $scope,
             'expir' => $expir,
             'kb' => $kb,
         ];
         $k = new crkey($k);
         if (!$k->saveToFile()) return false;
-        if (!$unique) {
-            self::$_shared_keys[] = $k;
-        }
         self::$_keys[$k->uid] = $k;
         return $k;
     }
-    public function doOpen($s, $scope = '') {
-        if ($scope !== $this->scope) return false;
+    public function doOpen($s, $scope) {
         $this->ensurekeys();
+        $parts = \explode('.', $s);
+        $nb = \count($parts);
+        if ($nb > 2) return false;
+        if ($nb === 2) $scopelen = (int)$parts[1];
+        else $scopelen = 0;
+        $s = $parts[0];
+        if (empty($s)) return false;
         $s = self::base64_url_decode($s);
         $ivSize = self::ivLength();
         $ivb = \substr($s, 0, $ivSize);
         $s = \substr($s, $ivSize);
         $s = \openssl_decrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
-        if ((false !== $s) && ($this->unique))
-            $this->removeFile();
+        if (false === $s) return false;
+        if ($scopelen > 0) {
+            $nb = \strlen($s) - $scopelen;
+            if (\substr($s, $nb) !== $scope) return false;
+            $s = \substr($s, 0, $nb);
+        }
         return $s;
     }
-    public function seal($s) {
+    public function seal($s, $scope = '*') {
         $this->ensurekeys();
         $ivSize = self::ivLength();
         $ivb = \openssl_random_pseudo_bytes($ivSize);
+        if ('*' === $scope) {
+            $scopelen = 0;
+        } else {
+            $scopelen = \strlen($scope);
+            $s .= $scope;
+        }
         $s = $ivb . \openssl_encrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
-        return $this->uid . self::base64_url_encode($s);
+        $s = $this->uid . self::base64_url_encode($s);
+        if ($scopelen > 0) {
+            $s .= ".{$scopelen}";
+        }
+        return $s;
     }
 }
