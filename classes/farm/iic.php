@@ -222,10 +222,11 @@ class token extends iic {
     }
     public static function newToken($scope, $data, $ttl) {
         $expir = \time() + $ttl;
-        $val = $tk = \random_string(self::TOKENLEN) . ',';
-        if ('OK' !== $data) $val += \base64_encode($data);
-        $val += ',';
-        if ($scope !== '*') $val += \base64_encode($scope);
+        $val = $tk = \random_string(self::TOKENLEN);
+        $val .= ',';
+        if ('OK' !== $data) $val .= \base64_encode($data);
+        $val .= ',';
+        if ($scope !== '*') $val .= \base64_encode($scope);
         $k = [
             'tk' => $tk,
             'val' => $val,
@@ -239,7 +240,7 @@ class token extends iic {
         return $k;
     }
     public function validate($tk, $scope) {
-        $this->ensureData();
+        $this->ensureTk();
         if (('*' !== $this->scope) && ($this->scope !== $scope)) return false;
         if ($tk !== $this->tk) return false;
         $this->removeFile();
@@ -289,7 +290,7 @@ class crkey extends iic {
             return \substr($s, 1);
         } else {
             $nb = \strlen($s) - $scopelen;
-            if (\substr($s, $nb + 1) !== $scope) return false;
+            if (\substr($s, $nb) !== $scope) return false;
             return \substr($s, 1, $nb - 1);
         }
     }
