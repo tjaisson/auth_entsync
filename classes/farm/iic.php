@@ -48,6 +48,8 @@ abstract class iic {
     const SAFE_TTL = 5;
     const UIDLEN = 10;
     const TYPE = null;
+    const OK = 'OK';
+    const NOSCOPE = '*';
     protected static $_sharedir;
     protected static $dirRed = false;
     protected static function checkConfig($throw = false) {
@@ -138,8 +140,8 @@ abstract class iic {
         return \rename($tempfp, "{$dirPath}/{$this->fileName}");
     }
     public static function createToken($scope = null, $data = null, $ttl = null) {
-        if (null === $scope) $scope = '*';
-        if (null === $data) $data = 'OK';
+        if (null === $scope) $scope = self::NOSCOPE;
+        if (null === $data) $data = self::OK;
         $k = token::newToken($scope, $data, $ttl);
         return $k->getUidtk();
     }
@@ -149,7 +151,7 @@ abstract class iic {
         if (!$k) $k = crkey::newCrkey($ttl);
         return $k;
     }
-    public static function open($uids, $scope = '*') {
+    public static function open($uids, $scope = self::NOSCOPE) {
         $type = \substr($uids, 0, 1);
         if (token::TYPE == $type) return token::findAndOpen($uids, $scope);
         else if (crkey::TYPE == $type) return crkey::findAndOpen($uids, $scope);
@@ -192,9 +194,9 @@ class token extends iic {
             $this->tk = $parts[0];
             if (self::TOKENLEN !== strlen($this->tk))
                 throw new \moodle_exception('token file corrupted', 'auth_entsync');
-            if (empty($parts[1])) $this->data = 'OK';
+            if (empty($parts[1])) $this->data = self::OK;
             else $this->data = \base64_decode($parts[1]);
-            if (empty($parts[2])) $this->scope = '*';
+            if (empty($parts[2])) $this->scope = self::NOSCOPE;
             else $this->scope = \base64_decode($parts[2]);
         }
     }
@@ -203,9 +205,9 @@ class token extends iic {
         $expir = \time() + $ttl;
         $val = $tk = \random_string(self::TOKENLEN);
         $val .= ',';
-        if ('OK' !== $data) $val .= \base64_encode($data);
+        if (self::OK !== $data) $val .= \base64_encode($data);
         $val .= ',';
-        if ($scope !== '*') $val .= \base64_encode($scope);
+        if (self::NOSCOPE !== $scope) $val .= \base64_encode($scope);
         $k = [
             'tk' => $tk,
             'val' => $val,
@@ -220,7 +222,7 @@ class token extends iic {
     }
     public function doOpen($tk, $scope) {
         $this->ensureTk();
-        if (('*' !== $this->scope) && ($this->scope !== $scope)) return false;
+        if ((self::NOSCOPE !== $this->scope) && ($this->scope !== $scope)) return false;
         if ($tk !== $this->tk) return false;
         $this->removeFile();
         return $this->data;
@@ -295,13 +297,13 @@ class crkey extends iic {
             return \substr($s, 1, $nb - 1);
         }
     }
-    public function seal($s, $scope = '*') {
+    public function seal($s, $scope = self::NOSCOPE) {
         if (empty($scope))
             throw new \moodle_exception('scope can\'t be empty', 'auth_entsync');
         $this->ensurekeys();
         $ivSize = self::ivLength();
         $ivb = \openssl_random_pseudo_bytes($ivSize);
-        if ('*' === $scope) {
+        if (self::NOSCOPE === $scope) {
             $s = chr(0) . $s;
         } else {
             $scopelen = \strlen($scope);
