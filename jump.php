@@ -20,7 +20,7 @@
  * @copyright 2016 Thomas Jaisson
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-require(__DIR__ . '/../../../config.php');
+require(__DIR__ . '/../../config.php');
 use \auth_entsync\farm\instance;
 use \auth_entsync\farm\iic;
 $inst = optional_param('inst', null, PARAM_TEXT);
