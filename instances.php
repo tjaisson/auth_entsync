@@ -113,6 +113,7 @@ if ($action == 'del') {
     echo $OUTPUT->footer();
 } else {
     // Il faut afficher la liste des instances.
+    $jumpurl = new moodle_url('/auth/entsync/jump.php');
     $editurl = new moodle_url($returnurl, ['action' => 'edit']);
     $delurl = new moodle_url($returnurl, ['action' => 'del']);
     
@@ -129,9 +130,9 @@ if ($action == 'del') {
 
     foreach ($instances as $instance) {
         $id = $instance->get('id');
+        $jumplnk = new moodle_url($jumpurl, ['inst' => $instance->get('dir')]);
         $editlnk = new moodle_url($editurl, ['id' => $id]);
         $dellnk = new moodle_url($delurl, ['id' => $id]);
-        $jumplnk = new moodle_url($instance->wwwroot() . '/auth/entsync/jump/login.php');
         $row = [];
         $row[] = html_writer::link($jumplnk, $instance->get('dir'), $jumpattr);
         $row[] = html_writer::link($editlnk, $instance->get('name'), $editattr);
