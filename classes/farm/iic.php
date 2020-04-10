@@ -45,16 +45,11 @@ abstract class iic {
     protected $unique;
     
 
-    const TTL = 60;
     const SAFE_TTL = 5;
     const UIDLEN = 10;
-    const TOKENLEN = 15;
-    const METHOD = 'aes128';
     const TYPE = null;
     protected static $_sharedir;
     protected static $dirRed = false;
-    protected static $_keys = [];
-    protected static $_tokens = [];
     protected static function checkConfig($throw = false) {
         if (!isset(self::$_sharedir)) {
             $sharedir = \get_config('auth_entsync', 'sharedir');
@@ -96,15 +91,13 @@ abstract class iic {
             'expir' => $parts[2],
         ];
         $type = $parts[0];
-        if ($type === token::TYPE) {
-            $k = new token($k);
-            self::$_tokens[$uid] = $k;
-        } else if ($type === crkey::TYPE) {
-            $k = new crkey($k);
-            self::$_keys[$uid] = $k;
-        } else {
-            return false;
-        }
+        if ($type === token::TYPE) return token::doAddItem($k);
+         else if ($type === crkey::TYPE) return crkey::doAddItem($k);
+         else return false;
+    }
+    public static function doAddItem($k) {
+        $k = new static($k);
+        static::$_list[$k->uid] = $k;
         return $k;
     }
     public function __construct($params) {
@@ -144,50 +137,32 @@ abstract class iic {
         if(false === \file_put_contents($tempfp, $this->val)) return false;
         return \rename($tempfp, "{$dirPath}/{$this->fileName}");
     }
-    public static function validateToken($uidtk, $scope = '*') {
-        $uid = \substr($uidtk, 0, self::UIDLEN);
-        $tk = \substr($uidtk, self::UIDLEN);
-        self::ensureDirRed();
-        if (!($k = @self::$_tokens[$uid])) return false;
-        return $k->validate($tk, $scope);
-    }
-    protected static function findExistingKey($ttl) {
-        $minExpir = \time() + $ttl;
-        $maxExpir = $minExpir + $ttl;
-        foreach (self::$_keys as $k) {
-            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir)) 
-                return  $k;
-        }
-        return false;
-    }
-    public static function createToken($scope = null, $data = null, $ttl = self::TTL) {
+    public static function createToken($scope = null, $data = null, $ttl = null) {
         if (null === $scope) $scope = '*';
         if (null === $data) $data = 'OK';
         $k = token::newToken($scope, $data, $ttl);
         return $k->getUidtk();
     }
-    public static function getCrkey($ttl = self::TTL) {
-        if (null === $ttl) $ttl = self::TTL;
+    public static function getCrkey($ttl = null) {
         self::ensureDirRed();
-        $k = self::findExistingKey($ttl);
+        $k = crkey::findExistingKey($ttl);
         if (!$k) $k = crkey::newCrkey($ttl);
         return $k;
     }
     public static function open($uids, $scope = '*') {
-        $uid = \substr($uids, 0, self::UIDLEN);
-        $s = \substr($uids, self::UIDLEN);
+        $type = \substr($uids, 0, 1);
+        if (token::TYPE == $type) return token::findAndOpen($uids, $scope);
+        else if (crkey::TYPE == $type) return crkey::findAndOpen($uids, $scope);
+        else return false;
+    }
+    public static function findAndOpen($uids, $scope) {
+        $uid = \substr($uids, 1, self::UIDLEN);
+        $s = \substr($uids, self::UIDLEN + 1);
         self::ensureDirRed();
-        if (!($k = @self::$_keys[$uid])) return false;
+        if (!($k = @static::$_list[$uid])) return false;
         return $k->doOpen($s, $scope);
     }
-    protected static $_ivLength;
-    protected  static function ivLength() {
-        if(!isset(self::$_ivLength))
-            self::$_ivLength = \openssl_cipher_iv_length(self::METHOD);
-        if (self::$_ivLength < 5)
-            throw new \moodle_exception('cryptographic function missing', 'auth_entsync');
-        return self::$_ivLength;
-    }
+    public abstract function doOpen($tk, $scope);
     public static function base64_url_encode($input) {
         return \rtrim(\strtr(\base64_encode($input), '+/', '-_'), '=');
     }
@@ -201,7 +176,10 @@ abstract class iic {
     }
 }
 class token extends iic {
+    const TTL = 10;
     const TYPE = 'T';
+    const TOKENLEN = 15;
+    public static $_list = [];
     protected $tk;
     protected $data;
     protected $scope;
@@ -221,6 +199,7 @@ class token extends iic {
         }
     }
     public static function newToken($scope, $data, $ttl) {
+        if (null === $ttl) $ttl = self::TTL;
         $expir = \time() + $ttl;
         $val = $tk = \random_string(self::TOKENLEN);
         $val .= ',';
@@ -236,10 +215,10 @@ class token extends iic {
         ];
         $k = new token($k);
         if (!$k->saveToFile()) return false;
-        self::$_tokens[$k->uid] = $k;
+        self::$_list[$k->uid] = $k;
         return $k;
     }
-    public function validate($tk, $scope) {
+    public function doOpen($tk, $scope) {
         $this->ensureTk();
         if (('*' !== $this->scope) && ($this->scope !== $scope)) return false;
         if ($tk !== $this->tk) return false;
@@ -247,12 +226,23 @@ class token extends iic {
         return $this->data;
     }
     public function getUidtk () {
-        return $this->uid . $this->tk;
+        return self::TYPE . $this->uid . $this->tk;
     }
 }
 class crkey extends iic {
+    const TTL = 60;
     const TYPE = 'K';
+    const METHOD = 'aes128';
+    public static $_list = [];
     protected $kb;
+    protected static $_ivLength;
+    protected  static function ivLength() {
+        if(!isset(self::$_ivLength))
+            self::$_ivLength = \openssl_cipher_iv_length(self::METHOD);
+            if (self::$_ivLength < 5)
+                throw new \moodle_exception('cryptographic function missing', 'auth_entsync');
+                return self::$_ivLength;
+    }
     protected function ensurekeys () {
         if (empty($this->kb)) {
             $this->ensureVal();
@@ -262,7 +252,18 @@ class crkey extends iic {
         if (\strlen($this->kb) !== $len)
             throw new \moodle_exception('key file corrupted', 'auth_entsync');
     }
+    public static function findExistingKey($ttl) {
+        if (null === $ttl) $ttl = self::TTL;
+        $minExpir = \time() + $ttl;
+        $maxExpir = $minExpir + $ttl;
+        foreach (self::$_list as $k) {
+            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir))
+                return  $k;
+        }
+        return false;
+    }
     public static function newCrkey($ttl) {
+        if (null === $ttl) $ttl = self::TTL;
         $ivSize = self::ivLength();
         $kb = \openssl_random_pseudo_bytes($ivSize);
         $expir = \time() + 2 * $ttl;
@@ -273,7 +274,7 @@ class crkey extends iic {
         ];
         $k = new crkey($k);
         if (!$k->saveToFile()) return false;
-        self::$_keys[$k->uid] = $k;
+        self::$_list[$k->uid] = $k;
         return $k;
     }
     public function doOpen($s, $scope) {
@@ -309,6 +310,6 @@ class crkey extends iic {
             $s = chr($scopelen) . $s . $scope;
         }
         $s = $ivb . \openssl_encrypt($s, self::METHOD, $this->kb, \OPENSSL_RAW_DATA, $ivb);
-        return $this->uid . self::base64_url_encode($s);
+        return self::TYPE . $this->uid . self::base64_url_encode($s);
     }
 }
