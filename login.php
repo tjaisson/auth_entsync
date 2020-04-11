@@ -34,27 +34,26 @@ if (!isset($CFG->additionalhtmlhead)) {
 $CFG->additionalhtmlhead .= '<meta name="robots" content="noindex" />';
 redirect_if_major_upgrade_required();
 
-$context = context_system::instance();
-$PAGE->set_url("$CFG->httpswwwroot/auth/entsync/login.php");
-$PAGE->set_context($context);
-$PAGE->set_pagelayout('login');
+$page_url = new moodle_url('/auth/entsync/login.php');
 
-$entclass = required_param('ent', PARAM_TEXT);
+$entclass = required_param('ent', PARAM_ALPHANUMEXT);
 require_once('ent_defs.php');
 if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
     (!$ent->is_sso()) ||
     (!$ent->is_enabled())) print_error('userautherror');
+    $page_param = ['ent' => $ent->get_entclass()];
 require_once(__DIR__ . '/../../login/lib.php');
-$userdata = optional_param('user', null, PARAM_TEXT);
+$userdata = optional_param('user', null, PARAM_ALPHANUMEXT);
 if (!empty($userdata)) {
     if ((count($_POST) + count($_GET)) !== 2) print_error('userautherror');
+    $page_param['user'] = $userdata;
     $scope = instance::inst() . ':' . $ent->get_entclass();
     if (false === ($userdata = iic::open($userdata, $scope)))
         print_error('expiredkey', 'error', instance::gwroot() . '/auth/entsync/switch.php?ent=' . $entclass);
     $val = unserialize($userdata);
-    $entu = auth_entsync_findEntu($val, $ent);
+    $entu = auth_entsync_findEntu($val);
     if (!$entu) {
-        auth_entsync_clearSession();
+        auth_entsync_clearSession(false);
         print_error('notauthorized',
             'auth_entsync',
             '',
@@ -63,15 +62,18 @@ if (!empty($userdata)) {
     if (isloggedin()) {
         if ($USER->id === $entu->userid) {
             redirect($CFG->wwwroot.'/');
+        } else {
+            auth_entsync_clearSession();
         }
     }
-    auth_entsync_clearSession();
-    auth_entsync_tryLogin($entu, $ent);
+    auth_entsync_tryLogin($entu);
 } else {
-    auth_entsync_clearSession();
+    if (isloggedin()) {
+        auth_entsync_clearSession();
+    }
     if (('cas' !== $ent->get_mode()) ||
         (!$cas = $ent->get_casconnector())) print_error('userautherror');
-    $clienturl = new moodle_url("{$CFG->httpswwwroot}/auth/entsync/login.php", ['ent' => $entclass]);
+    $clienturl = new moodle_url($page_url, ['ent' => $entclass]);
     $cas->set_clienturl($clienturl);
     if ($val = $cas->validateorredirect()) {
         $entu = auth_entsync_findEntu($val, $ent);
@@ -83,12 +85,11 @@ if (!empty($userdata)) {
         }
         auth_entsync_tryLogin($entu, $ent);
     } else {
-        // Display erreur et redirect button.
         print_error('userautherror');
     }
 }
-function auth_entsync_tryLogin($entu, $ent) {
-    global $USER, $SESSION;
+function auth_entsync_tryLogin($entu) {
+    global $USER, $SESSION, $ent;
     if ($entu->archived) print_error('userautherror');
     if (!$mdlu = get_complete_user_data('id', $entu->userid)) print_error('userautherror');
     if ($mdlu->suspended) print_error('userautherror');
@@ -103,10 +104,10 @@ function auth_entsync_tryLogin($entu, $ent) {
     // Discard any errors before the last redirect.
     unset($SESSION->loginerrormsg);
     // Test the session actually works by redirecting to self.
-    redirect(new moodle_url(get_login_url(), array('testsession' => $mdlu->id)));
+    redirect(new moodle_url(get_login_url(), ['testsession' => $mdlu->id]));
 }
-function auth_entsync_findEntu($val, $ent) {
-    global $DB;
+function auth_entsync_findEntu($val) {
+    global $DB, $ent;
     if ($val->uid) {
         if (!$entu = $DB->get_record('auth_entsync_user',
             ['uid' => $val->uid, 'ent' => $ent->get_code()])) {
@@ -123,8 +124,11 @@ function auth_entsync_findEntu($val, $ent) {
     }
     return $entu;
 }
-function auth_entsync_clearSession() {
-    global $USER;
+function auth_entsync_clearSession($redir = true) {
+    global $USER, $page_url, $page_param;
     if (isset($USER) && (isset($USER->entsync))) unset($USER->entsync);
     require_logout();
+    if ($redir) {
+        redirect(new moodle_url($page_url, $page_param));
+    }
 }
