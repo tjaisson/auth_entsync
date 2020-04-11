@@ -50,13 +50,20 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     }
     
     public function decodecallback($attr, $elem) {
-        //ENTPersonStructRattachRNE
         $attr->rnes = [];
-        $rnenodelist = $elem->item(0)->getElementsByTagName("ENTPersonStructRattachRNE");
-        foreach($rnenodelist as $rnenode) {
-            $attr->rnes[] = $rnenode->nodeValue;
+        if(($list = $elem->item(0)->getElementsByTagName('structureNodes'))->length > 0) {
+            $structs = json_decode($list->item(0)->nodeValue);
+            foreach ($structs as $struct) {
+                $attr->rnes[] = $struct->UAI;
+            }
+            $attr->uid = $elem->item(0)->getElementsByTagName('externalId')->item(0)->nodeValue;
+        } else {
+            $structs = $elem->item(0)->getElementsByTagName('ENTPersonStructRattachRNE');
+            foreach($structs as $struct) {
+                $attr->rnes[] = $struct->nodeValue;
+            }
+            $attr->uid = $elem->item(0)->getElementsByTagName('uid')->item(0)->nodeValue;
         }
-        $attr->uid = $elem->item(0)->getElementsByTagName("uid")->item(0)->nodeValue;
     }
     public function get_profileswithcohorts() {
         return [1];
