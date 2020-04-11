@@ -153,7 +153,6 @@ class casconnect {
                         return false;
                     } else {
                         $attr = new \stdClass();
-                        $attr->raw = $rep;
                         $attr->user = \trim(
                             $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
                             );
@@ -161,7 +160,6 @@ class casconnect {
                                 && \is_callable($this->_casparams['decodecallback'], false)) {
                             \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
-                        $attr->retries = $retries;
                         $this->_log('validated', $this->_ticket);
                         return $attr;
                     }
