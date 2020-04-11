@@ -28,11 +28,11 @@ if ((!empty($entclass)) &&
         $reponse .= "<h2>ENT :</h2>";
         $reponse .= "<pre>" . $ent->nomlong . "</pre>";
         
-        if ($val = $cas->validateorredirect()) {
+        if ($val = $cas->validateorredirect(true)) {
             $reponse .= "<h2>Ticket :</h2>";
             $reponse .= "<pre>" . $cas->get_ticket() . "</pre>";
             $reponse .= "<h2>Réponse :</h2>";
-            $reponse .= "<pre>" . htmlspecialchars($val->raw) . "</pre>";
+            $reponse .= "<pre>" . htmlspecialchars($val) . "</pre>";
         } else {
             $reponse .= "<h2>Ticket :</h2>";
             $reponse .= "<pre>" . $cas->get_ticket() . "</pre>";
