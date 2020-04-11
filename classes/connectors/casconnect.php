@@ -89,8 +89,8 @@ class casconnect {
         self::_redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
     }
     public function read_ticket() {
-        $ticket = \optional_param('ticket', null, 'PARAM_ALPHANUMEXT');
-        $salt = \optional_param('salt', null, 'PARAM_ALPHANUMEXT');
+        $ticket = \optional_param('ticket', null, \PARAM_ALPHANUMEXT);
+        $salt = \optional_param('salt', null, \PARAM_ALPHANUMEXT);
         if ((null === $ticket) || (null === $salt)) return false;
         unset($_GET['ticket']);
         unset($_GET['salt']);
