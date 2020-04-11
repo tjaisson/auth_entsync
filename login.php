@@ -66,7 +66,7 @@ if (!empty($userdata)) {
         }
     }
     auth_entsync_clearSession();
-    auth_entsync_tryLogin($entu);
+    auth_entsync_tryLogin($entu, $ent);
 } else {
     auth_entsync_clearSession();
     if (('cas' !== $ent->get_mode()) ||
@@ -81,7 +81,7 @@ if (!empty($userdata)) {
                 '',
                 (object)['ent' => $ent->nomcourt, 'user' => $val->user]);
         }
-        auth_entsync_tryLogin($entu);
+        auth_entsync_tryLogin($entu, $ent);
     } else {
         // Display erreur et redirect button.
         print_error('userautherror');
