@@ -49,7 +49,7 @@ if (!empty($userdata)) {
     $page_param['user'] = $userdata;
     $scope = instance::inst() . ':' . $ent->get_entclass();
     if (false === ($userdata = iic::open($userdata, $scope)))
-        print_error('expiredkey', 'error', instance::gwroot() . '/auth/entsync/switch.php?ent=' . $entclass);
+        print_error('expiredkey');
     $val = unserialize($userdata);
     $entu = auth_entsync_findEntu($val);
     if (!$entu) {
