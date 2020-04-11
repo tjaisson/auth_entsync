@@ -29,12 +29,6 @@ global $CFG;
 require_once($CFG->libdir.'/filelib.php');
 
 class casconnect {
-
-    /**
-     * @var string|null Null if ok, error msg otherwise
-     */
-    protected $_error;
-
     /**
      *   [
      *   'hostname' => 'www.parisclassenumerique.fr',
@@ -49,24 +43,15 @@ class casconnect {
      * @var array
      */
     protected $_casparams;
-
-    /**
-     * @var \moodle_url
-     */
+    const SALTLEN = 5;
+    protected $_error;
     protected $_clienturl;
-
     protected $_ticket;
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-    }
-
+    protected $_salt;
+    public $doLog = false;
     public function get_ticket() {
         return $this->_ticket;
     }
-
     public function set_param($casparams) {
         $this->_casparams = $casparams;
         if (!\array_key_exists('retries', $this->_casparams)) {
@@ -91,48 +76,31 @@ class casconnect {
             $this->_casparams['homehost'] = $this->_casparams['hostname'];
         }
     }
-
     public function support_gw() {
         return $this->_casparams['supportGW'];
     }
-
     public function allow_Untrust() {
         return $this->_casparams['allowUntrust'];
     }
-
     public function  redirtocas($gw = false) {
         self::_redirect($this->buildloginurl($gw));
     }
-
     public function  redirtohome() {
         self::_redirect('https://' . $this->_casparams['homehost'] . $this->_casparams['homeuri']);
     }
-
-    /**
-     * @return boolean
-     */
     public function read_ticket() {
-        $ticket = (isset($_GET['ticket']) ? $_GET['ticket'] : null);
-        if (\preg_match('/^[SP]T-/', $ticket) ) {
-            unset($_GET['ticket']);
-            $this->_ticket = $ticket;
-            return true;
-        } else {
-            // Pas de ticket.
-            unset($this->_ticket);
-            return false;
-        }
+        $ticket = \optional_param('ticket', null, 'PARAM_ALPHANUMEXT');
+        $salt = \optional_param('salt', null, 'PARAM_ALPHANUMEXT');
+        if ((null === $ticket) || (null === $salt)) return false;
+        unset($_GET['ticket']);
+        unset($_GET['salt']);
+        $this->_ticket = $ticket;
+        $this->_salt = $salt;
+        return true;
     }
-
-    /**
-     * Get last error
-     *
-     * @return string error text of null if none
-     */
     public function get_error() {
         return $this->_error;
     }
-
     public function validateorredirect() {
         if ($this->read_ticket()) {
             return $this->validate_ticket();
@@ -140,14 +108,12 @@ class casconnect {
             $this->redirtocas();
         }
     }
-
     public function validate_ticket() {
         $this->_error = '';
-        if (!isset($this->_ticket)) {
+        if (empty($this->_ticket) || empty($this->_salt)) {
             $this->_error = 'Erreur.';
             return false;
         }
-
         $valurl  = $this->buildvalidateurl()->out(false);
         $cu = new \curl();
         if ($this->allow_Untrust()) {
@@ -156,7 +122,6 @@ class casconnect {
         }
         $maxretries = $this->_casparams['retries'];
         $retries = 0;
-
         do {
             if ($rep = $cu->get($valurl)) {
                 // Create new DOMDocument object.
@@ -197,30 +162,27 @@ class casconnect {
                             \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
                         $attr->retries = $retries;
+                        $this->_log('validated', $this->_ticket);
                         return $attr;
                     }
                 }
             } else {
                 $this->_error = 'Impossible de contacter le serveur CAS';
+                $this->_log('not validated 1', $this->_ticket);
                 return false;
             }
         } while ($retries++ < $maxretries);
-
+        $this->_log('not validated 2', $this->_ticket);
         $this->_error = 'Ticket non validé';
         return false;
     }
-
     public function buildloginurl($gw = false) {
-        $param = ['service' => $this->_clienturl->out(false)];
-        if ($gw) {
-            $param['gateway'] = 'true';
-        }
+        $this->_salt = \random_string(self::SALTLEN);
+        $saltedurl = new \moodle_url($this->_clienturl, ['salt' => $this->_salt]);
+        $param = ['service' => $saltedurl->out(false)];
+        if ($gw) $param['gateway'] = 'true';
         return new \moodle_url($this->_getServerBaseURL().'login', $param);
     }
-
-    /**
-     * @return \moodle_url
-     */
     protected function buildvalidateurl() {
         $ret = $this->_getServerBaseURL();
         switch ($this->_casparams['casversion']) {
@@ -237,10 +199,10 @@ class casconnect {
                 $ret .= 'serviceValidate';
                 break;
         }
-        $param = ['service' => $this->_clienturl->out(false), 'ticket' => $this->_ticket];
+        $saltedurl = new \moodle_url($this->_clienturl, ['salt' => $this->_salt]);
+        $param = ['service' => $saltedurl->out(false), 'ticket' => $this->_ticket];
         return new \moodle_url($ret, $param);
     }
-
     protected function _getServerBaseURL() {
         $ret = 'https://' . $this->_casparams['hostname'];
         if ($this->_casparams['port'] != 443) {
@@ -249,15 +211,16 @@ class casconnect {
         $ret .= $this->_casparams['baseuri'];
         return $ret;
     }
-
-    /**
-     * @param \moodle_url $url
-     */
     public function set_clienturl($url) {
         $this->_clienturl = $url;
     }
-
     protected static function _redirect($url) {
         \redirect($url);
+    }
+    protected function _log($type, $tk){
+        if (!(true === $this->doLog)) return;
+        $logfile = \get_config('auth_entsync', 'sharedir');
+        $logfile .= '/logs/caslog.txt';
+        \file_put_contents($logfile, $type . ' ' . $tk . \PHP_EOL , \FILE_APPEND | \LOCK_EX);
     }
 }
