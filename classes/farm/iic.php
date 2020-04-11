@@ -232,7 +232,7 @@ class token extends iic {
     }
 }
 class crkey extends iic {
-    const TTL = 60;
+    const TTL = 180;
     const TYPE = 'K';
     const METHOD = 'aes128';
     public static $_list = [];
