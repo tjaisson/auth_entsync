@@ -15,8 +15,6 @@ if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
         (!($cas = $ent->get_casconnector()))) print_error('userautherror');
 $cas->set_clienturl(new moodle_url($page_url, ['ent' => $ent->get_entclass()]));
 if ($val = $cas->validateorredirect()) {
-    unset($val->raw);
-    unset($val->retries);
     if (count($val->rnes) <= 0) {
         // L'utilisateur n'a pas d'instance.
         auth_entsync_printinfopage();

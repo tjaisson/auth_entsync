@@ -101,14 +101,14 @@ class casconnect {
     public function get_error() {
         return $this->_error;
     }
-    public function validateorredirect() {
+    public function validateorredirect($raw = false) {
         if ($this->read_ticket()) {
-            return $this->validate_ticket();
+            return $this->validate_ticket($raw);
         } else {
             $this->redirtocas();
         }
     }
-    public function validate_ticket() {
+    public function validate_ticket($raw) {
         $this->_error = '';
         if (empty($this->_ticket) || empty($this->_salt)) {
             $this->_error = 'Erreur.';
@@ -120,10 +120,12 @@ class casconnect {
             $cu->setopt(['SSL_VERIFYHOST' => false]);
             $cu->setopt(['SSL_VERIFYPEER' => false]);
         }
-        $maxretries = $this->_casparams['retries'];
+        $maxretries = $raw ? 0 : $this->_casparams['retries'];
         $retries = 0;
         do {
-            if ($rep = $cu->get($valurl)) {
+            $rep = $cu->get($valurl);
+            if (0 === $cu->get_errno()) {
+                if ($raw) return $rep;
                 // Create new DOMDocument object.
                 $dom = new \DOMDocument();
                 // ... fix possible whitspace problems.
@@ -153,7 +155,6 @@ class casconnect {
                         return false;
                     } else {
                         $attr = new \stdClass();
-                        $attr->raw = $rep;
                         $attr->user = \trim(
                             $success_elements->item(0)->getElementsByTagName("user")->item(0)->nodeValue
                             );
@@ -161,7 +162,6 @@ class casconnect {
                                 && \is_callable($this->_casparams['decodecallback'], false)) {
                             \call_user_func($this->_casparams['decodecallback'], $attr, $success_elements);
                         }
-                        $attr->retries = $retries;
                         $this->_log('validated', $this->_ticket);
                         return $attr;
                     }
