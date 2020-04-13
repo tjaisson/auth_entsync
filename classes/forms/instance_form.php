@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die;
 
 class instance_form extends \core\form\persistent {
     /** @var string Persistent class name. */
-    protected static $persistentclass = 'auth_entsync\\persistents\\instance';
+    protected static $persistentclass = 'auth_entsync\\farm\\instance';
     
     public function definition() {
         $mform = $this->_form;
