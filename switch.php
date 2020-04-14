@@ -1,5 +1,4 @@
 <?php
-
 // Pas besoin de la session.
 define('NO_MOODLE_COOKIE', true);
 require(__DIR__ . '/../../config.php');
@@ -21,13 +20,8 @@ if ($val = $cas->validateorredirect()) {
         auth_entsync_printinfopage();
     }
     // On constitue la liste des instances de cet utilisateur.
-    $instances = \auth_entsync\farm\instance::get_records([], 'name');
-    $userinsts = [];
-    foreach ($instances as $instance) {
-        if ($instance->has_rne($val->rnes)) {
-            $userinsts[] = $instance;
-        }
-    }
+    $instances = $entsync->query('instances');
+    $userinsts = $instances->get_instancesForRnes($val->rnes);
     $instcount = count($userinsts);
     if ($instcount <= 0) {
         // L'utilisateur n'a pas d'instance, on lui présente aboutpam.

@@ -45,10 +45,17 @@ class container {
             return new conf(self::NAME);
         });
         $this->registerService('iic', function ($c) {
-            include_once(__dir__ . '//farm/iic.php');
+            include_once(__dir__ . '/farm/iic.php');
             return new farm\iic($c->query('conf'));
         });
-        
+        $this->registerService('instances', function ($c) {
+            include_once(__dir__ . '/farm/instances.php');
+            return new farm\instances($c->query('conf'));
+        });
+        $this->registerService('instances_form', function ($c) {
+            include_once(__dir__ . '/forms/instance_form.php');
+            return new forms\instance_form($c->query('instances'));
+        });
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
