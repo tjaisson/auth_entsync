@@ -22,15 +22,18 @@
  */
 require(__DIR__ . '/../../config.php');
 use \auth_entsync\farm\instance;
-use \auth_entsync\farm\iic;
+$entsync = \auth_entsync\container::services();
+$conf = $entsync->query('conf');
+$iic = $entsync->query('iic');
+$instances = $entsync->query('instances');
 $inst = optional_param('inst', null, PARAM_TEXT);
 if (!empty($inst)) {
     if ((!isloggedin()) || (!is_siteadmin())) die();
-    $instance = instance::get_record(['dir' => $inst]);
+    $instance = $instances->get_instance(['dir' => $inst]);
     if (!$instance) {
         die();
     }
-    $tk = iic::createToken($instance->get('dir'), null, 5);
+    $tk = $iic->createToken($instance->get('dir'), null, 5);
     if (empty($tk)) die();
     $redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump.php', ['tk' => $tk]);
     redirect($redirecturl);
@@ -38,8 +41,8 @@ if (!empty($inst)) {
 }
 $tk = optional_param('tk', null, PARAM_TEXT);
 if (empty($tk)) die();
-if (isloggedin() || instance::is_gw()) redirect($CFG->wwwroot);
-if (iic::OK !== iic::open($tk, instance::inst())) die();
+if (isloggedin() || $conf->is_gw()) redirect($CFG->wwwroot);
+if ($iic::OK !== $iic->open($tk, $conf->inst())) die();
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 $mdlu = $DB->get_record('user', ['username' => 'pam.central.adm', 'auth' => 'entsync']);

@@ -24,36 +24,37 @@
 namespace auth_entsync\farm;
 defined('MOODLE_INTERNAL') || die;
 
+class instances {
+    public static $conf;
+    public function __construct($conf) {
+        self::$conf = $conf;
+    }
+    public function get_instances($filters = [], $sort = '', $order = 'ASC', $skip = 0, $limit = 0) {
+        return instance::get_records($filters, $sort, $order, $skip, $limit);
+    }
+    public function get_instance($filters = []) {
+        return instance::get_record($filters);
+    }
+    public function get_instancesForRnes($rnes) {
+        $insts = [];
+        $instances = instance::get_records([], 'name');
+        foreach ($instances as $inst) {
+            if ($inst->has_rne($rnes)) {
+                $insts[] = $inst;
+            }
+        }
+        return $insts;
+    }
+    public function instance($id) {
+        return new instance($id);
+    }
+    public function instanceClass() {
+        return instance::class;
+    }
+}
+
 class instance extends \core\persistent {
     const TABLE = 'auth_entsync_instances';
-    protected static $pamroot;
-    protected static $inst;
-    protected static $gw;
-    protected static $_isgw;
-    public static function pamroot() {
-        if (!isset(self::$pamroot)) {
-            self::$pamroot = \get_config('auth_entsync', 'pamroot');
-        }
-        return self::$pamroot;
-    }
-    public static function inst() {
-        if (!isset(self::$inst)) {
-            self::$inst = \get_config('auth_entsync', 'inst');
-        }
-        return self::$inst;
-    }
-    public static function gw() {
-        if (!isset(self::$gw)) {
-            self::$gw = \get_config('auth_entsync', 'gw');
-        }
-        return self::$gw;
-    }
-    public static function is_gw() {
-        if (!isset(self::$_isgw)) {
-            self::$_isgw = ($gw = self::gw()) ? ($gw === self::inst()) : false;
-        }
-        return self::$_isgw;
-    }
     /**
      * Define properties.
      *
@@ -78,9 +79,6 @@ class instance extends \core\persistent {
         return (\count($i) > 0);
     }
     public function wwwroot() {
-        return self::pamroot() . '/' . $this->get('dir');
-    }
-    public static function gwroot() {
-        return self::pamroot() . '/' . self::gw();
+        return instances::$conf->pamroot() . '/' . $this->get('dir');
     }
 }
