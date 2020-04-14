@@ -3,6 +3,7 @@
 // Pas besoin de la session.
 define('NO_MOODLE_COOKIE', true);
 require(__DIR__ . '/../../config.php');
+$entsync = \auth_entsync\container::services();
 require_once('ent_defs.php');
 $page_url = new moodle_url('/auth/entsync/switch.php');
 $entclass = required_param('ent', PARAM_ALPHANUMEXT);
@@ -32,7 +33,8 @@ if ($val = $cas->validateorredirect()) {
         // L'utilisateur n'a pas d'instance, on lui présente aboutpam.
         auth_entsync_printinfopage();
     } else {
-        $k = \auth_entsync\farm\iic::getCrkey();
+        $iic = $entsync->query('iic');
+        $k = $iic->getCrkey();
         $userdata = serialize($val);
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.

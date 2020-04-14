@@ -24,7 +24,7 @@
 
 require(__DIR__ . '/../../config.php');
 use \auth_entsync\farm\instance;
-use \auth_entsync\farm\iic;
+$entsync = \auth_entsync\container::services();
 
 
 // Try to prevent searching for sites that allow sign-up.
@@ -48,7 +48,8 @@ if (!empty($userdata)) {
     if ((count($_POST) + count($_GET)) !== 2) print_error('userautherror');
     $page_param['user'] = $userdata;
     $scope = instance::inst() . ':' . $ent->get_entclass();
-    if (false === ($userdata = iic::open($userdata, $scope)))
+    $iic = $entsync->query('iic');
+    if (false === ($userdata = $iic->open($userdata, $scope)))
         print_error('expiredkey');
     $val = unserialize($userdata);
     $entu = auth_entsync_findEntu($val);
