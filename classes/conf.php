@@ -45,6 +45,9 @@ class conf {
         }
         return $this->_pamroot;
     }
+    public function gwroot() {
+        return $this->pamroot() . '/' . $this->gw();
+    }
     public function inst() {
         if (!isset($this->_inst)) {
             $this->_inst = \get_config($this->_pn, 'inst');
