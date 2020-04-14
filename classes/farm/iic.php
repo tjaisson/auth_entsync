@@ -89,12 +89,12 @@ class iic {
         return $k;
     }
     public function doAdd($k) {
-        $this->list[$k::TYPE][$k->uid] = $k;
+        $this->lists[$k::TYPE][$k->uid] = $k;
         return $k;
     }
     public function __construct($conf) {
         $this->conf = $conf;
-        $this->list = [
+        $this->lists = [
             token::TYPE => [],
             crkey::TYPE => [],
         ];
@@ -110,9 +110,11 @@ class iic {
     public function getCrkey($ttl = null) {
         self::ensureDirRed();
         $k = $this->findExistingKey($ttl);
-        if (!$k) $k = crkey::newCrkey($ttl);
-        $this->saveToFile($k);
-        $this->doAdd($k);
+        if (!$k) {
+            $k = crkey::newCrkey($ttl);
+            $this->saveToFile($k);
+            $this->doAdd($k);
+        }
         return $k;
     }
     protected function findExistingKey($ttl) {
@@ -120,17 +122,19 @@ class iic {
         $minExpir = \time() + $ttl;
         $maxExpir = $minExpir + $ttl;
         foreach ($this->lists[crkey::TYPE] as $k) {
-            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir))
-                return  $k;
+            if (($k->expir >= $minExpir) && ($k->expir <= $maxExpir)) {
+                $this->ensureVal($k);
+                return $k;
+            }
         }
         return false;
     }
     public function open($uids, $scope = self::NOSCOPE) {
         $type = \substr($uids, 0, 1);
+        $this->ensureDirRed();
         if (!($list = @$this->lists[$type])) return false;
         $uid = \substr($uids, 1, self::UIDLEN);
         $s = \substr($uids, self::UIDLEN + 1);
-        $this->ensureDirRed();
         if (!($k = @$list[$uid])) return false;
         $this->ensureVal($k);
         $s = $k->open($s, $scope);
@@ -144,7 +148,7 @@ class iic {
             if (empty($k->fileName))
                 throw new \moodle_exception('key filename unknown', 'auth_entsync');
             $dirPath = $this->sharedir(true);
-            $k->val = \file_get_contents("{$dirPath}/{$this->fileName}");
+            $k->val = \file_get_contents("{$dirPath}/{$k->fileName}");
         }
         if (empty($k->val))
             throw new \moodle_exception('key file not found', 'auth_entsync');
@@ -159,7 +163,7 @@ class iic {
         if(empty($k->val)) return false;
         if(isset($k->uid)) return false;
         $dirPath = $this->sharedir(true);
-        $this->uid = \random_string(self::UIDLEN);
+        $k->uid = \random_string(self::UIDLEN);
         $type = $k::TYPE;
         $filename = "-{$k->uid}-{$k->expir}";
         $k->fileName = $type . $filename;
@@ -223,7 +227,7 @@ class token extends iicitem {
     public static function newToken($scope, $data, $ttl) {
         if (null === $ttl) $ttl = self::TTL;
         $expir = \time() + $ttl;
-        $val = $tk = \random_string(iic::TOKENLEN);
+        $val = $tk = \random_string(self::TOKENLEN);
         $val .= ',';
         if (iic::OK !== $data) $val .= \base64_encode($data);
         $val .= ',';
