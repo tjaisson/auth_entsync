@@ -41,29 +41,32 @@ class container {
             return $CFG;
         });
         $this->registerService('conf', function ($c) {
+            include_once(__dir__ . '/conf.php');
             return new conf(self::NAME);
         });
         $this->registerService('iic', function ($c) {
+            include_once(__dir__ . '//farm/iic.php');
             return new farm\iic($c->query('conf'));
         });
+        
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
-        return (self::inst())->query($n);
+        return (self::services())->query($n);
     }
-    public static function inst() {
+    public static function services() {
         static $inst = null;
         if (null === $inst) {
             $inst = new self();
         }
         return $inst;
     }
-    protected $services = [];
+    protected $_services = [];
     protected function registerService($n, $fm) {
-        $this->services[$n] = new service($fm);
+        $this->_services[$n] = new service($fm);
     }
     public function query($n) {
-        if (! ($s = @$this->services[$n]))
+        if (! ($s = @$this->_services[$n]))
             throw new \moodle_exception('unknown service', 'auth_entsync');
         return $s->get($this);
     }
