@@ -24,7 +24,7 @@
 namespace auth_entsync;
 defined('MOODLE_INTERNAL') || die;
 /**
- * Class to register services.
+ * Class to register and instantiate services.
  *
  * @package    auth_entsync
  * @copyright  2020 Thomas Jaisson
