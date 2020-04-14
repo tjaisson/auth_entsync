@@ -49,11 +49,12 @@ class instances {
         return new instance($id);
     }
     public function instanceClass() {
-        return instance;
+        return instance::class;
     }
 }
 
 class instance extends \core\persistent {
+    const TABLE = 'auth_entsync_instances';
     /**
      * Define properties.
      *

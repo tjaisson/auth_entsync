@@ -85,7 +85,7 @@ class iic {
         if ($type === token::TYPE) $k = new token($k);
         else if ($type === crkey::TYPE) $k = new crkey($k);
         else return false;
-        $this->list[$type][$k->uid] = $k;
+        $this->lists[$type][$k->uid] = $k;
         return $k;
     }
     public function doAdd($k) {
