@@ -76,7 +76,7 @@ class service {
     }
     public function get($c) {
         if (null === $this->inst) {
-            $this->inst = $this->fm($c);
+            $this->inst = ($this->fm)($c);
         }
         return $this->inst;
     }
