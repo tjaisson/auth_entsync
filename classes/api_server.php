@@ -24,48 +24,22 @@
 namespace auth_entsync;
 defined('MOODLE_INTERNAL') || die;
 /**
- * Class to register and instantiate services.
+ * Class to register and instantiate api services.
  *
  * @package    auth_entsync
  * @copyright  2020 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class container {
-    protected function  __construct() {
-        $this->registerService('DB', function ($c) {
-            global $DB;
-            return $DB;
-        });
-        $this->registerService('CFG', function ($c) {
-            global $CFG;
-            return $CFG;
-        });
-        $this->registerService('conf', function ($c) {
-            include_once(__dir__ . '/conf.php');
-            return new conf(self::NAME);
-        });
-        $this->registerService('iic', function ($c) {
-            include_once(__dir__ . '/farm/iic.php');
-            return new farm\iic($c->query('conf'));
-        });
-        $this->registerService('instances', function ($c) {
-            include_once(__dir__ . '/farm/instances.php');
-            return new farm\instances($c->query('conf'));
-        });
-        $this->registerService('instance_form', function ($c) {
-            include_once(__dir__ . '/forms/instance_form.php');
-            return new forms\instance_form($c->query('instances'));
-        });
-        $this->registerService('api', function ($c) {
-            include_once(__dir__ . '/farm/api.php');
-            return new farm\api($c->query('conf'), $c->query('iic'), $c);
-        });
-        $this->registerService('api', function ($c) {
-            include_once(__dir__ . '/api_server.php');
-            return new api_server($c);
+class api_server {
+    const APIENTRY = '/auth/entsync/api.php';
+    protected $c;
+    protected function  __construct($c) {
+        $this->c = $c;
+        $this->registerService('instance', function ($c) {
+            include_once(__dir__ . '/farm/instances_api.php');
+            return new farm\instances_api($c->query('instances'));
         });
     }
-    public const NAME = 'auth_entsync';
     public static function get($n){
         return (self::services())->query($n);
     }
@@ -78,7 +52,7 @@ class container {
     }
     protected $_services = [];
     protected function registerService($n, $fm) {
-        $this->_services[$n] = new service_factory($fm);
+        $this->_services[$n] = new api_service_factory($fm);
     }
     public function query($n) {
         if (! ($s = @$this->_services[$n]))
@@ -86,7 +60,7 @@ class container {
         return $s->get($this);
     }
 }
-class service_factory {
+class api_service_factory {
     protected $fm;
     protected $inst = null;
     public function __construct($fm) {
@@ -97,5 +71,11 @@ class service_factory {
             $this->inst = ($this->fm)($c);
         }
         return $this->inst;
+    }
+}
+abstract class api_service {
+    protected $params;
+    public function set_params($params) {
+        $this->params = $params;
     }
 }
