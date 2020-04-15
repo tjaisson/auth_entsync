@@ -15,21 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  *
- * API over IIC.
+ * instances api.
  *
  * @package    auth_entsync
  * @copyright  2020 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace auth_entsync\farm;
+use auth_entsync\api_service;
+
 defined('MOODLE_INTERNAL') || die;
 /**
- * Class to perform API calls over IIC.
+ * Class to handle instances API calls.
  *
  * @package    auth_entsync
  * @copyright  2020 Thomas Jaisson
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class api {
-    
+class instances_api extends api_service {
+    protected $instances;
+    protected $conf;
+    public function __construct($conf, $instances) {
+        $this->conf = $conf;
+        $this->instances = $instances;
+    }
+    public function rnes() {
+        
+    }
 }
