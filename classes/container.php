@@ -56,6 +56,10 @@ class container {
             include_once(__dir__ . '/forms/instance_form.php');
             return new forms\instance_form($c->query('instances'));
         });
+        $this->registerService('api', function ($c) {
+            include_once(__dir__ . '/farm/api.php');
+            return new farm\api($c->query('conf'), $c->query('iic'), $c);
+        });
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
@@ -70,7 +74,7 @@ class container {
     }
     protected $_services = [];
     protected function registerService($n, $fm) {
-        $this->_services[$n] = new service($fm);
+        $this->_services[$n] = new service_factory($fm);
     }
     public function query($n) {
         if (! ($s = @$this->_services[$n]))
@@ -78,7 +82,7 @@ class container {
         return $s->get($this);
     }
 }
-class service {
+class service_factory {
     protected $fm;
     protected $inst = null;
     public function __construct($fm) {
