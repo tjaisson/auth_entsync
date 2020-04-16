@@ -21,7 +21,6 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 require(__DIR__ . '/../../config.php');
-use \auth_entsync\farm\instance;
 $entsync = \auth_entsync\container::services();
 $conf = $entsync->query('conf');
 $iic = $entsync->query('iic');
