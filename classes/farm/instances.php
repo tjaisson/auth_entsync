@@ -73,8 +73,11 @@ class instance extends \core\persistent {
             ],
         ];
     }
+    public function rnes() {
+        return \array_map('\trim', \explode(',', $this->raw_get('rne')));
+    }
     public function has_rne($rnes) {
-        $instrnes = \array_map('\trim', \explode(',', $this->raw_get('rne')));
+        $instrnes = $this->rnes();
         $i = \array_uintersect($instrnes, $rnes, '\strcasecmp');
         return (\count($i) > 0);
     }
