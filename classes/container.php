@@ -60,9 +60,9 @@ class container {
             include_once(__dir__ . '/farm/api.php');
             return new farm\api($c->query('conf'), $c->query('iic'), $c);
         });
-        $this->registerService('api', function ($c) {
+        $this->registerService('api_server', function ($c) {
             include_once(__dir__ . '/api_server.php');
-            return new api_server($c);
+            return new api_server($c->query('iic'), $c);
         });
     }
     public const NAME = 'auth_entsync';
