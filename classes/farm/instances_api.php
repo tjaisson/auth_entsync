@@ -39,9 +39,8 @@ class instances_api extends api_service {
         $this->conf = $conf;
         $this->instances = $instances;
     }
-    public function rnes() {
+    public function get_rnes() {
         $inst = $this->instances->get_instance(['dir' => $this->inst]);
-        return $inst->
-        
+        return $inst->rnes();
     }
 }
