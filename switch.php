@@ -29,7 +29,7 @@ if ($val = $cas->validateorredirect()) {
     } else {
         $iic = $entsync->query('iic');
         $k = $iic->getCrkey();
-        $userdata = serialize($val);
+        $userdata = json_encode($val, JSON_UNESCAPED_UNICODE);
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.
             redirect(build_connector_url($userinsts[0], $ent, $userdata, $k));

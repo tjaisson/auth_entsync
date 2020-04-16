@@ -50,7 +50,7 @@ if (!empty($userdata)) {
     $iic = $entsync->query('iic');
     if (false === ($userdata = $iic->open($userdata, $scope)))
         print_error('expiredkey');
-    $val = unserialize($userdata);
+    $val = json_decode($userdata);
     $entu = auth_entsync_findEntu($val);
     if (!$entu) {
         auth_entsync_clearSession(false);
