@@ -31,37 +31,35 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class api_server {
-    const APIENTRY = '/auth/entsync/api.php';
     protected $c;
     protected $iic;
-    protected function  __construct($iic, $c) {
+    protected $conf;
+    protected function  __construct($conf, $iic, $c) {
         $this->c = $c;
         $this->iic = $iic;
+        $this->conf = $conf;
         $this->registerService('instance', function ($c) {
             include_once(__dir__ . '/farm/instances_api.php');
             return new farm\instances_api($c->query('conf'), $c->query('instances'));
         });
     }
     public function handle() {
-        $inst = \required_param('inst', \PARAM_TEXT);
+        $func = \required_param('func', \PARAM_TEXT);
         if ((empty($auth = $_SERVER["HTTP_AUTHORIZATION"])) ||
             ('IIC ' !== \substr($auth, 0, 4)) ||
-            (!$this->iic::OK !== $this->iic->open(\substr($auth, 4), $inst)))
+            (empty($inst = $this->iic->open(\substr($auth, 4), $this->conf->inst()))))
             $this->error();
-        $func = \required_param('func', \PARAM_TEXT);
         list($service, $func) = \explode('.', $func);
         $s = $this->query($service);
         $httpmethod = \strtolower($_SERVER['REQUEST_METHOD']);
         $func = $httpmethod . '_' . $func;
         switch ($httpmethod) {
             case 'get':
-                unset($_GET['inst']);
                 unset($_GET['func']);
                 $s->set_params($inst, $_GET);
             break;
             case 'post':
             case 'put':
-                unset($_POST['inst']);
                 unset($_POST['func']);
                 $s->set_params($inst, $_POST);
             break;

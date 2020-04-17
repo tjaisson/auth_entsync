@@ -56,13 +56,13 @@ class container {
             include_once(__dir__ . '/forms/instance_form.php');
             return new forms\instance_form($c->query('instances'));
         });
-        $this->registerService('api', function ($c) {
-            include_once(__dir__ . '/farm/api.php');
-            return new farm\api($c->query('conf'), $c->query('iic'), $c);
-        });
         $this->registerService('api_server', function ($c) {
             include_once(__dir__ . '/api_server.php');
-            return new api_server($c->query('iic'), $c);
+            return new api_server($c->query('conf'), $c->query('iic'), $c);
+        });
+        $this->registerService('api_client', function ($c) {
+            include_once(__dir__ . '/api_client.php');
+            return new api_client($c->query('conf'), $c->query('iic'), $c->query('CFG'));
         });
     }
     public const NAME = 'auth_entsync';
