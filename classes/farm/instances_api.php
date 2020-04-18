@@ -34,13 +34,11 @@ defined('MOODLE_INTERNAL') || die;
  */
 class instances_api extends api_service {
     protected $instances;
-    protected $conf;
-    public function __construct($conf, $instances) {
-        $this->conf = $conf;
+    public function __construct($instances) {
         $this->instances = $instances;
     }
     public function get_rnes() {
-        $inst = $this->instances->get_instance(['dir' => $this->inst]);
-        return $inst->rnes();
+        $index = $this->instances->instancesIndex();
+        return $index[$this->inst]['rnes'];
     }
 }

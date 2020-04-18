@@ -28,23 +28,25 @@ if ($val = $cas->validateorredirect()) {
         auth_entsync_printinfopage();
     } else {
         $iic = $entsync->query('iic');
+        $conf = $entsync->query('conf');
         $k = $iic->getCrkey();
         $userdata = json_encode($val, JSON_UNESCAPED_UNICODE);
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.
-            redirect(build_connector_url($userinsts[0], $ent, $userdata, $k));
+            redirect(build_connector_url(array_key_first($userinsts), $userdata, $k));
         } else {
             // L'utilisateur a plusieurs instances, alors on lui donne le choix.
-            auth_entsync_printselectpage($userinsts, $ent, $userdata, $k);
+            auth_entsync_printselectpage($userinsts, $userdata, $k);
         }
     }
 } else {
     print_error('userautherror');
 }
-function build_connector_url($instance, $ent, $userdata, $k) {
-    $scope = $instance->get('dir') . ':' . $ent->get_entclass();
+function build_connector_url($inst, $userdata, $k) {
+    global $conf, $ent;
+    $scope = $inst . ':' . $ent->get_entclass();
     $userdata = $k->seal($userdata, $scope);
-    return new moodle_url($instance->wwwroot() . '/auth/entsync/login.php',
+    return new moodle_url($conf->pamroot() . '/' . $inst . '/auth/entsync/login.php',
         ['ent' => $ent->get_entclass(), 'user' => $userdata]);
 }
 function auth_entsync_setupPage(){
@@ -53,7 +55,7 @@ function auth_entsync_setupPage(){
     $PAGE->set_context(context_system::instance());
     $PAGE->set_pagelayout('embedded');
 }
-function auth_entsync_printselectpage($userinsts, $ent, $userdata, $k) {
+function auth_entsync_printselectpage($userinsts, $userdata, $k) {
     global $OUTPUT, $PAGE;
     auth_entsync_setupPage();
     $PAGE->set_title('Redirection');
@@ -62,9 +64,9 @@ function auth_entsync_printselectpage($userinsts, $ent, $userdata, $k) {
     echo $OUTPUT->heading('Plateforme Académique Moodle');
     echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
     $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
-    foreach ($userinsts as $instance) {
-        $lnk = $arrowico . '&nbsp;' . $instance->get('name');
-        $lnk = html_writer::link(build_connector_url($instance, $ent, $userdata, $k), $lnk);
+    foreach ($userinsts as $rep => $instance) {
+        $lnk = $arrowico . '&nbsp;' . $instance['name'];
+        $lnk = html_writer::link(build_connector_url($rep, $userdata, $k), $lnk);
         echo html_writer::tag('p', $lnk, ['style' => 'padding-left: 5em;']);
     }
     echo html_writer::end_div();

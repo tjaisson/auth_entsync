@@ -28,7 +28,7 @@ $definitions = array(
     'farm' => array(
         'mode' => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
-        'simpledata' => true,
+        'simpledata' => false,
         'staticacceleration' => true,
         'staticaccelerationsize' => 1,
     ),

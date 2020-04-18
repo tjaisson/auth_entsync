@@ -50,7 +50,7 @@ class container {
         });
         $this->registerService('instances', function ($c) {
             include_once(__dir__ . '/farm/instances.php');
-            return new farm\instances($c->query('conf'));
+            return new farm\instances();
         });
         $this->registerService('instance_form', function ($c) {
             include_once(__dir__ . '/forms/instance_form.php');

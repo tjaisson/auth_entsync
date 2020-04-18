@@ -40,7 +40,7 @@ class api_server {
         $this->conf = $conf;
         $this->registerService('instance', function ($c) {
             include_once(__dir__ . '/farm/instances_api.php');
-            return new farm\instances_api($c->query('conf'), $c->query('instances'));
+            return new farm\instances_api($c->query('instances'));
         });
     }
     public function handle() {

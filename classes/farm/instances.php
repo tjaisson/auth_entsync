@@ -1,33 +1,14 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- *
- * @package    tool_entsync
- * @copyright 2016 Thomas Jaisson
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace auth_entsync\farm;
+
 defined('MOODLE_INTERNAL') || die;
 
 class instances {
+    protected $rne_index;
+    protected $instances_index;
+    protected $indexesBuilt = false;
     public static $conf;
-    public function __construct($conf) {
-        self::$conf = $conf;
+    public function __construct() {
     }
     public function get_instances($filters = [], $sort = '', $order = 'ASC', $skip = 0, $limit = 0) {
         return instance::get_records($filters, $sort, $order, $skip, $limit);
@@ -36,14 +17,54 @@ class instances {
         return instance::get_record($filters);
     }
     public function get_instancesForRnes($rnes) {
+        $rne_index = $this->rnesIndex();
         $insts = [];
-        $instances = instance::get_records([], 'name');
-        foreach ($instances as $inst) {
-            if ($inst->has_rne($rnes)) {
-                $insts[] = $inst;
+        foreach ($rnes as $rne) {
+            if ($i = @$rne_index[$rne]) {
+                foreach ($i as $r) $insts[] = $r;
             }
         }
-        return $insts;
+        $insts = \array_unique($insts);
+        $instances_index = $this->instancesIndex();
+        $rep = [];
+        foreach ($insts as $r) $rep[$r] = $instances_index[$r];
+        return $rep;
+    }
+    protected function ensureIndexes() {
+        if ($this->indexesBuilt) return true;
+        $cache = \cache::make('auth_entsync', 'farm');
+        if ((false === ($rne_index = $cache->get('rne_index'))) ||
+            (false === ($instances_index = $cache->get('instances_index')))) {
+                $rne_index = [];
+                $instances_index = [];
+                foreach ($this->get_instances() as $inst) {
+                    $dir = $inst->get('dir');
+                    $name = $inst->get('name');
+                    $rnes = $inst->rnes();
+                    $instances_index[$dir] = ['name' => $name, 'rnes' => $rnes];
+                    foreach ($rnes as $rne) {
+                        if (\array_key_exists($rne, $rne_index)) {
+                            $rne_index[$rne][] = $dir;
+                        } else {
+                            $rne_index[$rne] = [ $dir ];
+                        }
+                    }
+                }
+                $cache->set('rne_index', $rne_index);
+                $cache->set('instances_index', $instances_index);
+            }
+            $this->rne_index = $rne_index;
+            $this->instances_index = $instances_index;
+            $this->indexesBuilt = true;
+            return true;
+    }
+    public function rnesIndex() {
+        $this->ensureIndexes();
+        return $this->rne_index;
+    }
+    public function instancesIndex() {
+        $this->ensureIndexes();
+        return $this->instances_index;
     }
     public function instance($id) {
         return new instance($id);
@@ -51,37 +72,37 @@ class instances {
     public function instanceClass() {
         return instance::class;
     }
-}
-
-class instance extends \core\persistent {
-    const TABLE = 'auth_entsync_instances';
-    /**
-     * Define properties.
-     *
-     * @return array
-     */
-    protected static function define_properties() {
-        return [
-            'dir' => [
-                'type' => PARAM_TEXT,
-            ],
-            'rne' => [
-                'type' => PARAM_TEXT,
-            ],
-            'name' => [
-                'type' => PARAM_TEXT,
-            ],
-        ];
+    public static function invalCache() {
+        $cache = \cache::make('auth_entsync', 'farm');
+        $cache->delete('instances_json');
+        $cache->delete('instances_index');
+        $cache->delete('rne_index');
     }
-    public function rnes() {
-        return \array_map('\trim', \explode(',', $this->raw_get('rne')));
-    }
-    public function has_rne($rnes) {
-        $instrnes = $this->rnes();
-        $i = \array_uintersect($instrnes, $rnes, '\strcasecmp');
-        return (\count($i) > 0);
-    }
-    public function wwwroot() {
-        return instances::$conf->pamroot() . '/' . $this->get('dir');
+    public function instances_json($admin = false) {
+        if ($admin) {
+            $lst = [];
+            foreach ($this->get_instances([], 'name') as $inst) {
+                $lst[] = [
+                    'id' => $inst->get('id'),
+                    'dir' => $inst->get('dir'),
+                    'name' => $inst->get('name'),
+                    'rne' => $inst->get('rne')];
+            }
+            return json_encode($lst);
+        } else {
+            $cache = \cache::make('auth_entsync', 'farm');
+            if (!false === ($json = $cache->get('instances_json'))) {
+                return $json;
+            }
+            $lst = [];
+            foreach ($this->get_instances([], 'name') as $inst) {
+                if ($inst->get('rne') !== '00') {
+                    $lst[] = ['dir' => $inst->get('dir'), 'name' => $inst->get('name')];
+                }
+            }
+            $json = json_encode($lst);
+            $cache->set('instances_json', $json);
+            return $json;
+        }
     }
 }

@@ -38,11 +38,9 @@ $sitecontext = context_system::instance();
 require_capability('moodle/site:config', $sitecontext);
 
 $returnurl = new moodle_url('/auth/entsync/instances.php');
-$cache = cache::make('auth_entsync', 'farm');
 $action = optional_param('action', 'list', PARAM_ACTION);
 if ($action == 'del') {
     // Suppression d'une instance demandée.
-    $cache->delete('instances');
     $id = required_param('id', PARAM_INT);
     $instance = $instances->instance($id);
     $rne = $instance->get('dir');
@@ -72,7 +70,6 @@ if ($action == 'del') {
     redirect($returnurl);
 } else if ($action == 'edit') {
     // Modification d'une instance demandée.
-    $cache->delete('instances');
     $id = optional_param('id', null, PARAM_INT);
     $PAGE->set_url(new moodle_url('/auth/entsync/instances.php', ['id' => $id, 'action' => 'edit']));
     $instance = null;
