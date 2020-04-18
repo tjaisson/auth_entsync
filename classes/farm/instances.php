@@ -66,8 +66,8 @@ class instances {
         $this->ensureIndexes();
         return $this->instances_index;
     }
-    public function instance($id) {
-        return new instance($id);
+    public function instance($id, $record = null) {
+        return new instance($id, $record);
     }
     public function instanceClass() {
         return instance::class;
