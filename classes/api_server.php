@@ -34,7 +34,7 @@ class api_server {
     protected $c;
     protected $iic;
     protected $conf;
-    protected function  __construct($conf, $iic, $c) {
+    public function  __construct($conf, $iic, $c) {
         $this->c = $c;
         $this->iic = $iic;
         $this->conf = $conf;
@@ -105,7 +105,7 @@ abstract class api_service {
     protected $params;
     protected $inst = null;
     public function set_params($inst, $params) {
-        $this->params = $params;
+        $this->inst = $inst;
         $this->params = $params;
     }
 }

@@ -23,6 +23,8 @@
  */
 namespace auth_entsync;
 defined('MOODLE_INTERNAL') || die;
+global $CFG;
+require_once($CFG->libdir.'/filelib.php');
 /**
  * Class to call api.
  *
@@ -36,16 +38,18 @@ class api_client {
     protected $conf;
     protected $iic;
     protected $curl = null;
-    protected function  __construct($conf, $iic, $CFG) {
+    public function  __construct($conf, $iic, $CFG) {
         $this->conf = $conf;
         $this->iic = $iic;
         $this->CFG = $CFG;
     }
-    public function get($func, $params, $target = null) {
+    public function get($func, $params = null, $target = null) {
         if (null === $target) $target = $this->conf->gw();
+        if (null === $params) $params = [];
+        $params['func'] = $func;
         $curl = $this->getCurl($target);
         $rep = $curl->get($this->serverURL($target), $params);
-        if (0 === $cu->get_errno()) return json_decode($rep);
+        if (0 === $curl->get_errno()) return json_decode($rep);
         return false;
     }
     public function post($func, $params, $target = null) {
@@ -56,7 +60,6 @@ class api_client {
     }
     protected function getCurl($target) {
         if (null == $this->curl) {
-            require_once($this->CFG->libdir.'/filelib.php');
             $this->curl = new \curl();
         }
         $this->curl->resetopt();
@@ -67,6 +70,6 @@ class api_client {
         return $this->curl;
     }
     protected function serverURL($target) {
-        return $this->conf->pamroot() . '/' . $target;
+        return $this->conf->pamroot() . '/' . $target . self::APIENTRY;
     }
 }
