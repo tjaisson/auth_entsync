@@ -21,7 +21,7 @@ if ($adminMode) {
 }
 $entsync = \auth_entsync\container::services();
 $instances = $entsync->query('instances');
-return $instances->instances_json($adminMode);
+echo $instances->instances_json($adminMode);
 function auth_entsync_error($code) {
     http_response_code($code);
     die();
