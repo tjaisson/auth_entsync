@@ -68,6 +68,10 @@ class container {
             include_once(__dir__ . '/helpers/http_client.php');
             return new helpers\http_client();
         });
+        $this->registerService('instance_info', function ($c) {
+            include_once(__dir__ . '/farm/instance_info.php');
+            return new farm\instance_info($c->query('api_client'));
+        });
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
