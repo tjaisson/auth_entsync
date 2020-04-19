@@ -62,7 +62,11 @@ class container {
         });
         $this->registerService('api_client', function ($c) {
             include_once(__dir__ . '/api_client.php');
-            return new api_client($c->query('conf'), $c->query('iic'), $c->query('CFG'));
+            return new api_client($c->query('conf'), $c->query('iic'), $c->query('http_client'));
+        });
+        $this->registerService('http_client', function ($c) {
+            include_once(__dir__ . '/helpers/http_client.php');
+            return new helpers\http_client();
         });
     }
     public const NAME = 'auth_entsync';

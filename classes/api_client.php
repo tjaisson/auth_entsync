@@ -23,8 +23,6 @@
  */
 namespace auth_entsync;
 defined('MOODLE_INTERNAL') || die;
-global $CFG;
-require_once($CFG->libdir.'/filelib.php');
 /**
  * Class to call api.
  *
@@ -34,22 +32,25 @@ require_once($CFG->libdir.'/filelib.php');
  */
 class api_client {
     const APIENTRY = '/auth/entsync/api.php';
-    protected $CFG;
+    protected $http_client;
     protected $conf;
     protected $iic;
     protected $curl = null;
-    public function  __construct($conf, $iic, $CFG) {
+    public function  __construct($conf, $iic, $http_client) {
         $this->conf = $conf;
         $this->iic = $iic;
-        $this->CFG = $CFG;
+        $this->http_client = $http_client;
     }
     public function get($func, $params = null, $target = null) {
         if (null === $target) $target = $this->conf->gw();
         if (null === $params) $params = [];
         $params['func'] = $func;
         $curl = $this->getCurl($target);
-        $rep = $curl->get($this->serverURL($target), $params);
-        if (0 === $curl->get_errno()) return json_decode($rep);
+        $auth = $this->buildTk($target);
+        $url = $this->serverURL($target);
+        $rep = $this->http_client->get($url, $params, $auth);
+        if (false === $rep) return false;
+        if (200 === $rep['status']) return json_decode($rep['content']);
         return false;
     }
     public function post($func, $params, $target = null) {
@@ -58,18 +59,12 @@ class api_client {
     public function put($func, $params, $target = null) {
         return null;
     }
-    protected function getCurl($target) {
-        if (null == $this->curl) {
-            $this->curl = new \curl();
-        }
-        $this->curl->resetopt();
-        $this->curl->resetHeader();
+    protected function buildTk($target) {
         $k = $this->iic->getCrkey();
         $tk = $k->seal($this->conf->inst(), $target);
-        $this->curl->setHeader('Authorization: IIC ' . $tk);
-        return $this->curl;
+        return 'IIC ' . $tk;
     }
     protected function serverURL($target) {
-        return $this->conf->pamroot() . '/' . $target . self::APIENTRY;
+        return new \moodle_url($this->conf->pamroot() . '/' . $target . self::APIENTRY);
     }
 }
