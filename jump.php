@@ -32,9 +32,10 @@ if (!empty($inst)) {
     if (!$instance) {
         die();
     }
-    $tk = $iic->createToken($instance->get('dir'), null, 5);
+    $dir = $instance->get('dir');
+    $tk = $iic->createToken($dir, null, 5);
     if (empty($tk)) die();
-    $redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump.php', ['tk' => $tk]);
+    $redirecturl = new moodle_url($conf->pamroot() . '/' . $dir . '/auth/entsync/jump.php', ['tk' => $tk]);
     redirect($redirecturl);
     die();
 }
