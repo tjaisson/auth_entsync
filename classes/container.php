@@ -72,6 +72,10 @@ class container {
             include_once(__dir__ . '/farm/instance_info.php');
             return new farm\instance_info($c->query('api_client'));
         });
+        $this->registerService('casconnect', function ($c) {
+            include_once(__dir__ . '/connectors/casconnect.php');
+            return new connectors\casconnect($c->query('http_client'));
+        });
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
