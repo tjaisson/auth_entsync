@@ -83,7 +83,7 @@ if (!empty($userdata)) {
                 '',
                 (object)['ent' => $ent->nomcourt, 'user' => $val->user]);
         }
-        auth_entsync_tryLogin($entu, $ent);
+        auth_entsync_tryLogin($entu);
     } else {
         print_error('userautherror');
     }
