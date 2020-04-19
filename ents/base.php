@@ -254,7 +254,7 @@ abstract class auth_entsync_ent_base {
             self::$_profilelist = [
                 1 => 'Elèves',
                 2 => 'Enseignants',
-                3 => 'Personnels'
+                4 => 'Personnels'
             ];
         }
         return self::$_profilelist;
@@ -373,5 +373,12 @@ abstract class auth_entsync_entcas extends auth_entsync_entsso {
         $con = $entsync->query('casconnect');
         $con->set_param($this->get_casparams());
         return $con;
+    }
+    protected static function xmlget($xmlelem, $tag) {
+        if (($list = $xmlelem->getElementsByTagName($tag))->length > 0) {
+            return $list->item(0)->nodeValue;
+        } else {
+            return false;
+        }
     }
 }
