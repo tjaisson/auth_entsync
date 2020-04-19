@@ -45,7 +45,6 @@ class api_client {
         if (null === $target) $target = $this->conf->gw();
         if (null === $params) $params = [];
         $params['func'] = $func;
-        $curl = $this->getCurl($target);
         $auth = $this->buildTk($target);
         $url = $this->serverURL($target);
         $rep = $this->http_client->get($url, $params, $auth);
