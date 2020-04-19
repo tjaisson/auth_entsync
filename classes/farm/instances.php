@@ -7,7 +7,6 @@ class instances {
     protected $rne_index;
     protected $instances_index;
     protected $indexesBuilt = false;
-    public static $conf;
     public function __construct() {
     }
     public function get_instances($filters = [], $sort = '', $order = 'ASC', $skip = 0, $limit = 0) {
