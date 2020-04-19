@@ -39,7 +39,9 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     public function can_switch() {
         return true;
     }
-    
+    public function can_onthefly() {
+        return true;
+    }
     public function get_casparams() {
         return [
                         'baseuri' => '/cas/',

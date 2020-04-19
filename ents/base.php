@@ -354,6 +354,9 @@ abstract class auth_entsync_entsso extends auth_entsync_ent_base {
     public function can_switch() {
         return false;
     }
+    public function can_onthefly() {
+        return false;
+    }
 }
 
 abstract class auth_entsync_entcas extends auth_entsync_entsso {
