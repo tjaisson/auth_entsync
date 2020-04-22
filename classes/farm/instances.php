@@ -77,9 +77,9 @@ class instances {
         $cache->delete('instances_index');
         $cache->delete('rne_index');
     }
-    public function instances_json($admin = false) {
+    public function instances_list($admin = false) {
+        $lst = [];
         if ($admin) {
-            $lst = [];
             foreach ($this->get_instances([], 'name') as $inst) {
                 $lst[] = [
                     'id' => $inst->get('id'),
@@ -87,21 +87,13 @@ class instances {
                     'name' => $inst->get('name'),
                     'rne' => $inst->get('rne')];
             }
-            return json_encode($lst);
         } else {
-            $cache = \cache::make('auth_entsync', 'farm');
-            if (!false === ($json = $cache->get('instances_json'))) {
-                return $json;
-            }
-            $lst = [];
             foreach ($this->get_instances([], 'name') as $inst) {
                 if ($inst->get('rne') !== '00') {
                     $lst[] = ['dir' => $inst->get('dir'), 'name' => $inst->get('name')];
                 }
             }
-            $json = json_encode($lst);
-            $cache->set('instances_json', $json);
-            return $json;
         }
+        return $lst;
     }
 }

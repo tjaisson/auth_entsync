@@ -43,12 +43,8 @@ class api_server {
             return new farm\instances_api($c->query('instances'));
         });
     }
-    public function handle() {
+    protected function findHandler() {
         $func = \required_param('func', \PARAM_TEXT);
-        if ((empty($auth = $_SERVER["HTTP_AUTHORIZATION"])) ||
-            ('IIC ' !== \substr($auth, 0, 4)) ||
-            (empty($inst = $this->iic->open(\substr($auth, 4), $this->conf->inst()))))
-            $this->error();
         list($service, $func) = \explode('.', $func);
         $s = $this->query($service);
         $httpmethod = \strtolower($_SERVER['REQUEST_METHOD']);
@@ -56,14 +52,36 @@ class api_server {
         switch ($httpmethod) {
             case 'get':
                 unset($_GET['func']);
-                $s->set_params($inst, $_GET);
-            break;
+                $s->set_params($_GET);
+                break;
             case 'post':
             case 'put':
                 unset($_POST['func']);
-                $s->set_params($inst, $_POST);
-            break;
+                $s->set_params($_POST);
+                break;
+            default :
+                $this->error();
         }
+        return [$s, $func];
+    }
+    public function handle_iic() {
+        if ((empty($auth = $_SERVER["HTTP_AUTHORIZATION"])) ||
+            ('IIC ' !== \substr($auth, 0, 4)) ||
+            (empty($inst = $this->iic->open(\substr($auth, 4), $this->conf->inst()))))
+            $this->error();
+        list($s, $func) = $this->findHandler();
+        $s->set_inst($inst);
+        $func = 'iic_' . $func;
+        return $s->{$func}();
+    }
+    public function handle_public() {
+        list($s, $func) = $this->findHandler();
+        $func = 'public_' . $func;
+        return $s->{$func}();
+    }
+    public function handle_mdl() {
+        list($s, $func) = $this->findHandler();
+        $func = 'mdl_' . $func;
         return $s->{$func}();
     }
     protected function error() {
@@ -104,8 +122,17 @@ class api_service_factory {
 abstract class api_service {
     protected $params;
     protected $inst = null;
-    public function set_params($inst, $params) {
-        $this->inst = $inst;
+    protected function requireSiteAdmin() {
+        $sitecontext = \context_system::instance();
+        \require_capability('moodle/site:config', $sitecontext);
+    }
+    protected function json_encode($s) {
+        return json_encode($s, \JSON_UNESCAPED_UNICODE);
+    }
+    public function set_params($params) {
         $this->params = $params;
+    }
+    public function set_inst($inst) {
+        $this->inst = $inst;
     }
 }

@@ -31,11 +31,10 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class api_client {
-    const APIENTRY = '/auth/entsync/api.php';
+    const APIENTRY = '/auth/entsync/api/iic.php';
     protected $http_client;
     protected $conf;
     protected $iic;
-    protected $curl = null;
     public function  __construct($conf, $iic, $http_client) {
         $this->conf = $conf;
         $this->iic = $iic;

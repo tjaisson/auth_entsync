@@ -37,8 +37,22 @@ class instances_api extends api_service {
     public function __construct($instances) {
         $this->instances = $instances;
     }
-    public function get_rnes() {
+    public function iic_get_rnes() {
         $index = $this->instances->instancesIndex();
-        return $index[$this->inst]['rnes'];
+        return $this->json_encode($index[$this->inst]['rnes']);
+    }
+    public function public_get_instances() {
+        $cache = \cache::make('auth_entsync', 'farm');
+        if (!false === ($json = $cache->get('instances_json'))) {
+            return $json;
+        }
+        $json = $this->json_encode($this->instances->instances_list());
+        $cache->set('instances_json', $json);
+        return $json;
+    }
+    public function mdl_get_instances() {
+        $this->requireSiteAdmin();
+        $json = $this->json_encode($this->instances->instances_list(true));
+        return $json;
     }
 }
