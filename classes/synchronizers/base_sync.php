@@ -128,7 +128,7 @@ abstract class base_sync {
         switch ($profile) {
             case 1 : return $this::FAKEEMAIL_ELEV;
             case 2 : return $this::FAKEEMAIL_ENS;
-            case 3 : return $this::FAKEEMAIL_PERS;
+            case 4: return $this::FAKEEMAIL_PERS;
         }
         return $this::FAKEEMAIL;
     }
