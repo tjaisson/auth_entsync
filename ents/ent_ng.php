@@ -81,8 +81,8 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
             }
         }
         $attr->uid = self::xmlget($elem, 'externalId');
-        $attr->lastName = self::xmlget($elem, 'lastName');
-        $attr->firstName = self::xmlget($elem, 'firstName');
+        $attr->lastname = self::xmlget($elem, 'lastName');
+        $attr->firstname = self::xmlget($elem, 'firstName');
         if (false !== ($val = self::xmlget($elem, 'type'))) {
             $attr->profile = self::typesToProfile(json_decode($val));
         } else {
