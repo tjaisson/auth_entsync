@@ -7,7 +7,7 @@ use \auth_entsync\helpers\rolehelper;
 
 class entus {
     const TABLE = 'auth_entsync_user';
-    const ENTU_FIELDS = ['userid', 'ent', 'uid', 'struct', 'profile', 'archived', 'archivedsince'];
+    const ENTU_FIELDS = ['userid', 'ent', 'uid', 'struct', 'profile', 'archived', 'archivedsince', 'sync'];
     const MDLU_FIELDS = ['auth', 'deleted', 'mnethostid', 'firstname', 'lastname', 'confirmed', 'suspended'];
     /**
      * Fausse email attribuée aux utilisateurs
@@ -203,6 +203,7 @@ class entus {
         $_mdlu->lang = 'fr';
         $_mdlu->id = \user_create_user($_mdlu, false, true);
         $_mdlu->deleted = 0;
+        $_mdlu->suspended = 0;
         return $_mdlu;
     }
 
