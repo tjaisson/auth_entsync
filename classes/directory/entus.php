@@ -2,6 +2,8 @@
 namespace auth_entsync\directory;
 
 use \auth_entsync\helpers\stringhelper;
+use \auth_entsync\helpers\cohorthelper;
+use \auth_entsync\helpers\rolehelper;
 
 class entus {
     const TABLE = 'auth_entsync_user';
@@ -17,9 +19,44 @@ class entus {
 
     protected $DB;
     protected $CFG;
-    public function __construct($CFG, $DB) {
+    protected $conf;
+    public function __construct($CFG, $DB, $conf) {
         $this->CFG = $CFG;
         $this->DB = $DB;
+        $this->conf = $conf;
+    }
+
+    /**
+     * Attempt to find the user by id
+     * 
+     * return [$entu, $mdlu] on success. Updated if enought info in $ui.
+     *        [$entu, null] if $mdlu is missing.
+     *        [null, null] if no match
+     *
+     * @param unknown $ui The user info with at least $ui->user
+     * @param unknown $ent The ent
+     * @return [\stdClass, \stdClass]
+     */
+    public function find_update_by_id($ui, $ent) {
+        $uids = [$ui->user];
+        if (! empty($ui->uid)) $uids[] = $ui->uid;
+        list($sql, $params) = $this->DB->get_in_or_equal($uids, \SQL_PARAMS_NAMED, 'uid');
+        $select = 'a.id AS mdluid';
+        foreach (self::MDLU_FIELDS as $field) $select .= ", a.{$field} as {$field}";
+        $sql = "SELECT b.*, {$select}
+        FROM {". self::TABLE . "} b
+        LEFT JOIN {user} a ON a.id = b.userid
+        WHERE b.ent = :ent AND b.uid {$sql}";
+        $params['ent'] = $ent->get_code();
+        $matches = $this->DB->get_records_sql($sql, $params);
+        $cnt = \count($matches);
+        if ($cnt === 0) {
+            return [null, null];
+        } else if ($cnt === 1) {
+            return $this->clean_one_match(\array_pop($matches), $ui, $ent);
+        } else {
+            return $this->clean_multi_matches($matches, $ui, $ent);
+        }
     }
 
     protected function clean_one_match($bndlu, $ui, $ent) {
@@ -49,28 +86,6 @@ class entus {
             foreach ($matches as $line) $ids[] = $line->id;
             $this->DB->delete_records_list(self::TABLE, 'id', $ids);
             return [null, null];
-        }
-    }
-
-    public function find_update_by_id($ui, $ent) {
-        $uids = [$ui->user];
-        if (! empty($ui->uid)) $uids[] = $ui->uid;
-        list($sql, $params) = $this->DB->get_in_or_equal($uids, \SQL_PARAMS_NAMED, 'uid');
-        $select = 'a.id AS mdluid';
-        foreach (self::MDLU_FIELDS as $field) $select .= ", a.{$field} as {$field}";
-        $sql = "SELECT b.*, {$select}
-        FROM {". self::TABLE . "} b
-        LEFT JOIN {user} a ON a.id = b.userid
-        WHERE b.ent = :ent AND b.uid {$sql}";
-        $params['ent'] = $ent->get_code();
-        $matches = $this->DB->get_records_sql($sql, $params);
-        $cnt = \count($matches);
-        if ($cnt === 0) {
-            return [null, null];
-        } else if ($cnt === 1) {
-            return $this->clean_one_match(\array_pop($matches), $ui, $ent);
-        } else {
-            return $this->clean_multi_matches($matches, $ui, $ent);
         }
     }
 
@@ -133,6 +148,11 @@ class entus {
 
     public function is_creatable($ui) {
         return !(empty($ui->profile) || empty($ui->firstname) || empty($ui->lastname));
+    }
+
+    public function has_bad_profile($ui) {
+        if (! isset($ui->profile)) return false;
+        return empty($ui->profile);
     }
 
     protected function split_bndlu($bndlu) {
@@ -277,6 +297,25 @@ class entus {
             $this->DB->update_record(self::TABLE, $_entu);
         }
         return $entu;
+    }
+
+    protected function update_role($entu, $mdlu, $ui, $ent) {
+        if (empty($ui->profile)) return;
+        if ($ui->profile == 2) {
+            $role = $this->conf->role_ens();
+        } else {
+            $role = -1;
+        }
+        rolehelper::updaterole($mdlu->id, $role);
+    }
+
+    protected function update_cohort($entu, $mdlu, $ui, $ent) {
+        if (empty($ui->profile)) return;
+        if (empty($ui->classe)) {
+            cohorthelper::removecohorts($mdlu->id);
+        } else if (\in_array($ui->profile, $ent->get_profileswithcohorts())) {
+            cohorthelper::set_cohort($mdlu->id, $ui->classe);
+        }
     }
 
     protected function get_fakeemail($profile) {
