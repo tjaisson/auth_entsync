@@ -50,8 +50,8 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                         'decodecallback' => [$this, 'decodecallback']
         ];
     }
-    protected static function typesToProfil($types) {
-        if (empty($types)) return -1;
+    protected static function typesToProfile($types) {
+        if (empty($types)) return 0;
         $flag = 0;
         foreach ($types as $t) {
             switch (strtolower($t)) {
@@ -69,7 +69,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         if ($flag & 1) return 1;
         if ($flag & 2) return 2;
         if ($flag & 4) return 4;
-        return -1;
+        return 0;
     }
     public function decodecallback($attr, $elem) {
         $elem = $elem->item(0);
@@ -84,11 +84,11 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         $attr->lastName = self::xmlget($elem, 'lastName');
         $attr->firstName = self::xmlget($elem, 'firstName');
         if (false !== ($val = self::xmlget($elem, 'type'))) {
-            $attr->profil = self::typesToProfil(json_decode($val));
+            $attr->profile = self::typesToProfile(json_decode($val));
         } else {
-            $attr->profil = -1;
+            $attr->profile = 0;
         }
-        if (1 === $attr->profil) {
+        if (1 === $attr->profile) {
             if ((false !== ($val = self::xmlget($elem, 'classes'))) &&
                 (is_array($classes = json_decode($val))) &&
                 (1 === count($classes))) {
@@ -96,7 +96,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                 $parts = explode('$', $classe, 2);
                 $attr->classe = (count($parts) === 2) ? $parts[1] : $classe;
             } else {
-                $attr->classe = false;
+                $attr->classe = null;
             }
         }
     }
