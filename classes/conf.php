@@ -36,8 +36,16 @@ class conf {
     protected $_inst;
     protected $_gw;
     protected $_isgw;
+    protected $_role_ens;
     public function  __construct($pn) {
         $this->_pn = $pn;
+    }
+    public function role_ens() {
+        if (!isset($this->_role_ens)) {
+            $this->_role_ens = \get_config($this->_pn, 'role_ens');
+            if (false === $this->_role_ens) $this->_role_ens = 0;
+        }
+        return $this->_pamroot;
     }
     public function pamroot() {
         if (!isset($this->_pamroot)) {
