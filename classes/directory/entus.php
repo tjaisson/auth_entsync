@@ -94,7 +94,7 @@ class entus {
         $select = 'a.id AS mdluid, b.id AS entuid';
         foreach (self::MDLU_FIELDS as $field) $select .= ", a.{$field} as {$field}";
         foreach (self::ENTU_FIELDS as $field) $select .= ", b.{$field} as {$field}";
-        $sql = $this->DB->sql_concat_join('.', ['a.id', 'b.ent']);
+        $sql = $this->DB->sql_concat_join("'x'", ['a.id', 'b.ent']);
         $sql = "SELECT {$sql} AS id, {$select} 
         FROM {user} a
         JOIN {". self::TABLE . "} b ON b.userid = a.id
@@ -330,7 +330,8 @@ class entus {
     protected function applycreds($_mdlu, $ui, $ent) {
         if ($ent->is_sso()) {
             $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
-            $username = "entsync.{$ent->get_code}.{$ui->user}";
+            $entcode = $ent->get_code();
+            $username = "entsync.{$entcode}.{$ui->user}";
         } else {
             $pw = stringhelper::rnd_string();
             $_mdlu->password = "entsync\\{$pw}";
