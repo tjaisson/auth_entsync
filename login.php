@@ -40,7 +40,11 @@ if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
     (!$ent->is_sso()) ||
     (!$ent->is_enabled()) ||
     ('cas' !== $ent->get_mode())) entsync_print_error('userautherror');
-require_once(__DIR__ . '/../../login/lib.php');
+
+require_once($CFG->dirroot.'/login/lib.php');
+require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/cohort/lib.php');
+
 $conf = $entsync->query('conf');
 $scope = $conf->inst() . ':' . $ent->get_entclass();
 $iic = $entsync->query('iic');
