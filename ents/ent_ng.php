@@ -55,13 +55,13 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         $flag = 0;
         foreach ($types as $t) {
             switch (strtolower($t)) {
-                case student:
+                case 'student':
                     $flag |= 1;
                     break;
-                case teacher:
+                case 'teacher':
                     $flag |= 2;
                     break;
-                case personnel:
+                case 'personnel':
                     $flag |= 4;
                     break;
             }
