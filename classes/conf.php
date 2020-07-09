@@ -45,7 +45,7 @@ class conf {
             $this->_role_ens = \get_config($this->_pn, 'role_ens');
             if (false === $this->_role_ens) $this->_role_ens = 0;
         }
-        return $this->_pamroot;
+        return $this->_role_ens;
     }
     public function pamroot() {
         if (!isset($this->_pamroot)) {
