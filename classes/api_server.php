@@ -42,6 +42,10 @@ class api_server {
             include_once(__dir__ . '/farm/instances_api.php');
             return new farm\instances_api($c->query('instances'));
         });
+        $this->registerService('sync', function ($c) {
+            include_once(__dir__ . '/synchronizers/autosync_api.php');
+            return new synchronizers\autosync_api($c->query('instances'));
+        });
     }
     protected function findHandler() {
         $func = \required_param('func', \PARAM_TEXT);
