@@ -41,6 +41,8 @@ if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
     (!$ent->is_enabled()) ||
     ('cas' !== $ent->get_mode())) entsync_print_error('userautherror');
 
+    //TODO : voir si login/lib est nécessaire
+    // voir à faire les autres require depuis les services qui les utilisent
 require_once($CFG->dirroot.'/login/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
