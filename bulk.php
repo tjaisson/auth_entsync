@@ -42,8 +42,6 @@ require_login();
 admin_externalpage_setup('authentsyncbulk');
 require_capability('moodle/site:uploadusers', context_system::instance());
 
-$entsync = \auth_entsync\container::services();
-
 $returnurl = new moodle_url('/auth/entsync/bulk.php');
 
 $config = get_config('auth_entsync');
@@ -148,7 +146,7 @@ if (!empty($FromLocal)) {
     
     
     $conf = $entsync->query('conf');
-    $localPath = '\\var\\www\\froment\\' . $conf->inst();
+    $localPath = '\\var\\www\\froment\\' . get_config('auth_entsync', 'inst');
     $dir = dir($localPath);
     $iuss = [];
     $msgs = [];
