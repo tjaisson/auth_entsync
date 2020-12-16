@@ -42,6 +42,8 @@ require_login();
 admin_externalpage_setup('authentsyncbulk');
 require_capability('moodle/site:uploadusers', context_system::instance());
 
+$entsync = \auth_entsync\container::services();
+
 $returnurl = new moodle_url('/auth/entsync/bulk.php');
 
 $config = get_config('auth_entsync');
@@ -130,71 +132,118 @@ $mform = new bulk_form(null, $formparams);
 
 echo $OUTPUT->header();
 
-//TODO peut être checker is_canceled
-$entfiletype = "X";
-if ($formdata = $mform->get_data()) {
-    // Il y a un fichier à charger
-    // retrouver l'ent et le type de fichier.
-    // Il est peut-être dans frozeneft.
-    if ($formdata->frozeneft !== "X") {
-        $entfiletype = $formdata->frozeneft;
-    } else {
-        $entfiletype = $formdata->entfiletype;
-    }
-    list($ent, $filetype) = bulk_form::decodeeft($entfiletype);
+$FromLocal = optional_param('fromlocal', '', PARAM_RAW);
+if (!empty($FromLocal)) {
+    $entfiletype = $FromLocal;
+    list($ent, $filetype) = bulk_form::decodeeft($$entfiletype);
     if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
     }
-
-    $storeid = optional_param('storeid', null, PARAM_INT);
-
-    if ($filename = $mform->get_new_filename('userfile')) {
-        $progress = new \core\progress\display_if_slow('veuillez patienter...', 0);
-        $progress->set_display_names();
-
-        $fileparser = $ent->get_fileparser($filetype);
-        $fileparser->set_progress_reporter($progress);
-        $filename = $mform->get_new_filename('userfile');
-        $progress->start_progress('', 2);
-        $ius = $fileparser->parse($filename, $mform->get_file_content('userfile'));
-
-        if ($ius) {
-            // Le chargement s'est bien passé.
-            $report = $fileparser->get_report();
-
-            $tmpstore = base_tmpstore::get_store($storeid);
-            $tmpstore->set_progress_reporter($progress);
-            $tmpstore->add_ius($ius);
-            $storeid = $tmpstore->save();
-
-            $progress->end_progress();
-
-            $msg = get_string('afterparseinfo', 'auth_entsync', [
-                'file' => $filename,
-                'nblines' => $report->parsedlines,
-                'nbusers' => $report->addedusers
-            ]);
-            echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
-        } else {
-            // Il y a eu une erreur.
-            if ($ius === false) {
-                $parseerror = $fileparser->get_error();
-                $msg = "Erreur de chargement du fichier. $parseerror";
-            } else {
-                $msg = 'Aucun utilisateur trouvé.';
+   
+    $fileparser = $ent->get_fileparser($filetype);
+    $progress = new \core\progress\none();
+    $fileparser->set_progress_reporter($progress);
+    
+    
+    $conf = $entsync->query('conf');
+    $localPath = '\\var\\www\\froment\\' . $conf->inst();
+    $dir = dir($localPath);
+    $iuss = [];
+    $msgs = [];
+    while (false !== ($item = $dir->read())) {
+        if (substr($item, 0, 1) != '.') {
+            $fullpath = "{$localPath}\{$item}";
+            $ius = $fileparser->parse($item, file_get_contents($fullpath));
+            if ($ius) {
+                $report = $fileparser->get_report();
+                $msgs[] = get_string('afterparseinfo', 'auth_entsync', [
+                    'file' => $item,
+                    'nblines' => $report->parsedlines,
+                    'nbusers' => $report->addedusers
+                ]);
+                $iuss[] = $ius;
             }
-            $progress->end_progress();
-            echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
         }
-    } else {
-        $msg = get_string('filemissingwarn', 'auth_entsync');
-        echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_WARNING);
     }
-    unset($_POST['userfile']);
+    $tmpstore = base_tmpstore::get_store();
+    $tmpstore->set_progress_reporter($progress);
+    foreach ($iuss as $ius) {
+        $tmpstore->add_ius($ius);
+    }
+    $storeid = $tmpstore->save();
+    $progress->end_progress();
+    echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
+    $localDone = true;
 } else {
-    $storeid = null;
+    $localDone = false;
+    //TODO peut être checker is_canceled
+    $entfiletype = "X";
+    if ($formdata = $mform->get_data()) {
+        // Il y a un fichier à charger
+        // retrouver l'ent et le type de fichier.
+        // Il est peut-être dans frozeneft.
+        if ($formdata->frozeneft !== "X") {
+            $entfiletype = $formdata->frozeneft;
+        } else {
+            $entfiletype = $formdata->entfiletype;
+        }
+        list($ent, $filetype) = bulk_form::decodeeft($entfiletype);
+        if ((!$ent) || (!$ent->is_enabled())) {
+            // Ne devrait pas se produire.
+            redirect($returnurl,
+                'Erreur', null, \core\output\notification::NOTIFY_ERROR);
+        }
+        
+        $storeid = optional_param('storeid', null, PARAM_INT);
+        
+        if ($filename = $mform->get_new_filename('userfile')) {
+            $progress = new \core\progress\display_if_slow('veuillez patienter...', 0);
+            $progress->set_display_names();
+            
+            $fileparser = $ent->get_fileparser($filetype);
+            $fileparser->set_progress_reporter($progress);
+            $filename = $mform->get_new_filename('userfile');
+            $progress->start_progress('', 2);
+            $ius = $fileparser->parse($filename, $mform->get_file_content('userfile'));
+            
+            if ($ius) {
+                // Le chargement s'est bien passé.
+                $report = $fileparser->get_report();
+                
+                $tmpstore = base_tmpstore::get_store($storeid);
+                $tmpstore->set_progress_reporter($progress);
+                $tmpstore->add_ius($ius);
+                $storeid = $tmpstore->save();
+                
+                $progress->end_progress();
+                
+                $msg = get_string('afterparseinfo', 'auth_entsync', [
+                    'file' => $filename,
+                    'nblines' => $report->parsedlines,
+                    'nbusers' => $report->addedusers
+                ]);
+                echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
+            } else {
+                // Il y a eu une erreur.
+                if ($ius === false) {
+                    $parseerror = $fileparser->get_error();
+                    $msg = "Erreur de chargement du fichier. $parseerror";
+                } else {
+                    $msg = 'Aucun utilisateur trouvé.';
+                }
+                $progress->end_progress();
+                echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_ERROR);
+            }
+        } else {
+            $msg = get_string('filemissingwarn', 'auth_entsync');
+            echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_WARNING);
+        }
+        unset($_POST['userfile']);
+    } else {
+        $storeid = null;
+    }
 }
 
 unset($_POST['frozeneft']);
