@@ -133,7 +133,7 @@ echo $OUTPUT->header();
 $FromLocal = optional_param('fromlocal', '', PARAM_RAW);
 if (!empty($FromLocal)) {
     $entfiletype = $FromLocal;
-    list($ent, $filetype) = bulk_form::decodeeft($$entfiletype);
+    list($ent, $filetype) = bulk_form::decodeeft($entfiletype);
     if ((!$ent) || (!$ent->is_enabled())) {
         // Ne devrait pas se produire.
         redirect($returnurl,
@@ -145,14 +145,13 @@ if (!empty($FromLocal)) {
     $fileparser->set_progress_reporter($progress);
     
     
-    $conf = $entsync->query('conf');
-    $localPath = '\\var\\www\\froment\\' . get_config('auth_entsync', 'inst');
+    $localPath = '/var/www/froment/' . get_config('auth_entsync', 'inst');
     $dir = dir($localPath);
     $iuss = [];
     $msgs = [];
     while (false !== ($item = $dir->read())) {
         if (substr($item, 0, 1) != '.') {
-            $fullpath = "{$localPath}\{$item}";
+            $fullpath = "{$localPath}/{$item}";
             $ius = $fileparser->parse($item, file_get_contents($fullpath));
             if ($ius) {
                 $report = $fileparser->get_report();
@@ -172,7 +171,7 @@ if (!empty($FromLocal)) {
     }
     $storeid = $tmpstore->save();
     $progress->end_progress();
-    echo $OUTPUT->notification($msg, \core\output\notification::NOTIFY_SUCCESS);
+    echo $OUTPUT->notification(implode('<br>', $msgs), \core\output\notification::NOTIFY_SUCCESS);
     $localDone = true;
 } else {
     $localDone = false;
