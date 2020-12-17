@@ -32,7 +32,12 @@ if (!empty($inst)) {
     }
     $tk = iic::createToken($instance->get('dir'), null, 5);
     if (empty($tk)) die();
-    $redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump.php', ['tk' => $tk]);
+    $queryparams = ['tk' => $tk];
+    $target =  optional_param('target', null, PARAM_URL);
+    if (null !== $target) {
+        $queryparams[target] = $target;
+    }
+    $redirecturl = new moodle_url($instance->wwwroot() . '/auth/entsync/jump.php', $queryparams);
     redirect($redirecturl);
     die();
 }
@@ -91,4 +96,10 @@ if (!is_siteadmin($mdlu)) {
 }
 complete_user_login($mdlu);
 \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
-redirect($CFG->wwwroot . '/');
+
+$target =  optional_param('target', null, PARAM_URL);
+if (null !== $target) {
+    redirect($target);
+} else {
+    redirect($CFG->wwwroot . '/');
+}
