@@ -42,7 +42,7 @@ require_login();
 admin_externalpage_setup('authentsyncbulk');
 require_capability('moodle/site:uploadusers', context_system::instance());
 
-$returnurl = new moodle_url('/auth/entsync/bulk.php');
+$returnurl = new moodle_url('/auth/entsync/lbulk.php');
 
 $config = get_config('auth_entsync');
 if (auth_entsync_ent_base::count_enabled() <= 0) {
@@ -139,7 +139,15 @@ if (!empty($FromLocal)) {
         redirect($returnurl,
             'Erreur', null, \core\output\notification::NOTIFY_ERROR);
     }
-   
+    if ($ent->get_code() == 3) {
+        $entAbrev = 'pcn';
+    } else if ($ent->get_code() == 7) {
+        $entAbrev = 'mln';
+    } else {
+        redirect($returnurl,
+            'Erreur', null, \core\output\notification::NOTIFY_ERROR);
+    }
+    
     $fileparser = $ent->get_fileparser($filetype);
     $progress = new \core\progress\none();
     $progress->start_progress('', 10);
@@ -152,16 +160,20 @@ if (!empty($FromLocal)) {
     $msgs = [];
     while (false !== ($item = $dir->read())) {
         if (substr($item, 0, 1) != '.') {
-            $fullpath = "{$localPath}/{$item}";
-            $ius = $fileparser->parse($item, file_get_contents($fullpath));
-            if ($ius) {
-                $report = $fileparser->get_report();
-                $msgs[] = get_string('afterparseinfo', 'auth_entsync', [
-                    'file' => $item,
-                    'nblines' => $report->parsedlines,
-                    'nbusers' => $report->addedusers
-                ]);
-                $iuss[] = $ius;
+            $filenameParts = explode('-', $item);
+            $abrevInFile = substr($filenameParts[2], 0, 3);
+            if ($abrevInFile === $entAbrev) {
+                $fullpath = "{$localPath}/{$item}";
+                $ius = $fileparser->parse($item, file_get_contents($fullpath));
+                if ($ius) {
+                    $report = $fileparser->get_report();
+                    $msgs[] = get_string('afterparseinfo', 'auth_entsync', [
+                        'file' => $item,
+                        'nblines' => $report->parsedlines,
+                        'nbusers' => $report->addedusers
+                    ]);
+                    $iuss[] = $ius;
+                }
             }
         }
     }
