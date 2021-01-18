@@ -115,7 +115,7 @@ function auth_entsync_findEntu($val) {
                     ['uid' => $val->user, 'ent' => $ent->get_code()])) {
                         $entu->uid = $val->uid;
                         $entu->checked = 1;
-                        $DB->update_record('auth_entsync_user', $entu);
+                        //$DB->update_record('auth_entsync_user', $entu);
                     }
             }
     } else {
