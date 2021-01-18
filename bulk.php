@@ -47,7 +47,7 @@ $returnurl = new moodle_url('/auth/entsync/bulk.php');
 if (false) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
-    echo $OUTPUT->notification('La synchronisation des utilisateurs est temporairement désactivée.');
+    echo $OUTPUT->notification('La synchronisation des utilisateurs est temporairement désactivée.<br />Veuillez réessayer ultérieurement');
     echo $OUTPUT->footer();
     die();
 }
