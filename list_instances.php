@@ -14,7 +14,7 @@ if (count($_GET) === 1)  {
 }
 
 require(__DIR__ . '/../../config.php');
-
+$PAGE->set_context(context_system::instance());
 if ($adminMode) {
     require_login();
     $sitecontext = context_system::instance();
