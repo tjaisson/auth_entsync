@@ -44,6 +44,14 @@ require_capability('moodle/site:uploadusers', context_system::instance());
 
 $returnurl = new moodle_url('/auth/entsync/bulk.php');
 
+if (false) {
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
+    echo $OUTPUT->notification('La synchronisation des utilisateurs est temporairement désactivée.');
+    echo $OUTPUT->footer();
+    die();
+}
+
 $config = get_config('auth_entsync');
 if (auth_entsync_ent_base::count_enabled() <= 0) {
     // Aucun ent paramétré, on ne peut pas synchroniser.

@@ -90,8 +90,10 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     public function get_fileparser($filetype) {
         if( ($filetype < 1) || ($filetype>3)) return null;
         $fileparser = new \auth_entsync\parsers\csv_parser();
-        $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom', 'user'=>'Identifiant',
-                        'uid'=>'Id', 'cohortname' => 'Classes', 'prf' =>'Type'];
+        $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom', 'user'=>'Id',
+            'uid'=>'Identifiant', 'cohortname' => 'Classes', 'prf' =>'Type'];
+        // Switch ref uid from uid to user (immutable login)
+        // warning : field names are confusing
         $fileparser->encoding = 'utf-8';
         $fileparser->delim = ';';
         $fileparser->set_validatecallback(partial([$this, 'validate'], $this->get_profilesintype($filetype)));
