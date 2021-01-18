@@ -136,11 +136,11 @@ class entus {
             $sql = 'profile ' . $sql;
             $sep = ' AND ';
         }
-        if (null === $ent) {
+        if (null === $ents) {
             if ($other_ents) return [];
         } else {
             list($sql2, $params2) = $DB->get_in_or_equal($ents, \SQL_PARAMS_NAMED, 'ent', !$other_ents);
-            $sql .= $sep . 'ent = ' . $sql2;
+            $sql .= $sep . 'ent ' . $sql2;
             $params = \array_merge($params, $params2);
         }
         return $DB->get_recordset_select(self::TABLE, $sql, $params);
