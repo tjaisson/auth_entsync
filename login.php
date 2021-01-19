@@ -63,7 +63,7 @@ if (!empty($ui)) {
     if (!($ui = $cas->validateorredirect())) entsync_print_error('userautherror');
 }
 // Here we have a $userdata.
-$entus = $entsync->query('entus');
+$entus = $entsync->query('directory.entus');
 list($entu, $mdlu) = $entus->find_update_by_id($ui, $ent);
 if (null === $mdlu) {
     if ($entus->has_bad_profile($ui) || empty($ui->rnes)) entsync_print_deny_error($ui, $ent);
