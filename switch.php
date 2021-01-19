@@ -33,7 +33,12 @@ if ($val = $cas->validateorredirect()) {
         $userdata = json_encode($val, JSON_UNESCAPED_UNICODE);
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.
-            redirect(build_connector_url(array_key_first($userinsts), $userdata, $k));
+            // array_key_first polyfill.
+            foreach ($userinsts as $key => $v) {
+                $inst = $key;
+                break;
+            }
+            redirect(build_connector_url($inst, $userdata, $k));
         } else {
             // L'utilisateur a plusieurs instances, alors on lui donne le choix.
             auth_entsync_printselectpage($userinsts, $userdata, $k);
