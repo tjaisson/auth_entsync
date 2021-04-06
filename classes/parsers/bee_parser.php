@@ -37,7 +37,8 @@ defined('MOODLE_INTERNAL') || die();
  */
 class bee_parser extends \auth_entsync\parsers\xml_parser {
     private $match1 = ['lastname' => 'NOM_DE_FAMILLE', 'firstname' => 'PRENOM'];
-    private $match2 = ['cohortname' => 'CODE_STRUCTURE'];
+    private $match2 = ['c_cn' => 'CODE_STRUCTURE', 'c_type' => 'TYPE_STRUCTURE'];
+    //private $match2 = ['cohortname' => 'CODE_STRUCTURE', 'type' => 'TYPE_STRUCTURE'];
     private $match;
 
     public function on_open($parser, $name, $attribs) {
@@ -51,6 +52,9 @@ class bee_parser extends \auth_entsync\parsers\xml_parser {
                 $this->_record = new \stdClass();
                 $this->_record->uid = $attribs['ELEVE_ID'];
                 $this->match = $this->match2;
+                return;
+            case 'STRUCTURE' :
+                $this->_record->c_type = '';
                 return;
         }
 
@@ -71,12 +75,18 @@ class bee_parser extends \auth_entsync\parsers\xml_parser {
                 $this->_progressreporter->progress();
                 return;
             case 'STRUCTURES_ELEVE' :
-                if (\array_key_exists($this->_record->uid, $this->_buffer)) {
-                    $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
-                    $this->_progressreporter->progress();
+                if ($this->_record->cohortname) {
+                    if (\array_key_exists($this->_record->uid, $this->_buffer)) {
+                        $this->_buffer[$this->_record->uid]->cohortname = $this->_record->cohortname;
+                        $this->_progressreporter->progress();
+                    }
                 }
                 unset($this->_record);
                 return;
+            case 'STRUCTURE' :
+                if ($this->_record->c_type === 'D') {
+                    $this->_record->cohortname = $this->_record->c_cn;
+                }
         }
     }
 
