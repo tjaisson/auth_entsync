@@ -43,7 +43,7 @@ class instances_api extends api_service {
     }
     public function public_get_instances() {
         $cache = \cache::make('auth_entsync', 'farm');
-        if (!false === ($json = $cache->get('instances_json'))) {
+        if (false !== ($json = $cache->get('instances_json'))) {
             return $json;
         }
         $json = $this->json_encode($this->instances->instances_list());
