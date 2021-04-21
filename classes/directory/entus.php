@@ -111,7 +111,9 @@ class entus {
         }
         $cnt = \count($list);
         if ($cnt === 1) {
-            list(, $mdlu) = $this->split_bndlu(\array_pop(\array_pop($list)));
+            $list = \array_pop($list);
+            $bndlu = \array_pop($list);
+            list(, $mdlu) = $this->split_bndlu($bndlu);
             return $this->update($entu, $mdlu, $ui, $ent);
         } else {
             return [$entu, null];
