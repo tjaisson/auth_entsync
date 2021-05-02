@@ -94,10 +94,4 @@ if (!is_siteadmin($mdlu)) {
 }
 complete_user_login($mdlu);
 \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
-
-$target =  optional_param('target', null, PARAM_URL);
-if (null !== $target) {
-    redirect($target);
-} else {
-    redirect($CFG->wwwroot . '/');
-}
+redirect($CFG->wwwroot . '/');

@@ -235,6 +235,7 @@ if ($storeid) {
 }
 
 echo $OUTPUT->heading_with_help(get_string('entsyncbulk', 'auth_entsync'), 'entsyncbulk', 'auth_entsync');
+
 $mform->display();
 
 if ($dispinfo) {
