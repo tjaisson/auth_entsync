@@ -23,9 +23,7 @@
  */
 
 require(__DIR__ . '/../../config.php');
-use \auth_entsync\farm\instance;
-use \auth_entsync\farm\iic;
-
+$entsync = \auth_entsync\container::services();
 
 // Try to prevent searching for sites that allow sign-up.
 if (!isset($CFG->additionalhtmlhead)) {
@@ -40,95 +38,87 @@ $entclass = required_param('ent', PARAM_ALPHANUMEXT);
 require_once('ent_defs.php');
 if ((!$ent = auth_entsync_ent_base::get_ent($entclass)) ||
     (!$ent->is_sso()) ||
-    (!$ent->is_enabled())) print_error('userautherror');
-    $page_param = ['ent' => $ent->get_entclass()];
-require_once(__DIR__ . '/../../login/lib.php');
-$userdata = optional_param('user', null, PARAM_ALPHANUMEXT);
-if (!empty($userdata)) {
-    if ((count($_POST) + count($_GET)) !== 2) print_error('userautherror');
-    $page_param['user'] = $userdata;
-    $scope = instance::inst() . ':' . $ent->get_entclass();
-    if (false === ($userdata = iic::open($userdata, $scope)))
-        print_error('expiredkey');
-    $val = unserialize($userdata);
-    $entu = auth_entsync_findEntu($val);
-    if (!$entu) {
-        auth_entsync_clearSession(false);
-        print_error('notauthorized',
-            'auth_entsync',
-            '',
-            (object)['ent' => $ent->nomcourt, 'user' => $val->user]);
-    }
-    if (isloggedin()) {
-        if ($USER->id === $entu->userid) {
-            redirect($CFG->wwwroot.'/');
-        } else {
-            auth_entsync_clearSession();
-        }
-    }
-    auth_entsync_tryLogin($entu);
+    (!$ent->is_enabled()) ||
+    ('cas' !== $ent->get_mode())) entsync_print_error('userautherror');
+
+    //TODO : voir si login/lib est nécessaire
+    // voir à faire les autres require depuis les services qui les utilisent
+require_once($CFG->dirroot.'/login/lib.php');
+require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/cohort/lib.php');
+
+$conf = $entsync->query('conf');
+$scope = $conf->inst() . ':' . $ent->get_entclass();
+$iic = $entsync->query('iic');
+$ui = optional_param('user', null, PARAM_ALPHANUMEXT);
+if (!empty($ui)) {
+    if ((count($_POST) + count($_GET)) !== 2) entsync_print_error('userautherror');
+    //$page_param['user'] = $userdata;
+    if (false === ($ui = $iic->open($ui, $scope))) entsync_print_error('expiredkey');
+    $ui = json_decode($ui);
 } else {
-    if (isloggedin()) {
-        auth_entsync_clearSession();
-    }
-    if (('cas' !== $ent->get_mode()) ||
-        (!$cas = $ent->get_casconnector())) print_error('userautherror');
+    if (!$cas = $ent->get_casconnector()) entsync_print_error('userautherror');
     $clienturl = new moodle_url($page_url, ['ent' => $entclass]);
     $cas->set_clienturl($clienturl);
-    if ($val = $cas->validateorredirect()) {
-        $entu = auth_entsync_findEntu($val, $ent);
-        if (!$entu) {
-            print_error('notauthorized',
-                'auth_entsync',
-                '',
-                (object)['ent' => $ent->nomcourt, 'user' => $val->user]);
-        }
-        auth_entsync_tryLogin($entu, $ent);
-    } else {
-        print_error('userautherror');
+    if (!($ui = $cas->validateorredirect())) entsync_print_error('userautherror');
+}
+// Here we have a $userdata.
+$entus = $entsync->query('directory.entus');
+list($entu, $mdlu) = $entus->find_update_by_id($ui, $ent);
+if (null === $mdlu) {
+    if ($entus->has_bad_profile($ui) || empty($ui->rnes)) entsync_print_deny_error($ui, $ent);
+    $instance_info = $entsync->query('instance_info');
+    if (count(array_intersect($ui->rnes, $instance_info->rnes())) === 0) entsync_print_deny_error($ui, $ent);
+    list($entu, $mdlu) = $entus->find_update_by_names_and_profile($entu, $ui, $ent);
+    if (null === $mdlu) {
+        list($entu, $mdlu) = $entus->create($entu, $ui, $ent);
     }
 }
-function auth_entsync_tryLogin($entu) {
-    global $USER, $SESSION, $ent;
-    if ($entu->archived) print_error('userautherror');
-    if (!$mdlu = get_complete_user_data('id', $entu->userid)) print_error('userautherror');
-    if ($mdlu->suspended) print_error('userautherror');
-    set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
-    complete_user_login($mdlu);
-    \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
-    // Ajouter dans $USER que c'est un sso et quel est l'ent. Au log out, rediriger vers l'ent.
-    $USER->entsync = $ent->get_code();
-    $urltogo = core_login_get_return_url();
-    if (strstr($urltogo, 'entsync')) unset($SESSION->wantsurl);
-    else $SESSION->wantsurl = $urltogo;
-    // Discard any errors before the last redirect.
-    unset($SESSION->loginerrormsg);
-    // Test the session actually works by redirecting to self.
-    redirect(new moodle_url(get_login_url(), ['testsession' => $mdlu->id]));
-}
-function auth_entsync_findEntu($val) {
-    global $DB, $ent;
-    if ($val->uid) {
-        if (!$entu = $DB->get_record('auth_entsync_user',
-            ['uid' => $val->uid, 'ent' => $ent->get_code()])) {
-                if ($entu = $DB->get_record('auth_entsync_user',
-                    ['uid' => $val->user, 'ent' => $ent->get_code()])) {
-                        $entu->uid = $val->uid;
-                        $entu->checked = 1;
-                        //$DB->update_record('auth_entsync_user', $entu);
-                    }
-            }
+if (null === $mdlu) entsync_print_deny_error($ui, $ent);
+$mdlu = get_complete_user_data('id', $mdlu->id);
+if (!$mdlu) entsync_print_deny_error($ui, $ent);
+// Here we have a $mdlu.
+if (isloggedin()) {
+    if ($USER->id === $mdlu->id) {
+        // User is already logged in.
+        redirect($CFG->wwwroot.'/');
     } else {
-        $entu = $DB->get_record('auth_entsync_user',
-            ['uid' => $val->user, 'ent' => $ent->get_code()]);
+        entsync_require_logout();
+        $k = $iic->getCrkey();
+        $ui = json_encode($ui, JSON_UNESCAPED_UNICODE);
+        $ui = $k->seal($ui, $scope);
+        redirect(new moodle_url($page_url, ['ent' => $entclass, 'user' => $ui]));
     }
-    return $entu;
 }
-function auth_entsync_clearSession($redir = true) {
-    global $USER, $page_url, $page_param;
+// Here we have to log $mdlu in.
+if (! empty($mdlu->suspended)) entsync_print_deny_error($ui, $ent);
+set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
+complete_user_login($mdlu);
+\core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
+// Ajouter dans $USER que c'est un sso et quel est l'ent. Au log out, rediriger vers l'ent.
+$USER->entsync = $ent->get_code();
+$urltogo = core_login_get_return_url();
+if (strstr($urltogo, 'entsync')) unset($SESSION->wantsurl);
+else $SESSION->wantsurl = $urltogo;
+// Discard any errors before the last redirect.
+unset($SESSION->loginerrormsg);
+// Test the session actually works by redirecting to self.
+redirect(new moodle_url(get_login_url(), ['testsession' => $mdlu->id]));
+
+function entsync_print_error($errorcode, $module = 'error', $link = '', $a = null, $debuginfo = null) {
+    entsync_require_logout();
+    print_error($errorcode, $module, $link, $a, $debuginfo);
+}
+
+function entsync_print_deny_error($ui, $ent) {
+    entsync_print_error('notauthorized',
+        'auth_entsync',
+        '',
+        (object)['ent' => $ent->nomcourt, 'user' => $ui->user]);
+}
+
+function entsync_require_logout() {
+    global $USER;
     if (isset($USER) && (isset($USER->entsync))) unset($USER->entsync);
     require_logout();
-    if ($redir) {
-        redirect(new moodle_url($page_url, $page_param));
-    }
 }

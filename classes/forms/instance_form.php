@@ -23,11 +23,21 @@
 
 namespace auth_entsync\forms;
 defined('MOODLE_INTERNAL') || die;
+class instance_form {
+    public function __construct($instances) {
+        _instance_form::setClass($instances->instanceClass());
+    }
+    public function createForm($action = null, $customdata = null) {
+        return new _instance_form($action, $customdata);
+    }
+}
 
-class instance_form extends \core\form\persistent {
+class _instance_form extends \core\form\persistent {
     /** @var string Persistent class name. */
     protected static $persistentclass = 'auth_entsync\\farm\\instance';
-    
+    public static function setClass($class) {
+        self::$persistentclass = $class;
+    }
     public function definition() {
         $mform = $this->_form;
         

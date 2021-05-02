@@ -39,7 +39,9 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
     public function can_switch() {
         return true;
     }
-    
+    public function can_onthefly() {
+        return true;
+    }
     public function get_casparams() {
         return [
                         'baseuri' => '/cas/',
@@ -48,21 +50,54 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                         'decodecallback' => [$this, 'decodecallback']
         ];
     }
-    
+    protected static function typesToProfile($types) {
+        if (empty($types)) return 0;
+        $flag = 0;
+        foreach ($types as $t) {
+            switch (strtolower($t)) {
+                case 'student':
+                    $flag |= 1;
+                    break;
+                case 'teacher':
+                    $flag |= 2;
+                    break;
+                case 'personnel':
+                    $flag |= 4;
+                    break;
+            }
+        }
+        if ($flag & 1) return 1;
+        if ($flag & 2) return 2;
+        if ($flag & 4) return 4;
+        return 0;
+    }
     public function decodecallback($attr, $elem) {
+        $elem = $elem->item(0);
         $attr->rnes = [];
-        if(($list = $elem->item(0)->getElementsByTagName('structureNodes'))->length > 0) {
-            $structs = json_decode($list->item(0)->nodeValue);
+        if(false !== ($val = self::xmlget($elem, 'structureNodes'))) {
+            $structs = json_decode($val);
             foreach ($structs as $struct) {
                 $attr->rnes[] = $struct->UAI;
             }
-            $attr->uid = $elem->item(0)->getElementsByTagName('externalId')->item(0)->nodeValue;
+        }
+        $attr->uid = self::xmlget($elem, 'externalId');
+        $attr->lastname = self::xmlget($elem, 'lastName');
+        $attr->firstname = self::xmlget($elem, 'firstName');
+        if (false !== ($val = self::xmlget($elem, 'type'))) {
+            $attr->profile = self::typesToProfile(json_decode($val));
         } else {
-            $structs = $elem->item(0)->getElementsByTagName('ENTPersonStructRattachRNE');
-            foreach($structs as $struct) {
-                $attr->rnes[] = $struct->nodeValue;
+            $attr->profile = 0;
+        }
+        if (1 === $attr->profile) {
+            if ((false !== ($val = self::xmlget($elem, 'classes'))) &&
+                (is_array($classes = json_decode($val))) &&
+                (1 === count($classes))) {
+                $classe = array_pop($classes);
+                $parts = explode('$', $classe, 2);
+                $attr->classe = (count($parts) === 2) ? $parts[1] : $classe;
+            } else {
+                $attr->classe = null;
             }
-            $attr->uid = $elem->item(0)->getElementsByTagName('uid')->item(0)->nodeValue;
         }
     }
     public function get_profileswithcohorts() {
@@ -91,7 +126,7 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
         if( ($filetype < 1) || ($filetype>3)) return null;
         $fileparser = new \auth_entsync\parsers\csv_parser();
         $fileparser->match = ['lastname'=>'Nom', 'firstname'=>'Prénom', 'user'=>'Id',
-            'uid'=>'Identifiant', 'cohortname' => 'Classes', 'prf' =>'Type'];
+                        'uid'=>'Identifiant', 'cohortname' => 'Classes', 'prf' =>'Type'];
         // Switch ref uid from uid to user (immutable login)
         // warning : field names are confusing
         $fileparser->encoding = 'utf-8';
@@ -110,7 +145,8 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                 break;
             case 'eleve' :
                 $profile = 1;
-                if (strpos($record->cohortname, ',') !== false) $record->cohortname = '';
+                if (false !== strpos($record->cohortname, ','))
+                    $record->cohortname = false;
                 break;
             default:
                 $profile = -1;

@@ -25,10 +25,11 @@
 namespace auth_entsync\connectors;
 defined('MOODLE_INTERNAL') || die();
 
-global $CFG;
-require_once($CFG->libdir.'/filelib.php');
-
 class casconnect {
+    protected $http_client;
+    public function __construct($http_client) {
+        $this->http_client = $http_client;
+    }
     /**
      *   [
      *   'hostname' => 'www.parisclassenumerique.fr',
@@ -114,17 +115,13 @@ class casconnect {
             $this->_error = 'Erreur.';
             return false;
         }
-        $valurl  = $this->buildvalidateurl()->out(false);
-        $cu = new \curl();
-        if ($this->allow_Untrust()) {
-            $cu->setopt(['SSL_VERIFYHOST' => false]);
-            $cu->setopt(['SSL_VERIFYPEER' => false]);
-        }
+        $valurl  = $this->buildvalidateurl();
         $maxretries = $raw ? 0 : $this->_casparams['retries'];
         $retries = 0;
         do {
-            $rep = $cu->get($valurl);
-            if (0 === $cu->get_errno()) {
+            $rep = $this->http_client->get($valurl);
+            if ((false !== $rep) && (200 === $rep['status'])) {
+                $rep = $rep['content'];
                 if ($raw) return $rep;
                 // Create new DOMDocument object.
                 $dom = new \DOMDocument();

@@ -36,7 +36,7 @@ class rolehelper {
             \role_unassign($roleid, $userid, \context_system::instance()->id, 'auth_entsync');
         }
     }
-    
+
     static function updaterole($userid, $newroleid) {
         global $DB;
         $_already = false;
@@ -53,7 +53,7 @@ class rolehelper {
             \role_assign($newroleid, $userid, \context_system::instance()->id, 'auth_entsync');
         }
     }
-    
+
     static function updateroleallusers($profile, $newroleid) {
         $iurs = usertblhelper::get_users($profile);
         foreach($iurs as $userid) {
@@ -71,7 +71,7 @@ class rolehelper {
             self::removeroles($userid);
         }
     }
-    
+
     static function getsysrolemenu() {
         static $ret;
         if(isset($ret)) return $ret;

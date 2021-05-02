@@ -1,8 +1,8 @@
 <?php
-
 // Pas besoin de la session.
 define('NO_MOODLE_COOKIE', true);
 require(__DIR__ . '/../../config.php');
+$entsync = \auth_entsync\container::services();
 require_once('ent_defs.php');
 $page_url = new moodle_url('/auth/entsync/switch.php');
 $entclass = required_param('ent', PARAM_ALPHANUMEXT);
@@ -20,35 +20,38 @@ if ($val = $cas->validateorredirect()) {
         auth_entsync_printinfopage();
     }
     // On constitue la liste des instances de cet utilisateur.
-    $instances = \auth_entsync\farm\instance::get_records([], 'name');
-    $userinsts = [];
-    foreach ($instances as $instance) {
-        if ($instance->has_rne($val->rnes)) {
-            $userinsts[] = $instance;
-        }
-    }
+    $instances = $entsync->query('instances');
+    $userinsts = $instances->get_instancesForRnes($val->rnes);
     $instcount = count($userinsts);
     if ($instcount <= 0) {
         // L'utilisateur n'a pas d'instance, on lui présente aboutpam.
         auth_entsync_printinfopage();
     } else {
-        $k = \auth_entsync\farm\iic::getCrkey();
-        $userdata = serialize($val);
+        $iic = $entsync->query('iic');
+        $conf = $entsync->query('conf');
+        $k = $iic->getCrkey();
+        $userdata = json_encode($val, JSON_UNESCAPED_UNICODE);
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.
-            redirect(build_connector_url($userinsts[0], $ent, $userdata, $k));
+            // array_key_first polyfill.
+            foreach ($userinsts as $key => $v) {
+                $inst = $key;
+                break;
+            }
+            redirect(build_connector_url($inst, $userdata, $k));
         } else {
             // L'utilisateur a plusieurs instances, alors on lui donne le choix.
-            auth_entsync_printselectpage($userinsts, $ent, $userdata, $k);
+            auth_entsync_printselectpage($userinsts, $userdata, $k);
         }
     }
 } else {
     print_error('userautherror');
 }
-function build_connector_url($instance, $ent, $userdata, $k) {
-    $scope = $instance->get('dir') . ':' . $ent->get_entclass();
+function build_connector_url($inst, $userdata, $k) {
+    global $conf, $ent;
+    $scope = $inst . ':' . $ent->get_entclass();
     $userdata = $k->seal($userdata, $scope);
-    return new moodle_url($instance->wwwroot() . '/auth/entsync/login.php',
+    return new moodle_url($conf->pamroot() . '/' . $inst . '/auth/entsync/login.php',
         ['ent' => $ent->get_entclass(), 'user' => $userdata]);
 }
 function auth_entsync_setupPage(){
@@ -57,7 +60,7 @@ function auth_entsync_setupPage(){
     $PAGE->set_context(context_system::instance());
     $PAGE->set_pagelayout('embedded');
 }
-function auth_entsync_printselectpage($userinsts, $ent, $userdata, $k) {
+function auth_entsync_printselectpage($userinsts, $userdata, $k) {
     global $OUTPUT, $PAGE;
     auth_entsync_setupPage();
     $PAGE->set_title('Redirection');
@@ -66,9 +69,9 @@ function auth_entsync_printselectpage($userinsts, $ent, $userdata, $k) {
     echo $OUTPUT->heading('Plateforme Académique Moodle');
     echo html_writer::tag('p', 'À quelle plateforme souhaitez-vous accéder&nbsp;?');
     $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
-    foreach ($userinsts as $instance) {
-        $lnk = $arrowico . '&nbsp;' . $instance->get('name');
-        $lnk = html_writer::link(build_connector_url($instance, $ent, $userdata, $k), $lnk);
+    foreach ($userinsts as $rep => $instance) {
+        $lnk = $arrowico . '&nbsp;' . $instance['name'];
+        $lnk = html_writer::link(build_connector_url($rep, $userdata, $k), $lnk);
         echo html_writer::tag('p', $lnk, ['style' => 'padding-left: 5em;']);
     }
     echo html_writer::end_div();

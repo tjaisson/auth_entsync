@@ -15,15 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Plugin cache definitions.
  *
- * @package    auth_none
- * @copyright  2011 Petr Skoda (http://skodak.org)
+ * @package   auth_entsync
+ * @copyright 2020 Thomas Jaisson <thomas.jaisson@ac-paris.fr>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2021042100;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016051900;        // Requires this Moodle version
-$plugin->component = 'auth_entsync';    // Full name of the plugin (used for diagnostics).
+$definitions = array(
+    'farm' => array(
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => false,
+        'staticacceleration' => true,
+        'staticaccelerationsize' => 1,
+    ),
+);
