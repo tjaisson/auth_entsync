@@ -446,7 +446,7 @@ if($formdata = $form->get_data())
         } else {
             //créer le rôle créateur de catégorie
             $data->catrole = create_role('Créateur de cours et catégories', 'catcreator',
-                'Les créateurs de cours et catégories peuvent créer de nouveau cours et de nouvelles catégories de cours',
+                'Les créateurs de cours et catégories peuvent créer de nouveaux cours et de nouvelles catégories de cours',
                 'coursecreator');
         }
         entsync_init_role($data->catrole, 'coursecreator', ['moodle/category:manage']);
