@@ -54,9 +54,6 @@ abstract class base_sync {
     const FAKEEMAIL_ENS = 'enseignant@ac-paris.invalid';
     const FAKEEMAIL_PERS = 'personnel@ac-paris.invalid';
 
-    const COHORT_PRFX = 'auto_';
-    const COHORT_PRFX_LEN = 5;
-
     /**
      * @var string|null Null if ok, error msg otherwise
      */

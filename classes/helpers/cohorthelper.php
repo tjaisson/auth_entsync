@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 use \auth_entsync\helpers\stringhelper;
 
 class cohorthelper {
-    const COHORT_PRFX = 'auto_';
+    const COHORT_PRFX = 'auto_cl_';
 
     /**
      * @var array [$cohortname => $cohortid]
