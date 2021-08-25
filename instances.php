@@ -26,20 +26,19 @@ require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 $entsync = \auth_entsync\container::services();
 $conf = $entsync->query('conf');
+if (!$conf->is_gw()) print_error('userautherror');
 $instances = $entsync->query('instances');
-
-if (!$conf->is_gw()) {
-    redirect($CFG->wwwroot);
-}
-
-require_login();
-admin_externalpage_setup('authentsyncinst');
 $sitecontext = context_system::instance();
-require_capability('moodle/site:config', $sitecontext);
-
 $returnurl = new moodle_url('/auth/entsync/instances.php');
+$PAGE->set_url($returnurl);
+$PAGE->set_context($sitecontext);
+if (! has_capability('moodle/site:configview', $sitecontext)) print_error('userautherror');
+require_login();
+$is_admin = has_capability('moodle/site:config', $sitecontext);
+
 $action = optional_param('action', 'list', PARAM_ACTION);
-if ($action == 'del') {
+if (! $is_admin) $action = '';
+if ($action === 'del') {
     // Suppression d'une instance demandée.
     $id = required_param('id', PARAM_INT);
     $instance = $instances->instance($id);
@@ -68,7 +67,7 @@ if ($action == 'del') {
         }
     }
     redirect($returnurl);
-} else if ($action == 'edit') {
+} else if ($action === 'edit') {
     // Modification d'une instance demandée.
     $id = optional_param('id', null, PARAM_INT);
     $PAGE->set_url(new moodle_url('/auth/entsync/instances.php', ['id' => $id, 'action' => 'edit']));
@@ -112,8 +111,12 @@ if ($action == 'del') {
 } else {
     // Il faut afficher la liste des instances.
     $jumpurl = new moodle_url('/auth/entsync/jump.php');
-    $editurl = new moodle_url($returnurl, ['action' => 'edit']);
-    $delurl = new moodle_url($returnurl, ['action' => 'del']);
+    if ($is_admin) {
+        $editurl = new moodle_url($returnurl, ['action' => 'edit']);
+        $delurl = new moodle_url($returnurl, ['action' => 'del']);
+    } else {
+        $editurl = $delurl = $jumpurl;
+    }
     $instancesList = $instances->get_instances([], 'dir');
     $t = new html_table();
     // Icons.
@@ -133,7 +136,7 @@ if ($action == 'del') {
         $row[] = html_writer::link($editlnk, $instance->get('rne'), $editattr);
         $buttons = [];
         $buttons[] = html_writer::link($editlnk, $editico);
-        $buttons[] = html_writer::link($dellnk, $delico);
+        if ($is_admin) $buttons[] = html_writer::link($dellnk, $delico);
         $row[] = implode(' ', $buttons);
         $t->data[] = new html_table_row($row);
     }
@@ -143,6 +146,6 @@ if ($action == 'del') {
     $plural = ($nbinst <= 1) ? '' : 's';
     echo html_writer::tag('p', "Total&nbsp;: {$nbinst} instance{$plural}");
     echo html_writer::table($t);
-    echo $OUTPUT->single_button($editurl, 'Ajouter une instance', 'get');
+    if ($is_admin) echo $OUTPUT->single_button($editurl, 'Ajouter une instance', 'get');
     echo $OUTPUT->footer();
 }

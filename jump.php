@@ -27,7 +27,7 @@ $iic = $entsync->query('iic');
 $instances = $entsync->query('instances');
 $inst = optional_param('inst', null, PARAM_TEXT);
 if (!empty($inst)) {
-    if ((!isloggedin()) || (!is_siteadmin())) die();
+    if ((!isloggedin()) || (!has_capability('moodle/site:configview', context_system::instance()))) die();
     $instance = $instances->get_instance(['dir' => $inst]);
     if (!$instance) {
         die();
