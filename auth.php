@@ -63,18 +63,24 @@ class auth_plugin_entsync extends auth_plugin_base {
             return false;
         }
 
-        $entus = $DB->get_records('auth_entsync_user', ['userid' => $mdlu->id, 'archived' => 0]);
-        $hasenabledent = false;
-        foreach ($entus as $entu) {
-            if ($ent = auth_entsync_ent_base::get_ent($entu->ent)) {
-                if ($ent->is_enabled() && (!$ent->is_sso())) {
-                    $hasenabledent = true;
-                    break;
+        $allow_local = get_config('auth_entsync', 'allow_local') === 'true';
+        if ($allow_local) {
+            $nb_entus = $DB->count_records('auth_entsync_user', ['userid' => $mdlu->id, 'archived' => 0]);
+            if ($nb_entus < 1) return false;
+        } else {
+            $entus = $DB->get_records('auth_entsync_user', ['userid' => $mdlu->id, 'archived' => 0]);
+            $hasenabledent = false;
+            foreach ($entus as $entu) {
+                if ($ent = auth_entsync_ent_base::get_ent($entu->ent)) {
+                    if ($ent->is_enabled() && (!$ent->is_sso())) {
+                        $hasenabledent = true;
+                        break;
+                    }
                 }
             }
-        }
-        if (!$hasenabledent) {
-            return false;
+            if (!$hasenabledent) {
+                return false;
+            }
         }
         $firstpw = "entsync\\{$password}";
         if ($firstpw === $mdlu->password) {
