@@ -489,8 +489,8 @@ abstract class base_sync {
         WHERE a.auth = 'entsync'
         AND a.deleted = 0
         AND a.mnethostid = :mnethostid
-        AND UPPER(a.firstname) = UPPER(:firstname)
-        AND UPPER(a.lastname) = UPPER(:lastname)";
+        AND a.firstname = :firstname
+        AND a.lastname = :lastname";
         $lst = $DB->get_records_sql($sql,
             ['firstname' => $iu->firstname, 'lastname' => $iu->lastname, 'mnethostid' => $CFG->mnet_localhost_id]);
         if (count($lst) === 0) {

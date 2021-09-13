@@ -100,8 +100,8 @@ class entus {
         JOIN {". self::TABLE . "} b ON b.userid = a.id
         WHERE a.deleted = 0
         AND b.profile = :profile
-        AND UPPER(a.firstname) = UPPER(:firstname)
-        AND UPPER(a.lastname) = UPPER(:lastname)";
+        AND a.firstname = :firstname
+        AND a.lastname = :lastname";
         $matches = $this->DB->get_records_sql($sql,
             ['firstname' => $ui->firstname, 'lastname' => $ui->lastname, 'profile' => $ui->profile]);
         $list = [];
