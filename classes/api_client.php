@@ -22,6 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace auth_entsync;
+use \auth_entsync\conf;
+use \auth_entsync\farm\iic;
+use \auth_entsync\helpers\http_client;
+
 defined('MOODLE_INTERNAL') || die;
 /**
  * Class to call api.
@@ -32,10 +36,10 @@ defined('MOODLE_INTERNAL') || die;
  */
 class api_client {
     const APIENTRY = '/auth/entsync/api/iic.php';
-    protected $http_client;
-    protected $conf;
-    protected $iic;
-    public function  __construct($conf, $iic, $http_client) {
+    protected conf $conf;
+    protected iic $iic;
+    protected http_client $http_client;
+    public function  __construct(conf $conf, iic $iic, http_client $http_client) {
         $this->conf = $conf;
         $this->iic = $iic;
         $this->http_client = $http_client;
@@ -63,6 +67,8 @@ class api_client {
         return 'IIC ' . $tk;
     }
     protected function serverURL($target) {
+        //return new \moodle_url($this->conf->iicroot() . '/' . $target . self::APIENTRY);
+        
         return new \moodle_url($this->conf->pamroot() . '/' . $target . self::APIENTRY);
     }
 }

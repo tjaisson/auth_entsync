@@ -47,8 +47,10 @@ require_once($CFG->dirroot.'/login/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 require_once($CFG->dirroot.'/cohort/lib.php');
 
+/** @var \auth_entsync\conf $conf */
 $conf = $entsync->query('conf');
 $scope = $conf->inst() . ':' . $ent->get_entclass();
+/** @var \auth_entsync\farm\iic $iic */
 $iic = $entsync->query('iic');
 $ui = optional_param('user', null, PARAM_ALPHANUMEXT);
 if (!empty($ui)) {
@@ -63,12 +65,11 @@ if (!empty($ui)) {
     if (!($ui = $cas->validateorredirect())) entsync_print_error('userautherror');
 }
 // Here we have a $userdata.
+/** @var \auth_entsync\directory\entus $entus */
 $entus = $entsync->query('directory.entus');
 list($entu, $mdlu) = $entus->find_update_by_id($ui, $ent);
 if (null === $mdlu) {
-    if ($entus->has_bad_profile($ui) || empty($ui->rnes)) entsync_print_deny_error($ui, $ent);
-    $instance_info = $entsync->query('instance_info');
-    if (count(array_intersect($ui->rnes, $instance_info->rnes())) === 0) entsync_print_deny_error($ui, $ent);
+    if (! $entus->is_auto_creatable($ui)) entsync_print_deny_error($ui, $ent);
     list($entu, $mdlu) = $entus->find_update_by_names_and_profile($entu, $ui, $ent);
     if (null === $mdlu) {
         list($entu, $mdlu) = $entus->create($entu, $ui, $ent);

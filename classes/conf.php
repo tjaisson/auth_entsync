@@ -33,23 +33,45 @@ defined('MOODLE_INTERNAL') || die;
 class conf {
     protected $_pn;
     protected $_pamroot;
+    protected $_iicroot;
     protected $_inst;
     protected $_gw;
     protected $_isgw;
     protected $_role_ens;
+    protected $_auto_account;
     public function  __construct($pn) {
         $this->_pn = $pn;
     }
     public function role_ens() {
-        if (!isset($this->_role_ens)) {
+        if (! isset($this->_role_ens)) {
             $this->_role_ens = \get_config($this->_pn, 'role_ens');
             if (false === $this->_role_ens) $this->_role_ens = 0;
         }
         return $this->_role_ens;
     }
+    public function auto_account() {
+        if (! isset($this->_auto_account)) {
+            $auto_profiles = \get_config($this->_pn, 'auto_profiles');
+            if (false === $auto_profiles) $auto_profiles = 7;
+            else $auto_profiles = intval($auto_profiles);
+            $no_uai_check =  \get_config($this->_pn, 'no_uai_check');
+            if (false === $no_uai_check) $no_uai_check = 0;
+            else $no_uai_check = intval($no_uai_check);
+            $this->_auto_account = new \stdClass();
+            $this->_auto_account->auto_profiles = $auto_profiles;
+            $this->_auto_account->no_uai_check = $no_uai_check;
+        }
+        return $this->_auto_account;
+    }
     public function pamroot() {
         if (!isset($this->_pamroot)) {
             $this->_pamroot = \get_config($this->_pn, 'pamroot');
+        }
+        return $this->_pamroot;
+    }
+    public function iicroot() {
+        if (!isset($this->_iicroot)) {
+            $this->_iicroot = \get_config($this->_pn, 'iicroot');
         }
         return $this->_pamroot;
     }

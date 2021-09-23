@@ -4,6 +4,8 @@ namespace auth_entsync\directory;
 use \auth_entsync\helpers\stringhelper;
 use \auth_entsync\helpers\cohorthelper;
 use \auth_entsync\helpers\rolehelper;
+use \auth_entsync\conf;
+use \auth_entsync\farm\instance_info;
 
 class entus {
     const TABLE = 'auth_entsync_user';
@@ -17,13 +19,15 @@ class entus {
     const FAKEEMAIL_ENS = 'enseignant@ac-paris.invalid';
     const FAKEEMAIL_PERS = 'personnel@ac-paris.invalid';
 
-    protected $DB;
     protected $CFG;
-    protected $conf;
-    public function __construct($CFG, $DB, $conf) {
+    protected $DB;
+    protected conf $conf;
+    protected instance_info $i_info;
+    public function __construct($CFG, $DB, conf $conf, instance_info $i_info) {
         $this->CFG = $CFG;
         $this->DB = $DB;
         $this->conf = $conf;
+        $this->i_info = $i_info;
     }
 
     /**
@@ -151,7 +155,22 @@ class entus {
     public function is_creatable($ui) {
         return !(empty($ui->profile) || empty($ui->firstname) || empty($ui->lastname));
     }
-
+    
+    public function is_auto_creatable($ui) {
+        if ((empty($ui->profile) || empty($ui->firstname) || empty($ui->lastname) || empty($ui->rnes))) {
+            return false;
+        };
+        $auto_conf = $this->conf->auto_account();
+        $user_auto_profile = intval($ui->profile) & $auto_conf->auto_profiles;
+        if ($user_auto_profile) {
+            if ($user_auto_profile & $auto_conf->no_uai_check) {
+                return true;
+            } else {
+                return count(array_intersect($ui->rnes, $this->i_info->rnes())) != 0;
+            }
+        }
+    }
+    
     public function has_bad_profile($ui) {
         if (! isset($ui->profile)) return false;
         return empty($ui->profile);

@@ -78,7 +78,7 @@ class container {
         });
         $this->registerService('directory.entus', function ($c) {
             include_once(__dir__ . '/directory/entus.php');
-            return new directory\entus($c->query('CFG'), $c->query('DB'), $c->query('conf'));
+            return new directory\entus($c->query('CFG'), $c->query('DB'), $c->query('conf'), $c->query('instance_info'));
         });
     }
     public const NAME = 'auth_entsync';
