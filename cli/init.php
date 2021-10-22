@@ -134,7 +134,7 @@ function aes_writeln_ko($msg) {
 class aes_conf {
     public static function check_homepage() {
         global $CFG;
-        if ($CFG-$CFG->defaulthomepage == HOMEPAGE_SITE) {
+        if ($CFG->defaulthomepage == HOMEPAGE_SITE) {
             aes_writeln_ok('La page d\'accueil est réglée sur \'Site\'.');
         } else  {
             aes_writeln_ko('La page d\'accueil n\'est pas réglée sur \'Site\'.');
@@ -635,7 +635,24 @@ ORDER BY r.sortorder ASC";
     }
     
     public static function get_wanted_role_allows($role, $type) {
-        return get_default_role_archetype_allows($type, $role->archetype);
+        global $DB;
+        $ret = get_default_role_archetype_allows($type, $role->archetype);
+        $roles = $DB->get_records('role');
+        $map = [];
+        foreach ($roles as $r) {
+            $map[$r->shortname] = $r->id;
+        }
+    
+
+        if ($type === 'assign') {
+            if ($role->shortname === 'editingteacher') {
+                $ret[$map['editingteacher']] = $map['editingteacher'];
+            } else if ($role->shortname === 'courseowner') {
+                $ret[$map['editingteacher']] = $map['editingteacher'];
+                $ret[$map['courseowner']] = $map['courseowner'];
+            }
+        }
+        return $ret;
     }
     
     public static function get_wanted_cntx($role) {
