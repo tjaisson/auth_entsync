@@ -42,6 +42,7 @@ class conf {
     public function  __construct($pn) {
         $this->_pn = $pn;
     }
+    public function pn() { return $this->_pn; }
     public function role_ens() {
         if (! isset($this->_role_ens)) {
             $this->_role_ens = \get_config($this->_pn, 'role_ens');

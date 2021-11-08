@@ -2,7 +2,7 @@
 namespace auth_entsync\directory;
 
 use \auth_entsync\helpers\stringhelper;
-use \auth_entsync\helpers\cohorthelper;
+use \auth_entsync\directory\cohorts;
 use \auth_entsync\helpers\rolehelper;
 use \auth_entsync\conf;
 use \auth_entsync\farm\instance_info;
@@ -20,14 +20,16 @@ class entus {
     const FAKEEMAIL_PERS = 'personnel@ac-paris.invalid';
 
     protected $CFG;
-    protected $DB;
+    protected \moodle_database $DB;
     protected conf $conf;
     protected instance_info $i_info;
-    public function __construct($CFG, $DB, conf $conf, instance_info $i_info) {
+    protected cohorts $cohorts;
+    public function __construct($CFG, $DB, conf $conf, instance_info $i_info, cohorts $cohorts) {
         $this->CFG = $CFG;
         $this->DB = $DB;
         $this->conf = $conf;
         $this->i_info = $i_info;
+        $this->cohorts = $cohorts;
     }
 
     /**
@@ -334,9 +336,13 @@ class entus {
     protected function update_cohort($entu, $mdlu, $ui, $ent) {
         if (empty($ui->profile)) return;
         if (empty($ui->classe)) {
-            cohorthelper::removecohorts($mdlu->id);
+            $this->cohorts->clear_user_div_and_groups($mdlu->id);
         } else if (\in_array($ui->profile, $ent->get_profileswithcohorts())) {
-            cohorthelper::set_cohort($mdlu->id, $ui->classe);
+            if (null == $ui->groupes) {
+                $this->cohorts->set_user_div($mdlu->id, $ui->classe);
+            } else {
+                $this->cohorts->set_user_div_and_groups($mdlu->id, $ui->classe, $ui->groupes);
+            }
         }
     }
 

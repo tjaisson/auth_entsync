@@ -95,8 +95,14 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                 $classe = array_pop($classes);
                 $parts = explode('$', $classe, 2);
                 $attr->classe = (count($parts) === 2) ? $parts[1] : $classe;
+                if ((false !== ($val = self::xmlget($elem, 'functionalGroups'))) &&
+                (is_array($groupes = json_decode($val)))) {
+                    $attr->groupes = [];
+                    foreach ($groupes as $g) $attr->groupes[] = $g->name;
+                }
             } else {
                 $attr->classe = null;
+                $attr->groupes = null;
             }
         }
     }

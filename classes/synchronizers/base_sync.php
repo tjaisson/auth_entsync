@@ -25,9 +25,9 @@
 namespace auth_entsync\synchronizers;
 defined('MOODLE_INTERNAL') || die();
 
-use \auth_entsync\helpers\cohorthelper;
 use \auth_entsync\helpers\rolehelper;
 use \auth_entsync\helpers\usertblhelper;
+use \auth_entsync\directory\cohorts;
 
 
 /**
@@ -84,6 +84,8 @@ abstract class base_sync {
      * @var array liste des utilisateurs de l'ent synchronisé ayant un profil non synchronisé
      */
     protected $_existingentuother;
+
+    protected cohorts $cohorts;
 
     /**
      * @var int Code de l'ent synchronisé
@@ -257,7 +259,7 @@ abstract class base_sync {
         rolehelper::updaterole($_mdlu->id, $this->roles[$iu->profile]);
 
         if (\in_array($iu->profile, $this->_profileswithcohort)) {
-            cohorthelper::set_cohort($_mdlu->id, $iu->cohortname);
+            $this->cohorts->set_user_div($_mdlu->id, $iu->cohortname);
         }
 
         return [$_entu, $_mdlu];
@@ -284,7 +286,7 @@ abstract class base_sync {
                 rolehelper::removeroles($entu->userid);
                 
                 // On le sort de sa cohorte éventuelle (si c'est un élève).
-                cohorthelper::removecohorts($entu->userid);
+                $this->cohorts->clear_div_and_groups($entu->userid);
             }
         }
 
@@ -313,6 +315,9 @@ abstract class base_sync {
 
     public function dosync($iurs) {
         global $DB;
+
+        $this->cohorts = \auth_entsync\container::get('directory.cohorts');
+
         if (is_null($this->_progressreporter)) {
             $this->_progressreporter = new \core\progress\none();
         }

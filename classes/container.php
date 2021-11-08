@@ -78,7 +78,11 @@ class container {
         });
         $this->registerService('directory.entus', function ($c) {
             include_once(__dir__ . '/directory/entus.php');
-            return new directory\entus($c->query('CFG'), $c->query('DB'), $c->query('conf'), $c->query('instance_info'));
+            return new directory\entus($c->query('CFG'), $c->query('DB'), $c->query('conf'), $c->query('instance_info'), $c->query('directory.cohorts'));
+        });
+        $this->registerService('directory.cohorts', function ($c) {
+            include_once(__dir__ . '/directory/cohorts.php');
+            return new directory\cohorts($c->query('DB'), $c->query('conf'));
         });
     }
     public const NAME = 'auth_entsync';
