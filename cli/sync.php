@@ -12,7 +12,7 @@ require_once($CFG->dirroot.'/cohort/lib.php');
 require_once(__DIR__ . '/../ent_defs.php');
 
 $help =
-"Netoie la base entsync.
+"Synchronise les élèves.
     
 Options:
 --run       Effectue la synchro.
@@ -114,10 +114,15 @@ class aes_farm_user {
         $inst = $conf->inst();
         $sql = 'SELECT fi.id as id, fi.name as name, GROUP_CONCAT(fiu.uai SEPARATOR \',\') as uais, fi.ent as ent, fi.do_entsync as do_sync
 FROM pam$FARM.{farm_instance} fi
-JOIN pam$FARM.{farm_instance_uai} fiu on fiu.instanceid = fi.id WHERE fi.dir = :dir
+LEFT JOIN pam$FARM.{farm_instance_uai} fiu on fiu.instanceid = fi.id WHERE fi.dir = :dir
 GROUP BY fi.id;';
         $info = $DB->get_record_sql($sql, ['dir' => $inst]);
-        $info->uais = explode(',', $info->uais);
+        if (empty($info->uais)) {
+            $info->uais = [];
+        } else {
+            $info->uais = explode(',', $info->uais);
+        }
+        
         return $info;
     }
 

@@ -55,6 +55,23 @@ AND c.idnumber ' . $sql . ';';
     }
 
     /**
+     * @return cohort_info[]
+     */
+    public function list() {
+        $sql =
+'SELECT
+ c.*,
+ substring(c.idnumber, 6, 2) as typ
+FROM {cohort} c
+WHERE c.component = :pn;';
+        $list = $this->DB->get_records_sql($sql, ['pn' => $this->conf->pn()]);
+        $ret = [];
+        foreach($list as $c) $ret[] = cohort_info::from_record($c);
+        return $ret;
+    }
+
+
+    /**
      * @param int       $userid
      * @return array $id => $idnumber
      */
@@ -180,6 +197,7 @@ class cohort_info {
     public string $type;
     public string $name;
     public string $idnumber;
+    public \stdClass $rec;
     public static function idnumber($name, $type) {
         $name = self::simplify_cohort($name);
         return 'auto_' . $type . '_' . $name;
@@ -216,6 +234,23 @@ class cohort_info {
         return $c;
     }
 
+    /**
+     * @param \stdClass $rec
+     * @return cohort_info
+     */
+    public static function from_record($rec) {
+        if (\array_key_exists($rec->idnumber, self::$cache)) return self::$cache[$rec->idnumber];
+        $c = new cohort_info();
+        $c->id = $rec->id;
+        $c->name = $rec->name;
+        $c->idnumber = $rec->idnumber;
+        $c->type = $rec->typ;
+        unset($rec->typ);
+        $c->rec = $rec;
+        self::$cache[$rec->idnumber] = $c;
+        return $c;
+    }
+
     public function prefixed_name() {
         if ($this->type === self::C_TYPE_DIV) {
             return self::PRFX_DIV . $this->name;
@@ -229,5 +264,13 @@ class cohort_info {
     public function set_id($id) {
         $this->id = $id;
         self::$cache[$this->idnumber] = $this;
+    }
+
+    public function is_div_or_group() {
+        return $this->type === self::C_TYPE_DIV || $this->type === self::C_TYPE_GRP;
+    }
+
+    public function delete() {
+        cohort_delete_cohort($this->rec);
     }
 }

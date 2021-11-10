@@ -286,7 +286,7 @@ abstract class base_sync {
                 rolehelper::removeroles($entu->userid);
                 
                 // On le sort de sa cohorte éventuelle (si c'est un élève).
-                $this->cohorts->clear_div_and_groups($entu->userid);
+                $this->cohorts->clear_user_div_and_groups($entu->userid);
             }
         }
 
