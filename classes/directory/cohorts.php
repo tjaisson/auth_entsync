@@ -271,6 +271,8 @@ class cohort_info {
     }
 
     public function delete() {
-        cohort_delete_cohort($this->rec);
+        \cohort_delete_cohort($this->rec);
+        unset(self::$cache[$this->idnumber]);
     }
 }
+
