@@ -73,6 +73,8 @@ class roles {
     /** @var \moodle_database $db */
     protected $db;
     protected $cfg;
+    /** @var \auth_entsync\conf $conf */
+    protected $conf;
     protected $cap = false;
     protected $archetypes_cap = false;
     protected $role_map = false;
@@ -81,6 +83,7 @@ class roles {
         $this->console = $console;
         $this->db = $container->query('DB');
         $this->cfg = $container->query('CFG');
+        $this->conf = $container->query('conf');
     }
     protected function start_section() {
         $this->console->start_section('Rôles');
@@ -92,13 +95,21 @@ class roles {
     }
     public function init() {
         $this->start_section();
-        $this->console->writeln('Init non implémenté.');
+        if ($this->conf->is_gw()) {
+            $this->console->writeln('Init rôles non effectué sur gw.');    
+        } else {
+            $this->console->writeln('Init rôles non implémenté.');
+        }
     }
     public function fix() {
         $this->start_section();
-        $this->add_entsync_roles();
-        $this->fix_roles();
-        $this->fix_default_roles();
+        if ($this->conf->is_gw()) {
+            $this->console->writeln('Fix rôles non effectué sur gw.');    
+        } else {
+            $this->add_entsync_roles();
+            $this->fix_roles();
+            $this->fix_default_roles();
+        }
     }
 
     protected function sort_roles() {
