@@ -39,6 +39,8 @@ class conf {
     protected $_isgw;
     protected $_role_ens;
     protected $_auto_account;
+    protected $_sharedir;
+    protected $_initdir;
     public function  __construct($pn) {
         $this->_pn = $pn;
     }
@@ -102,5 +104,11 @@ class conf {
             $this->_sharedir = \get_config($this->_pn, 'sharedir');
         }
         return $this->_sharedir;
+    }
+    public function initdir() {
+        if (!isset($this->_initdir)) {
+            $this->_initdir = \get_config($this->_pn, 'initdir');
+        }
+        return $this->_initdir;
     }
 }

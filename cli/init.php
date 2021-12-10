@@ -1,4 +1,7 @@
 <?php
+use auth_entsync\init\console;
+use auth_entsync\init\roles;
+use auth_entsync\init\h5p;
 
 define('CLI_SCRIPT', true);
 
@@ -45,6 +48,9 @@ if ($options['help']) {
     exit(0);
 }
 
+$aes_container = \auth_entsync\container::services();
+$aes_console = new console(!!$options['only-ko']);
+
 if ($options['diag']) {
     if ($options['only-ko']) $aes_only_ko = true;
     else $aes_only_ko = false;
@@ -60,7 +66,7 @@ if ($options['diag']) {
             'entsync-roles' => true,
             'entsync-defaults' => true,
             'system-roles' => true,
-            'roles-defaults' => true,
+            'roles-defaults' => true
         ];
     } else {
         $parts = explode(',', $options['run']);
@@ -115,6 +121,14 @@ if ($options['diag']) {
     }
     if (array_key_exists('roles-defaults', $actions)) {
         aes_roles::set_default_roles();
+    }
+    if (array_key_exists('mdl_h5p', $actions)) {
+        $aes_h5p = new h5p($aes_console, $aes_container);
+        $aes_h5p->fix('mdl_h5p');
+    }
+    if (array_key_exists('mod_hvp', $actions)) {
+        $aes_h5p = new h5p($aes_console, $aes_container);
+        $aes_h5p->fix('mod_hvp');
     }
 }
 
@@ -660,7 +674,13 @@ ORDER BY r.sortorder ASC";
     }
     
     public static function get_wanted_cap($role) {
-        $wanted = self::get_default_capabilities($role->archetype);
+        $entsync_def = self::get_entsync_roles_def($role->shortname);
+        if (empty($entsync_def)) {
+            $wanted = self::get_default_capabilities($role->archetype);
+        } else {
+            $wanted = self::get_default_capabilities($entsync_def['archetype']);
+        }
+        
         if ($role->shortname === 'catcreator') {
             $wanted['moodle/category:manage'] = CAP_ALLOW;
             $wanted['moodle/course:ignoreavailabilityrestrictions'] = CAP_ALLOW;
