@@ -31,6 +31,7 @@ list($options, $unrecognised) = cli_get_params(
         'only-ko'  => false,
         'run'  => false,
         'ent'  => false,
+        'lib' => false,
         'help'    => false,
     ],
     [
@@ -53,7 +54,7 @@ $aes_console = new console(!!$options['only-ko']);
 
 if ($options['diag']) {
     $aes_roles = new roles($aes_console, $aes_container);
-    $aes_roles->check();
+    $aes_roles->check(!!$options['lib']);
 } else if ($options['run']) {
     if (strtolower(trim($options['run'])) === 'all') {
         $actions = [
@@ -85,7 +86,7 @@ if ($options['diag']) {
     }
     if (array_key_exists('roles', $actions)) {
         $aes_roles = new roles($aes_console, $aes_container);
-        $aes_roles->fix();
+        $aes_roles->fix(!!$options['lib']);
     }
     if (array_key_exists('entsync-defaults', $actions)) {
         $ent = $options['ent'];

@@ -71,6 +71,10 @@ class entparam_form extends \moodleform {
         $enableico = $OUTPUT->pix_icon('t/show', $txt2->enable);
         
         foreach (\auth_entsync_ent_base::get_ents() as $entcode => $ent) {
+            // Hack : only show ent 4 & 6 if already activated
+            if (($entcode == '4' || $entcode == '6') && (!$ent->is_enabled())) {
+                continue;
+            }
             $actionurlent = new \moodle_url($actionurl, ['ent' => $entcode]);
             $class = '';
             // Hide/show link.

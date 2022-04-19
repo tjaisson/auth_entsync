@@ -368,19 +368,19 @@ class entus {
             $username = $_fn . $_ln;
         }
         $clean = \core_user::clean_field($username, 'username');
-        if (0 === $this->DB->count_records('user', ['username' => $clean])) {
-            $_mdlu->username = $clean;
-        } else {
+        if ($this->DB->record_exists('user', ['username' => $clean])) {
             $clean = \rtrim($clean, '0..9');
-            if (0 === $this->DB->count_records('user', ['username' => $clean])) {
-                $_mdlu->username = $clean;
-            } else {
+            if ($this->DB->record_exists('user', ['username' => $clean])) {
                 $i = 1;
-                while (0 !== $this->DB->count_records('user', ['username' => $clean . $i])) {
+                while ($this->DB->record_exists('user', ['username' => $clean . $i])) {
                     ++$i;
                 }
                 $_mdlu->username = $clean . $i;
+            } else {
+                $_mdlu->username = $clean;
             }
+        } else {
+            $_mdlu->username = $clean;
         }
         $_mdlu->mnethostid = $this->CFG->mnet_localhost_id;
     }

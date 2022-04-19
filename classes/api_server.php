@@ -87,16 +87,6 @@ class api_server {
     protected function error() {
         throw new \moodle_exception('api error', 'auth_entsync');
     }
-    protected static function get($n){
-        return (self::services())->query($n);
-    }
-    protected static function services() {
-        static $inst = null;
-        if (null === $inst) {
-            $inst = new self();
-        }
-        return $inst;
-    }
     protected $_services = [];
     protected function registerService($n, $fm) {
         $this->_services[$n] = new api_service_factory($fm);
@@ -109,6 +99,7 @@ class api_server {
 }
 class api_service_factory {
     protected $fm;
+    protected $inst = null;
     public function __construct($fm) {
         $this->fm = $fm;
     }

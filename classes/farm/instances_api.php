@@ -33,12 +33,12 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class instances_api extends api_service {
-    protected $instances;
+    protected $inst_svc;
     public function __construct($instances) {
-        $this->instances = $instances;
+        $this->inst_svc = $instances;
     }
     public function iic_get_rnes() {
-        $index = $this->instances->instancesIndex();
+        $index = $this->inst_svc->instancesIndex();
         return $this->json_encode($index[$this->inst]['rnes']);
     }
     public function public_get_instances() {
@@ -46,13 +46,13 @@ class instances_api extends api_service {
         if (false !== ($json = $cache->get('instances_json'))) {
             return $json;
         }
-        $json = $this->json_encode($this->instances->instances_list());
+        $json = $this->json_encode($this->inst_svc->instances_list());
         $cache->set('instances_json', $json);
         return $json;
     }
     public function mdl_get_instances() {
         $this->requireSiteAdmin();
-        $json = $this->json_encode($this->instances->instances_list(true));
+        $json = $this->json_encode($this->inst_svc->instances_list(true));
         return $json;
     }
 }

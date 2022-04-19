@@ -24,6 +24,19 @@ class roles {
         ]
     ];
 
+    const LIBRARY_ROLES_DEFS = [
+        'libcontrib' => [
+            'name' => 'Contribution à la bibliothèque',
+            'desc' => 'Ce rôle permet de contribur à la bibliothèque',
+            'archetype' => 'coursecreator'
+        ],
+        'libview' => [
+            'name' => 'Accès à la bibliothèque',
+            'desc' => 'Ce rôle permet de voir tous les cours en tant qu\'enseignant non éditeur',
+            'archetype' => 'coursecreator'
+        ],
+    ];
+
     const ARCHETYPES = [
         'manager',
         'coursecreator',
@@ -54,6 +67,7 @@ class roles {
                 'mod/hvp:installrecommendedh5plibraries' => \CAP_ALLOW,
                 'moodle/course:ignoreavailabilityrestrictions' => \CAP_ALLOW,
                 'moodle/course:delete' => \CAP_ALLOW,
+                'moodle/course:view' => \CAP_ALLOW,
             ],
         ],
         'coursecreator' => [
@@ -66,7 +80,26 @@ class roles {
                 'webservice/rest:use' => \CAP_ALLOW,
             ],
 
-        ]
+        ],
+        'libcontrib' => [
+            'capabilities_copy' => [
+                'coursecreator',
+                'teacher',
+            ],
+            'capabilities' => [
+                'moodle/course:ignoreavailabilityrestrictions' => \CAP_ALLOW,
+                'moodle/course:view' => \CAP_ALLOW,
+            ],
+        ],
+        'libview' => [
+            'capabilities_copy' => [
+                'teacher',
+            ],
+            'capabilities' => [
+                'moodle/course:ignoreavailabilityrestrictions' => \CAP_ALLOW,
+                'moodle/course:view' => \CAP_ALLOW,
+            ],
+        ],
     ];
 
     protected console $console;
@@ -88,9 +121,9 @@ class roles {
     protected function start_section() {
         $this->console->start_section('Rôles');
     }
-    public function check() {
+    public function check($lib_mode = false) {
         $this->start_section();
-        $this->check_roles();
+        $this->check_roles($lib_mode);
         $this->check_default_roles();
     }
     public function init() {
@@ -101,13 +134,13 @@ class roles {
             $this->console->writeln('Init rôles non implémenté.');
         }
     }
-    public function fix() {
+    public function fix($lib_mode = false) {
         $this->start_section();
         if ($this->conf->is_gw()) {
             $this->console->writeln('Fix rôles non effectué sur gw.');    
         } else {
-            $this->add_entsync_roles();
-            $this->fix_roles();
+            $this->add_entsync_roles($lib_mode);
+            $this->fix_roles($lib_mode);
             $this->fix_default_roles();
         }
     }
@@ -166,7 +199,7 @@ class roles {
         $this->console->write_fix('Rôles réordonnés');
     }
 
-    protected function check_roles() {
+    protected function check_roles($lib_mode = false) {
         $roles = $this->db->get_records('role');
         $unkn = [];
         $to_check = [];
@@ -182,7 +215,15 @@ class roles {
                 } else if (\array_key_exists($role->shortname, self::ENTSYNC_ROLES_DEFS)) {
                     $to_check[] = $role;
                 } else {
-                    $unkn[] = $role->shortname;
+                    if ($lib_mode) {
+                        if (\array_key_exists($role->shortname, self::LIBRARY_ROLES_DEFS)) {
+                            $to_check[] = $role;
+                        } else {
+                            $unkn[] = $role->shortname;
+                        }
+                    } else {
+                        $unkn[] = $role->shortname;
+                    }
                 }
             }
         }
@@ -218,11 +259,25 @@ class roles {
         } else {
             $this->console->write_check('Rôles entsync manquants : ' . implode(', ', $missings), false);
         }
+        if ($lib_mode) {
+            $lib_missings = [];
+            foreach (self::LIBRARY_ROLES_DEFS as $rolename => $_unused) {
+                if (! array_key_exists($rolename, $existings)) {
+                    $lib_missings[] = $rolename;
+                }
+            }
+            if (empty($lib_missings)) {
+                $this->console->write_check('Aucun rôle de bibliothèque manquant.');
+            } else {
+                $this->console->write_check('Rôles de bibliothèque manquants : ' . implode(', ', $lib_missings), false);
+            }
+        }
+
         foreach ($to_check as $role) {
             $this->check_role($role);
         }
     }
-    
+
     protected function check_role($role) {
         $this->check_role_archetype($role);
         $this->check_role_cntx($role);
@@ -230,7 +285,7 @@ class roles {
         $this->check_role_cap($role);
     }
 
-    protected function fix_roles() {
+    protected function fix_roles($lib_mode = false) {
         $roles = $this->db->get_records('role');
         $unkn = [];
         $to_check = [];
@@ -247,7 +302,15 @@ class roles {
             } else if (\array_key_exists($role->shortname, self::ENTSYNC_ROLES_DEFS)) {
                 $to_check[] = $role;
             } else {
-                $unkn[] = $role->shortname;
+                if ($lib_mode) {
+                    if (\array_key_exists($role->shortname, self::LIBRARY_ROLES_DEFS)) {
+                        $to_check[] = $role;
+                    } else {
+                        $unkn[] = $role->shortname;
+                    }
+                } else {
+                    $unkn[] = $role->shortname;
+                }
             }
         }
         if (!empty($duplicates)) {
@@ -274,6 +337,17 @@ class roles {
         if (!empty($missings)) {
             $this->console->write_fix('Attention, rôles entsync manquants non ajoutés : ' . implode(', ', $missings), false);
         }
+        if ($lib_mode) {
+            $lib_missings = [];
+            foreach (self::LIBRARY_ROLES_DEFS as $rolename => $_unused) {
+                if (! array_key_exists($rolename, $existings)) {
+                    $lib_missings[] = $rolename;
+                }
+            }
+            if (!empty($lib_missings)) {
+                $this->console->write_fix('Attention, rôles lib manquants non ajoutés : ' . implode(', ', $lib_missings), false);
+            }
+        }
         foreach ($to_check as $role) {
             $this->fix_role($role);
         }
@@ -287,21 +361,25 @@ class roles {
         $this->fix_role_cap($role);
     }
 
-    protected function add_entsync_roles() {
-        foreach (self::ENTSYNC_ROLES_DEFS as $name => $unused) {
-            $this->add_role($name);
+    protected function add_entsync_roles($lib_mode = false) {
+        foreach (self::ENTSYNC_ROLES_DEFS as $name => $def) {
+            $this->add_role($name, $def);
+        }
+        if ($lib_mode) {
+            foreach (self::LIBRARY_ROLES_DEFS as $name => $def) {
+                $this->add_role($name, $def);
+            }
         }
         $this->sort_roles();
     }
 
-    protected function add_role($roleShortName) {
+    protected function add_role($roleShortName, $def) {
         if ($this->db->record_exists('role', ['shortname' => $roleShortName])) {
             $this->console->write_fix('Le rôle ' . $roleShortName . ' existe déjà.');
             return;
         }
-        $def = $this->get_entsync_roles_def($roleShortName);
         if (! $def) {
-            $this->console->write_fix('Le rôle ' . $roleShortName . ' n\'est pas un rôle entsync.', false);
+            $this->console->write_fix('Le rôle ' . $roleShortName . ' n\'est pas un rôle entsync (ou bib).', false);
             return;
         }
         create_role($def['name'], $roleShortName, $def['desc'], $def['archetype']);
@@ -456,12 +534,16 @@ ORDER BY r.sortorder ASC";
         $systemcontext = \context_system::instance();
         $systemcontext->mark_dirty();
     }
-    
+
     public function check_role_cap($role) {
+        $wanted = $this->get_wanted_cap($role);
+        $this->_check_role_cap($role, $wanted);
+    }
+
+    protected function _check_role_cap($role, $wanted) {
         $roleid = $role->id;
         $systemcontext = \context_system::instance();
         $existing_rec = $this->db->get_records('role_capabilities', ['roleid' => $roleid, 'contextid' => $systemcontext->id]);
-        $wanted = $this->get_wanted_cap($role);
         $wrong = [];
         $existings = [];
         $duplicates = [];
@@ -500,13 +582,14 @@ ORDER BY r.sortorder ASC";
         }
         
     }
-    
     public function fix_role_cap($role) {
+        $wanted = $this->get_wanted_cap($role);
+        $this->_fix_role_cap($role, $wanted);
+    }    
+
+    protected function _fix_role_cap($role, $wanted) {
         $systemcontext = \context_system::instance();
         $roleid = $role->id;
-        
-        $wanted = $this->get_wanted_cap($role);
-        foreach ($wanted as $cap => $perm) $wanted[$cap] = $perm;
         
         $current = $this->db->get_records_menu('role_capabilities', array('roleid' => $roleid,
             'contextid' => $systemcontext->id), '', 'capability,permission');
@@ -521,26 +604,16 @@ ORDER BY r.sortorder ASC";
         $systemcontext->mark_dirty();
     }
     
-    public function get_entsync_roles_def($roleShortName) {
-        if (\array_key_exists($roleShortName, self::ENTSYNC_ROLES_DEFS)) {
-            return self::ENTSYNC_ROLES_DEFS[$roleShortName];
-        } else {
-            return false;
-        }
-    }
-
     protected function _get_wanted_archetype($role) {
-        $entsync_def = $this->get_entsync_roles_def($role->shortname);
-        if (empty($entsync_def)) {
-            if (\in_array($role->shortname, self::ARCHETYPES)) {
-                return $role->shortname;
-            } else {
-                return $role->archetype;
-            }
+        if (\array_key_exists($role->shortname, self::ENTSYNC_ROLES_DEFS))
+            return self::ENTSYNC_ROLES_DEFS[$role->shortname]['archetype'];
+        if (\array_key_exists($role->shortname, self::LIBRARY_ROLES_DEFS))
+            return self::LIBRARY_ROLES_DEFS[$role->shortname]['archetype'];
+        if (\in_array($role->shortname, self::ARCHETYPES)) {
+            return $role->shortname;
         } else {
-            return $entsync_def['archetype'];
+            return $role->archetype;
         }
-
     }
 
     protected function _get_role_map() {
@@ -576,15 +649,22 @@ ORDER BY r.sortorder ASC";
     }
     
     protected function get_wanted_cap($role) {
-        $archetype = $this->_get_wanted_archetype($role);
-        $wanted = $this->get_default_capabilities($archetype);
         if (\array_key_exists($role->shortname, self::EXTRA_ALLOW)) {
             $extra_def = self::EXTRA_ALLOW[$role->shortname];
+            if (\array_key_exists('capabilities_copy', $extra_def)) {
+                $wanted = $this->merge_default_capabilities($extra_def['capabilities_copy']);
+            } else {
+                $archetype = $this->_get_wanted_archetype($role);
+                $wanted = $this->merge_default_capabilities([$archetype]);
+            }
             if (\array_key_exists('capabilities', $extra_def)) {
-                foreach ($extra_def['capabilities'] as $name => $allow) {
-                    $wanted[$name] = $allow;
+                foreach ($extra_def['capabilities'] as $cap => $perm) {
+                    $wanted[$cap] = $perm;
                 }
             }
+        } else {
+            $archetype = $this->_get_wanted_archetype($role);
+            return $this->merge_default_capabilities([$archetype]);
         }
         return $wanted;
     }
@@ -727,4 +807,19 @@ ORDER BY r.sortorder ASC";
         else return [];
     }
 
+    public function merge_default_capabilities($archetypes) {
+        if (\count($archetypes) === 1) return $this->get_default_capabilities($archetypes[0]);
+        $ret = [];
+        foreach ($archetypes as $archetype) {
+            $caps = $this->get_default_capabilities($archetype);
+            foreach ($caps as $cap => $perm) {
+                if (\array_key_exists($cap, $ret)) {
+                    $ret[$cap] = \max($perm, $ret[$cap]);
+                } else {
+                    $ret[$cap] = $perm;
+                }
+            }
+        }
+        return $ret;
+    }
 }

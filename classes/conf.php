@@ -31,6 +31,8 @@ defined('MOODLE_INTERNAL') || die;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class conf {
+    /** @var \moodle_database $db */
+    protected $db;
     protected $_pn;
     protected $_pamroot;
     protected $_iicroot;
@@ -39,10 +41,10 @@ class conf {
     protected $_isgw;
     protected $_role_ens;
     protected $_auto_account;
-    protected $_sharedir;
-    protected $_initdir;
-    public function  __construct($pn) {
+    protected $_year_offset;
+    public function  __construct($pn, $db) {
         $this->_pn = $pn;
+        $this->db = $db;
     }
     public function pn() { return $this->_pn; }
     public function role_ens() {
@@ -100,15 +102,29 @@ class conf {
         return $this->_isgw;
     }
     public function sharedir() {
-        if (!isset($this->_sharedir)) {
-            $this->_sharedir = \get_config($this->_pn, 'sharedir');
-        }
-        return $this->_sharedir;
+        return \get_config($this->_pn, 'sharedir');
     }
     public function initdir() {
-        if (!isset($this->_initdir)) {
-            $this->_initdir = \get_config($this->_pn, 'initdir');
+        return \get_config($this->_pn, 'initdir');
+    }
+    public function farmdb() {
+        return \get_config($this->_pn, 'farmdb');
+    }
+    public function get_farm_config($pn) {
+        $farmdb = $this->farmdb();
+        $sql = "SELECT value FROM {$farmdb}.{ent_config} WHERE name = :name;";
+        return $this->db->get_field_sql($sql, ['name' => $pn]);
+    }
+    protected function year_offset() {
+        if (!isset($this->_year_offset)) {
+            $this->_year_offset = \intval($this->get_farm_config('year_offset'));
         }
-        return $this->_initdir;
+        return $this->_year_offset;
+    }
+    public function current_scol_year() {
+        return \intval(date('Y', time() - $this->year_offset()));
+    }
+    public function scol_year_start_time($y) {
+        return \mktime(0,0,0,1,1,$y) + $this->year_offset();
     }
 }

@@ -42,7 +42,7 @@ class container {
         });
         $this->registerService('conf', function ($c) {
             include_once(__dir__ . '/conf.php');
-            return new conf(self::NAME);
+            return new conf(self::NAME, $c->query('DB'));
         });
         $this->registerService('iic', function ($c) {
             include_once(__dir__ . '/farm/iic.php');

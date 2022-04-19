@@ -59,22 +59,16 @@ class cas_sync extends \auth_entsync\synchronizers\base_sync {
 
     protected function applycreds($_mdlu, $iu) {
         global $DB, $CFG;
-        $_mdlu->username = "entsync.{$this->entcode}.{$iu->uid}";
-        // TODO : gérer le cas où le username est déjà utilisé
-        // ne devrait pas se produire mais déjà vu suite à bugg.
-        $clean = \core_user::clean_field($_mdlu->username, 'username');
-        if ($_mdlu->username !== $clean) {
-            if (0 === $DB->count_records('user', ['username' => $clean])) {
-                $_mdlu->username = $clean;
-            } else {
-                $i = 1;
-                while (0 !== $DB->count_records('user', ['username' => $clean . $i])) {
-                    ++$i;
-                }
-                $_mdlu->username = $clean . $i;
+        $username = \core_user::clean_field("entsync.{$this->entcode}.{$iu->uid}", 'username');
+        if ($DB->record_exists('user', ['username' => $username])) {
+            $i = 1;
+            while ($DB->record_exists('user', ['username' => $username . $i])) {
+                ++$i;
             }
+            $_mdlu->username = $username . $i;
+        } else {
+            $_mdlu->username = $username;
         }
-
         $_mdlu->mnethostid = $CFG->mnet_localhost_id;
         $_mdlu->password = AUTH_PASSWORD_NOT_CACHED;
     }
