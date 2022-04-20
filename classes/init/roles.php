@@ -35,6 +35,11 @@ class roles {
             'desc' => 'Ce rôle permet de voir tous les cours en tant qu\'enseignant non éditeur',
             'archetype' => 'coursecreator'
         ],
+        'libfrontpage' => [
+            'name' => 'Accès frontpage bibliothèque',
+            'desc' => 'Rôle pour la page d\'accueil',
+            'archetype' => 'student'
+        ],
     ];
 
     const ARCHETYPES = [
@@ -82,7 +87,7 @@ class roles {
 
         ],
         'libcontrib' => [
-            'capabilities_copy' => [
+            'capabilities_copy_from' => [
                 'coursecreator',
                 'teacher',
             ],
@@ -92,12 +97,22 @@ class roles {
             ],
         ],
         'libview' => [
-            'capabilities_copy' => [
+            'capabilities_copy_from' => [
                 'teacher',
             ],
             'capabilities' => [
                 'moodle/course:ignoreavailabilityrestrictions' => \CAP_ALLOW,
                 'moodle/course:view' => \CAP_ALLOW,
+            ],
+        ],
+        'libfrontpage' => [
+            'capabilities_shield_from' => [
+                'coursecreator' => \CAP_PROHIBIT,
+                'teacher' => \CAP_PROHIBIT,
+            ],
+            'capabilities_shield' => [
+                'moodle/course:ignoreavailabilityrestrictions' => \CAP_PROHIBIT,
+                'moodle/course:view' => \CAP_PROHIBIT,
             ],
         ],
     ];
@@ -651,8 +666,8 @@ ORDER BY r.sortorder ASC";
     protected function get_wanted_cap($role) {
         if (\array_key_exists($role->shortname, self::EXTRA_ALLOW)) {
             $extra_def = self::EXTRA_ALLOW[$role->shortname];
-            if (\array_key_exists('capabilities_copy', $extra_def)) {
-                $wanted = $this->merge_default_capabilities($extra_def['capabilities_copy']);
+            if (\array_key_exists('capabilities_copy_from', $extra_def)) {
+                $wanted = $this->merge_default_capabilities($extra_def['capabilities_copy_from']);
             } else {
                 $archetype = $this->_get_wanted_archetype($role);
                 $wanted = $this->merge_default_capabilities([$archetype]);
@@ -661,6 +676,37 @@ ORDER BY r.sortorder ASC";
                 foreach ($extra_def['capabilities'] as $cap => $perm) {
                     $wanted[$cap] = $perm;
                 }
+            }
+            if (\array_key_exists('capabilities_shield_from', $extra_def)) {
+                foreach($extra_def['capabilities_shield_from'] as $archetype => $perm) {
+                    $caps = $this->get_default_capabilities($archetype);
+                    foreach ($caps as $cap => $unused_perm) {
+                        if ($unused_perm == \CAP_ALLOW){
+                            $do = false;
+                            if (\array_key_exists($cap, $wanted)) {
+                                $do = ($wanted[$cap] == \CAP_INHERIT);
+                            } else {
+                                $do = true;
+                            }
+                            if ($do) {
+                                $wanted[$cap] = $perm;
+                            }
+                        }
+                    }
+                }
+            }
+            if (\array_key_exists('capabilities_shield', $extra_def)) {
+                foreach($extra_def['capabilities_shield'] as $cap => $perm) {
+                    $do = false;
+                    if (\array_key_exists($cap, $wanted)) {
+                        $do = ($wanted[$cap] == \CAP_INHERIT);
+                    } else {
+                        $do = true;
+                    }
+                    if ($do) {
+                        $wanted[$cap] = $perm;
+                    }
+            }
             }
         } else {
             $archetype = $this->_get_wanted_archetype($role);
