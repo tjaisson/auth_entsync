@@ -97,7 +97,12 @@ set_user_preference('auth_forcepasswordchange', false, $mdlu->id);
 complete_user_login($mdlu);
 \core\session\manager::apply_concurrent_login_limit($mdlu->id, session_id());
 // Ajouter dans $USER que c'est un sso et quel est l'ent. Au log out, rediriger vers l'ent.
-$USER->entsync = $ent->get_code();
+$USER->entsync = (object)[
+    'code' => $ent->get_code(),
+    'class' => $ent->get_entclass(),
+    'login' => $entu->uid,
+    'profile' => $entu->profile
+];
 $urltogo = core_login_get_return_url();
 if (strstr($urltogo, 'entsync')) unset($SESSION->wantsurl);
 else $SESSION->wantsurl = $urltogo;

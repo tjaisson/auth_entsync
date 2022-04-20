@@ -196,7 +196,7 @@ class auth_plugin_entsync extends auth_plugin_base {
     public function postlogout_hook($user) {
         global $CFG;
         if (($user->auth == 'entsync') && isset($user->entsync)) {
-            $ent = auth_entsync_ent_base::get_ent($user->entsync);
+            $ent = auth_entsync_ent_base::get_ent($user->entsync->code);
             if ($ent->get_mode() == 'cas') {
                 $cas = $ent->get_casconnector();
                 if ($cas->support_gw()) {
