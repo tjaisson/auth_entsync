@@ -84,6 +84,11 @@ class container {
             include_once(__dir__ . '/directory/cohorts.php');
             return new directory\cohorts($c->query('DB'), $c->query('conf'));
         });
+        $this->registerService('token', function ($c) {
+            include_once(__dir__ . '/Security/TokenServiceInterface.php');
+            include_once(__dir__ . '/Security/Impl/TokenService.php');
+            return new Security\Impl\TokenService($c->query('DB'), $c->query('conf'));
+        });
     }
     public const NAME = 'auth_entsync';
     public static function get($n){
