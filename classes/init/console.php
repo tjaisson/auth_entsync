@@ -49,4 +49,8 @@ class console {
     public function writeln_format($msg, $prefix, $color) {
         $this->writeln(\cli_ansi_format("<colour:{$color}>{$prefix} :<colour:normal> {$msg}"));
     }
+
+    public function format_time($time) {
+        return \userdate(\intval($time), get_string('strftimedaydate', 'core_langconfig'));
+    }
 }
