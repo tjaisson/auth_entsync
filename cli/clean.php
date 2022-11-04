@@ -52,8 +52,14 @@ switch ($options['run']) {
     case 'fix-externalid':
         $user_cleaner->fix_externalid($diag);
         break;
-    case 'clean3':
+    case 'remove-local':
         $user_cleaner->remove_local_users($diag);
+        break;
+    case 'remove-envole':
+        $user_cleaner->remove_envole_users($diag);
+        break;
+    case 'remove-disabled':
+        $user_cleaner->remove_disabled_ent_users($diag);
         break;
     case 'remove-old-users':
         $user_cleaner->remove_old_users($diag);
@@ -61,7 +67,7 @@ switch ($options['run']) {
     case 'clean4':
         $user_cleaner->estimate_synchro_time();
         break;
-    case 'clean5':
+    case 'check-enabled-ent':
         $user_cleaner->check_enabled_ent();
         break;
     case 'fix-deleted':
@@ -172,10 +178,12 @@ WHERE (mdlu.id IS NULL) OR (mdlu.deleted);';
                     }
                 }
             } else {
+                $entu = $this->db->get_record('auth_entsync_user', ['id' => $match->id]);
+                $mdlu = $this->db->get_record('user', ['id' => $entu->userid]);
                 $obj = new \stdClass();
                 $obj->id = $match->id;
                 $obj->uid = $match->login;
-                $this->console->write_fix('Fix : ' . $match->login);
+                $this->console->write_fix('Fix : ' . $match->login . ' / ' . $entu->uid  . ' (' . $mdlu->firstname . ' ' . $mdlu->lastname . ')' );
                 if (!$diag) {
                     $this->db->update_record('auth_entsync_user', $obj);
                 }
@@ -226,7 +234,7 @@ JOIN {$farmdb}.{ent_login} el on el.id = farmu.login_id;";
                     } else {
                         ++$nb_gone_but_access;
                         if ($mdlu->lastaccess > $max_gone_but_access) $max_gone_but_access = $mdlu->lastaccess;
-                        if ($mdlu->lastaccess > $limit_current)
+                        if ($mdlu->lastaccess > $limit)
                             $this->console->write_fix('gone : ' . $mdlu->id, false);
                     }
                 }
@@ -258,11 +266,18 @@ JOIN {$farmdb}.{ent_login} el on el.id = farmu.login_id;";
                 $unused = substr($mdlu->password, 0, 8 ) === "entsync\\";
                 if ($mdlu->hasFarmEnt || $mdlu->hasEnvole) {
                     $nb_to_unlink++;
+                    $archived = false;
                     if (\array_key_exists(7, $mdlu->entus)) {
                         if ($mdlu->entus[7]->archived) {
-                            $nb_to_unlink_archived++;
+                            $archived = true;
                         }
                     }
+                    if (\array_key_exists(3, $mdlu->entus)) {
+                        if ($mdlu->entus[3]->archived) {
+                            $archived = true;
+                        }
+                    }
+                    if ($archived) $nb_to_unlink_archived++;
                     if ($unused) $nb_to_unlink_unused++;
                 } else {
                     $nb_to_del++;
@@ -288,6 +303,98 @@ JOIN {$farmdb}.{ent_login} el on el.id = farmu.login_id;";
         $this->console->writeln('nb to del : ' . $nb_to_del .
         ' (archived : ' . $nb_to_del_archived .
         ', unused : ' . $nb_to_del_unused . ')');
+    }
+
+    public function remove_envole_users($diag) {
+        $nb_to_del = 0;
+        $nb_to_del_archived = 0;
+        $nb_to_unlink = 0;
+        $nb_to_unlink_archived = 0;
+        $max_last_access = 0;
+        foreach ($this->get_entus() as $mdlu) {
+            if ($mdlu->hasEnvole) {
+                if ($mdlu->hasFarmEnt) {
+                    $nb_to_unlink++;
+                    $archived = false;
+                    if (\array_key_exists(7, $mdlu->entus)) {
+                        if ($mdlu->entus[7]->archived) {
+                            $archived = true;
+                        }
+                    }
+                    if (\array_key_exists(3, $mdlu->entus)) {
+                        if ($mdlu->entus[3]->archived) {
+                            $archived = true;
+                        }
+                    }
+                    if ($archived) $nb_to_unlink_archived++;
+                } else {
+                    $nb_to_del++;
+                    if ($mdlu->entus[6]->archived) {
+                        $nb_to_del_archived++;
+                    }
+                    if ($mdlu->lastaccess > $max_last_access) $max_last_access = $mdlu->lastaccess;
+                    $user = new \stdClass();
+                    $user->id = $mdlu->id;
+                    $user->username = $mdlu->username;
+                    if (!$diag) {
+                        \delete_user($user);
+                    }
+                }
+                if (!$diag) {
+                    $this->db->delete_records('auth_entsync_user', ['userid' => $mdlu->id, 'ent' => 6]);
+                }
+            }
+        }
+        $this->console->writeln('nb to unlink : ' . $nb_to_unlink .
+        ' (archived : ' . $nb_to_unlink_archived . ')');
+        $max_last_access = $max_last_access == 0 ? 'jamais' : $this->format_time($max_last_access);
+        $this->console->writeln('nb to del : ' . $nb_to_del .
+        ' (archived : ' . $nb_to_del_archived .
+        ', max access : ' . $max_last_access . ')');
+    }
+
+    public function remove_disabled_ent_users($diag) {
+        $enabled = $this->get_enabled_ent();
+        $nb_to_del = 0;
+        $nb_to_unlink = 0;
+        $max_last_access = 0;
+        foreach ($this->get_entus() as $mdlu) {
+            $has_enabled = false;
+            $has_disabled = false;
+            $user_disabled = [];
+            foreach ($mdlu->entus as $ent => $entu) {
+                if (\in_array($ent, $enabled)) {
+                    $has_enabled = true;
+                } else {
+                    $has_disabled = true;
+                    $user_disabled[] = $ent;
+                }
+            }
+
+            if ($has_disabled) {
+                if ($has_enabled) {
+                    $nb_to_unlink++;
+                } else {
+                    $nb_to_del++;
+                    if ($mdlu->lastaccess > $max_last_access) $max_last_access = $mdlu->lastaccess;
+                    $user = new \stdClass();
+                    $user->id = $mdlu->id;
+                    $user->username = $mdlu->username;
+                    if (!$diag) {
+                        \delete_user($user);
+                    }
+                }
+                if (!$diag) {
+                    foreach ($user_disabled as $ent) {
+                        $this->db->delete_records('auth_entsync_user', ['userid' => $mdlu->id, 'ent' => $ent]);
+                    }
+                }
+            }
+        }
+        $this->console->writeln('nb to unlink : ' . $nb_to_unlink);
+        $max_last_access = $max_last_access == 0 ? 'jamais' : $this->format_time($max_last_access);
+        $this->console->writeln('nb to del : ' . $nb_to_del .
+        ' (max access : ' . $max_last_access . ')');
     }
 
     protected function simplify_profile($p) {
@@ -574,6 +681,13 @@ GROUP BY ent;";
         } else {
             $this->console->write_check('Local désactivé');
         }
+        list($sql, $params) = $this->db->get_in_or_equal($enabled, \SQL_PARAMS_NAMED, 'ents', false);
+        $sql = "select count(1) from {auth_entsync_user} where ent {$sql};";
+        $extra = $this->db->count_records_sql($sql, $params);
+        $this->console->write_check("Users d'ent désactivé : {$extra}", $extra == 0);
+        $sql = "select count(1) from {user} u where not u.deleted and u.username <> 'pam.central.adm' and u.auth = 'entsync' and not exists(select 1 from {auth_entsync_user} eu where eu.userid = u.id);";
+        $extra = $this->db->count_records_sql($sql);
+        $this->console->write_check("Users sans entu : {$extra}", $extra == 0);
     }
 
     public function get_instance_info() {
