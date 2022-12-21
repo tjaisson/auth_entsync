@@ -22,27 +22,42 @@
  */
 require(__DIR__ . '/../../config.php');
 $entsync = \auth_entsync\container::services();
+/** @var \auth_entsync\conf $conf */
 $conf = $entsync->query('conf');
-$iic = $entsync->query('iic');
+/** @var \auth_entsync\Security\TokenServiceInterface $tk_srv */
+$tk_srv = $entsync->query('token');
+$tk_sub = 'central.adm.switch';
+/** @var \auth_entsync\farm\instances $instances */
 $instances = $entsync->query('instances');
 $inst = optional_param('inst', null, PARAM_TEXT);
 if (!empty($inst)) {
+    if (!$conf->is_gw()) die();
     if ((!isloggedin()) || (!has_capability('moodle/site:configview', context_system::instance()))) die();
     $instance = $instances->get_instance(['dir' => $inst]);
     if (!$instance) {
         die();
     }
     $dir = $instance->get('dir');
-    $tk = $iic->createToken($dir, null, 5);
-    if (empty($tk)) die();
+    $builder = $tk_srv->createBuilder();
+    $builder->withData('jump')->withSubject($tk_sub)
+    ->withTTL(5)->withNonce();
+    $tk = $builder->toString();
     $redirecturl = new moodle_url($conf->pamroot() . '/' . $dir . '/auth/entsync/jump.php', ['tk' => $tk]);
     redirect($redirecturl);
-    die();
 }
 $tk = optional_param('tk', null, PARAM_TEXT);
 if (empty($tk)) die();
-if (isloggedin() || $conf->is_gw()) redirect($CFG->wwwroot);
-if ($iic::OK !== $iic->open($tk, $conf->inst())) die();
+if ($conf->is_gw()) redirect($CFG->wwwroot);
+
+if (isloggedin()) {
+    require_logout();
+    $redirecturl = new moodle_url('/auth/entsync/jump.php', ['tk' => $tk]);
+    redirect($redirecturl);
+}
+$validator = $tk_srv->createValidator();
+$validator->withToken($tk)->withSubject($tk_sub)->withNonce();
+if ('jump' !== $validator->getData()) die();
+
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 $mdlu = $DB->get_record('user', ['username' => 'pam.central.adm', 'auth' => 'entsync']);
