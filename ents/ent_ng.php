@@ -47,7 +47,8 @@ abstract class auth_entsync_entng extends auth_entsync_entcas {
                         'baseuri' => '/cas/',
                         'homeuri' => '/',
                         'supportGW' => false,
-                        'decodecallback' => [$this, 'decodecallback']
+                        'decodecallback' => [$this, 'decodecallback'],
+                        'retries' => 10
         ];
     }
     protected static function typesToProfile($types) {
