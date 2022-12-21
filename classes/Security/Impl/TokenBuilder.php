@@ -13,6 +13,7 @@ class TokenBuilder implements TokenBuilderInterface
     protected int $ttl;
     protected int $exp;
     protected string $data = '';
+    protected string $subject = '';
     protected bool $useEncryption = false;
     protected bool $useNonce = false;
     /**
@@ -46,6 +47,12 @@ class TokenBuilder implements TokenBuilderInterface
         $this->data = $data;
         return $this;
     }
+    public function withSubject(string $subject): TokenBuilderInterface
+    {
+        if (\strlen($subject) > 0x100) throw new \Exception('Subject string too long. Max is 256 characters.');
+        $this->subject = $subject;
+        return $this;
+    }
     public function withEncription(): TokenBuilderInterface
     {
         $this->useEncryption = true;
@@ -61,14 +68,19 @@ class TokenBuilder implements TokenBuilderInterface
         if (! $this->expirSet) throw new \Exception('Token expiration must be set.');
         $key = $this->keyRepository->getSuitableKey($this->ttl);
         $kid = \pack('V', $key->getId());
-        $dl = \strlen($this->data);
-        if ($dl < 32) {
-            $flag = 31 - $dl;
-            if ($flag === 0) $flag = 1;
-            $data = \random_bytes($flag + 1) . $this->data;
+        $data = $this->data;
+        if ($this->subject !== '') {
+            $flag = 0x40;
+            $data = \chr(\strlen($this->subject) - 1) . $this->subject . $data;
         } else {
             $flag = 0;
-            $data = $this->data;
+        }
+        $dl = \strlen($data);
+        if ($dl < 32) {
+            $_flag = 31 - $dl;
+            if ($_flag === 0) $_flag = 1;
+            $data = \random_bytes($_flag + 1) . $data;
+            $flag |= $_flag;
         }
         if ($this->useNonce) {
             $flag |= 0x80;

@@ -11,11 +11,13 @@ class TokenValidator implements TokenValidatorInterface
     protected $nonceRepository;
     protected bool $tkSet = false;
     protected string $tk;
+    protected string $subject = '';
     protected bool $useEncryption = false;
     protected bool $useNonce = false;
     protected bool $checked = false;
     protected bool $valid;
     protected string $data;
+    protected int $exp;
     /**
      * @param \auth_entsync\Security\KeyRepositoryInterface $keyRepository
      * @param \auth_entsync\Security\NonceRepositoryInterface $nonceRepository
@@ -39,6 +41,11 @@ class TokenValidator implements TokenValidatorInterface
     public function withNonce(): TokenValidatorInterface
     {
         $this->useNonce = true;
+        return $this;
+    }
+    public function withSubject(string $subject): TokenValidatorInterface
+    {
+        $this->subject = $subject;
         return $this;
     }
     public function validate(): bool
@@ -71,13 +78,15 @@ class TokenValidator implements TokenValidatorInterface
         }
         $flag = \ord($data[0]);
         $useNonce = ($flag & 0x80) != 0;
+        $hasSubject = ($flag & 0x40) != 0;
         $flag &= 0x1f;
         if ($flag > 0) ++$flag;
         $exp = \unpack('J', $data, 1)[1];
         if ($exp < \time()) return false;
+        $this->exp = $exp;
         if ($useNonce) {
             $nonce = \unpack('J', $data, 9)[1];
-            if (! $this->nonceRepository->validateNonce($nonce, $exp)) return false;
+            if (! $this->nonceRepository->validateNonce($nonce, $exp + 60)) return false;
             $flag += 17;
         } else {
             if ($this->useNonce) return false;
@@ -87,6 +96,16 @@ class TokenValidator implements TokenValidatorInterface
         $data = \substr($data, 0, -32);
         $compSignature = \hash_hmac('sha256', $data, $key->getSignKey(), true);
         if ($compSignature !== $signature) return false;
+        if ($hasSubject) {
+            if ($this->subject === '') return false;
+            $subLen = ord($data[$flag]) + 1;
+            $flag += 1;
+            $subject = \substr($data, $flag, $subLen);
+            if ($subject !== $this->subject) return false;
+            $flag +=  $subLen;
+        } else {
+            if ($this->subject !== '') return false;
+        }
         $this->data = \substr($data, $flag);
         $this->valid = true;
         return true;
@@ -97,5 +116,12 @@ class TokenValidator implements TokenValidatorInterface
         if (! $this->checked) $this->validate();
         if (! $this->valid) throw new \Exception('Token is invalid.');
         return $this->data;
+    }
+
+    public function getExpiration(): int
+    {
+        if (! $this->checked) $this->validate();
+        if (! $this->valid) throw new \Exception('Token is invalid.');
+        return $this->exp;
     }
 }
