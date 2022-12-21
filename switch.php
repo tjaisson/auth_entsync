@@ -27,32 +27,37 @@ if ($val = $cas->validateorredirect()) {
         // L'utilisateur n'a pas d'instance, on lui présente aboutpam.
         auth_entsync_printinfopage();
     } else {
-        $iic = $entsync->query('iic');
+        /** @var \auth_entsync\conf $conf */
         $conf = $entsync->query('conf');
-        $k = $iic->getCrkey();
-        $userdata = json_encode($val, JSON_UNESCAPED_UNICODE);
+        /** @var \auth_entsync\Security\TokenServiceInterface $tk_srv */
+        $tk_srv = $entsync->query('token');
+        $tk_sub = 'login.ui.' . $ent->get_entclass();
+        $builder = $tk_srv->createBuilder();
+        $builder->withEncription()->withSubject($tk_sub)
+        ->withData(json_encode($val, JSON_UNESCAPED_UNICODE));
+
         if ($instcount == 1) {
             // L'utilisateur n'a qu'une instance, alors on redirige directement.
+            $builder->withTTL(5);
             // array_key_first polyfill.
             foreach ($userinsts as $key => $v) {
                 $inst = $key;
                 break;
             }
-            redirect(build_connector_url($inst, $userdata, $k));
+            redirect(build_connector_url($inst, $builder->toString()));
         } else {
             // L'utilisateur a plusieurs instances, alors on lui donne le choix.
-            auth_entsync_printselectpage($userinsts, $userdata, $k);
+            $builder->withNonce()->withTTL(180); // L'utilisateur a 2 minutes pour se décider.
+            auth_entsync_printselectpage($userinsts, $builder->toString());
         }
     }
 } else {
     print_error('userautherror');
 }
-function build_connector_url($inst, $userdata, $k) {
+function build_connector_url($inst, $tk) {
     global $conf, $ent;
-    $scope = $inst . ':' . $ent->get_entclass();
-    $userdata = $k->seal($userdata, $scope);
     return new moodle_url($conf->pamroot() . '/' . $inst . '/auth/entsync/login.php',
-        ['ent' => $ent->get_entclass(), 'user' => $userdata]);
+        ['ent' => $ent->get_entclass(), 'user' => $tk]);
 }
 function auth_entsync_setupPage(){
     global $PAGE, $page_url;
@@ -60,7 +65,7 @@ function auth_entsync_setupPage(){
     $PAGE->set_context(context_system::instance());
     $PAGE->set_pagelayout('embedded');
 }
-function auth_entsync_printselectpage($userinsts, $userdata, $k) {
+function auth_entsync_printselectpage($userinsts, $tk) {
     global $OUTPUT, $PAGE;
     auth_entsync_setupPage();
     $PAGE->set_title('Redirection');
@@ -71,7 +76,7 @@ function auth_entsync_printselectpage($userinsts, $userdata, $k) {
     $arrowico = $OUTPUT->pix_icon('t/right', get_string('go'));
     foreach ($userinsts as $rep => $instance) {
         $lnk = $arrowico . '&nbsp;' . $instance['name'];
-        $lnk = html_writer::link(build_connector_url($rep, $userdata, $k), $lnk);
+        $lnk = html_writer::link(build_connector_url($rep, $tk), $lnk);
         echo html_writer::tag('p', $lnk, ['style' => 'padding-left: 5em;']);
     }
     echo html_writer::end_div();

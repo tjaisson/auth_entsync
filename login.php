@@ -49,18 +49,21 @@ require_once($CFG->dirroot.'/cohort/lib.php');
 
 /** @var \auth_entsync\conf $conf */
 $conf = $entsync->query('conf');
-$scope = $conf->inst() . ':' . $ent->get_entclass();
-/** @var \auth_entsync\farm\iic $iic */
-$iic = $entsync->query('iic');
+/** @var \auth_entsync\Security\TokenServiceInterface $tk_srv */
+$tk_srv = $entsync->query('token');
+$tk_sub = 'login.ui.' . $ent->get_entclass();
+
 $ui = optional_param('user', null, PARAM_ALPHANUMEXT);
 if (!empty($ui)) {
     if ((count($_POST) + count($_GET)) !== 2) entsync_print_error('userautherror');
-    //$page_param['user'] = $userdata;
-    if (false === ($ui = $iic->open($ui, $scope))) entsync_print_error('expiredkey');
+    $validator = $tk_srv->createValidator();
+    $validator->withEncription()->withToken($ui)->withSubject($tk_sub);
+    if (!$validator->validate()) entsync_print_error('expiredkey');
+    $ui = $validator->getData();
     $ui = json_decode($ui);
 } else {
     if (!$cas = $ent->get_casconnector()) entsync_print_error('userautherror');
-    $clienturl = new moodle_url($page_url, ['ent' => $entclass]);
+    $clienturl = new moodle_url($page_url, ['ent' => $ent->get_entclass()]);
     $cas->set_clienturl($clienturl);
     if (!($ui = $cas->validateorredirect())) entsync_print_error('userautherror');
 }
@@ -85,10 +88,13 @@ if (isloggedin()) {
         redirect($CFG->wwwroot.'/');
     } else {
         entsync_require_logout();
-        $k = $iic->getCrkey();
         $ui = json_encode($ui, JSON_UNESCAPED_UNICODE);
-        $ui = $k->seal($ui, $scope);
-        redirect(new moodle_url($page_url, ['ent' => $entclass, 'user' => $ui]));
+        $builder = $tk_srv->createBuilder();
+        $builder->withEncription()->withNonce()
+        ->withTTL(5)->withSubject($tk_sub)
+        ->withData($ui);
+        $ui = $builder->toString();
+        redirect(new moodle_url($page_url, ['ent' => $ent->get_entclass(), 'user' => $ui]));
     }
 }
 // Here we have to log $mdlu in.
